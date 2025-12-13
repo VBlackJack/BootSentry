@@ -7,6 +7,7 @@ using BootSentry.Actions;
 using BootSentry.Backup;
 using BootSentry.Providers;
 using BootSentry.Security;
+using BootSentry.UI.Services;
 using BootSentry.UI.ViewModels;
 
 namespace BootSentry.UI;
@@ -57,6 +58,17 @@ public partial class App : Application
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
 
+        // Initialize services
+        var settingsService = Services.GetRequiredService<SettingsService>();
+        settingsService.Load();
+
+        var themeService = Services.GetRequiredService<ThemeService>();
+        themeService.CurrentTheme = settingsService.Settings.Theme;
+        themeService.Initialize();
+
+        // Initialize localization
+        BootSentry.UI.Resources.Strings.CurrentLanguage = settingsService.Settings.Language;
+
         Log.Information("BootSentry starting up");
 
         base.OnStartup(e);
@@ -100,9 +112,14 @@ public partial class App : Application
         services.AddBootSentryProviders();
         services.AddBootSentryActions();
 
+        // UI Services
+        services.AddSingleton<SettingsService>();
+        services.AddSingleton<ThemeService>();
+
         // ViewModels
         services.AddTransient<MainViewModel>();
         services.AddTransient<EntryListViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<HistoryViewModel>();
     }
 }

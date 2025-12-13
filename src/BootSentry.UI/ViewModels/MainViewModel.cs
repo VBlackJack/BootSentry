@@ -534,23 +534,21 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenSettings()
     {
-        // TODO: Open settings window
-        MessageBox.Show(
-            "Les paramètres seront disponibles dans une prochaine version.",
-            "Paramètres",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        var settingsWindow = new Views.SettingsView
+        {
+            Owner = Application.Current.MainWindow
+        };
+        settingsWindow.ShowDialog();
     }
 
     [RelayCommand]
     private void ShowHistory()
     {
-        // TODO: Show history window
-        MessageBox.Show(
-            "L'historique sera disponible dans une prochaine version.",
-            "Historique",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        var historyWindow = new Views.HistoryView
+        {
+            Owner = Application.Current.MainWindow
+        };
+        historyWindow.ShowDialog();
     }
 
     [RelayCommand]

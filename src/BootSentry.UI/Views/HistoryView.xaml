@@ -1,0 +1,157 @@
+<Window x:Class="BootSentry.UI.Views.HistoryView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
+        mc:Ignorable="d"
+        Title="Historique - BootSentry"
+        Height="500" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackground}">
+
+    <Window.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+        </Style>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentForeground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Historique des actions"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="{DynamicResource WindowForeground}"/>
+            <TextBlock Text="Consultez et restaurez les modifications précédentes"
+                       Foreground="{DynamicResource DisabledForeground}"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Transaction List -->
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Transactions}"
+                  SelectedItem="{Binding SelectedTransaction}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  Background="{DynamicResource PanelBackground}"
+                  Foreground="{DynamicResource WindowForeground}"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  RowBackground="{DynamicResource PanelBackground}"
+                  AlternatingRowBackground="{DynamicResource RowAlternate}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
+                <DataGridTextColumn Header="Action" Binding="{Binding ActionType}" Width="80"/>
+                <DataGridTextColumn Header="Entrée" Binding="{Binding EntryDisplayName}" Width="*"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding EntryType}" Width="100"/>
+                <DataGridTextColumn Header="Utilisateur" Binding="{Binding User}" Width="100"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding StatusText}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Selected Transaction Details -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource PanelBackground}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Margin="0,12,0,0"
+                Padding="12"
+                Visibility="{Binding SelectedTransaction, Converter={StaticResource NotNullToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Style="{StaticResource HeaderTextStyle}"
+                               Text="{Binding SelectedTransaction.EntryDisplayName}"/>
+                    <TextBlock Foreground="{DynamicResource DisabledForeground}"
+                               Margin="0,4,0,0">
+                        <Run Text="Source: "/>
+                        <Run Text="{Binding SelectedTransaction.SourcePath, Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Command="{Binding RollbackSelectedCommand}"
+                        IsEnabled="{Binding SelectedTransaction.CanRestore}"
+                        Content="Restaurer"/>
+            </Grid>
+        </Border>
+
+        <!-- Footer with Actions and Status -->
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource DisabledForeground}"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="Purger les anciens"
+                        Command="{Binding PurgeOldTransactionsCommand}"
+                        Padding="12,8"
+                        Margin="4,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ControlForeground}"
+                        BorderBrush="{DynamicResource BorderBrush}"/>
+                <Button Content="Actualiser"
+                        Command="{Binding LoadTransactionsCommand}"
+                        Padding="12,8"
+                        Margin="4,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ControlForeground}"
+                        BorderBrush="{DynamicResource BorderBrush}"/>
+                <Button Content="Fermer"
+                        Click="CloseButton_Click"
+                        Padding="12,8"
+                        Margin="4,0,0,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ControlForeground}"
+                        BorderBrush="{DynamicResource BorderBrush}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Border Grid.RowSpan="4"
+                Background="#80000000"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
+                <TextBlock Text="Chargement..."
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
