@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BootSentry.UI</RootNamespace>
+    <AssemblyName>BootSentry</AssemblyName>
+    <!-- <ApplicationIcon>Resources\app.ico</ApplicationIcon> -->
+    <Version>1.0.0</Version>
+    <Authors>Julien Bombled</Authors>
+    <Company>BootSentry</Company>
+    <Product>BootSentry</Product>
+    <Description>Windows Startup Manager - Safe and user-friendly</Description>
+    <Copyright>Copyright (c) 2025 Julien Bombled</Copyright>
+
+    <!-- Single file publish settings -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BootSentry.Core\BootSentry.Core.csproj" />
+    <ProjectReference Include="..\BootSentry.Providers\BootSentry.Providers.csproj" />
+    <ProjectReference Include="..\BootSentry.Actions\BootSentry.Actions.csproj" />
+    <ProjectReference Include="..\BootSentry.Backup\BootSentry.Backup.csproj" />
+    <ProjectReference Include="..\BootSentry.Security\BootSentry.Security.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <!-- Resources will be added later
+  <ItemGroup>
+    <Resource Include="Resources\*.ico" />
+    <Resource Include="Resources\*.png" />
+  </ItemGroup>
+  -->
+
+</Project>

@@ -1,0 +1,85 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Build
+publish/
+*.exe
+!src/BootSentry.UI/Resources/*.exe
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# JetBrains Rider
+*.sln.iml
+
+# NCrunch
+*.ncrunchproject
+*.ncrunchsolution
+_NCrunch_*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Publish profiles
+PublishProfiles/
+
+# Local environment
+.env
+.env.local
+appsettings.local.json

@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --configuration Release --verbosity normal
+
+  package:
+    needs: build
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Publish
+      run: |
+        dotnet publish src/BootSentry.UI/BootSentry.UI.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -o ./publish
+
+    - name: Get version from tag
+      id: get_version
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+      shell: pwsh
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./publish/BootSentry.exe
+        name: BootSentry v${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## BootSentry v${{ steps.get_version.outputs.VERSION }}
+
+          ### Installation
+          1. Téléchargez `BootSentry.exe`
+          2. Placez-le dans un dossier de votre choix
+          3. Exécutez-le
+
+          ### Nouveautés
+          Voir les commits pour les détails des changements.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BootSentry-portable
+        path: ./publish/BootSentry.exe
+        retention-days: 30
