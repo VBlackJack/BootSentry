@@ -181,15 +181,38 @@ public static partial class CommandLineParser
         // Check for common obfuscation patterns
         var suspicious = new[]
         {
-            @"-enc\s+[A-Za-z0-9+/=]+",  // PowerShell encoded command
-            @"-e\s+[A-Za-z0-9+/=]{50,}",  // Short form encoded
+            // PowerShell encoded/obfuscated commands
+            @"-enc\s+[A-Za-z0-9+/=]+",  // Encoded command
+            @"-e\s+[A-Za-z0-9+/=]{20,}",  // Short form encoded (lowered threshold)
+            @"-encodedcommand",  // Full parameter name
             @"frombase64string",  // Base64 decode
             @"invoke-expression",  // Dynamic execution
-            @"iex\s*\(",  // Short IEX
+            @"\biex\b",  // Short IEX (word boundary)
             @"downloadstring",  // Download and execute
             @"webclient",  // Web download
+            @"net\.webclient",  // .NET WebClient
+            @"invoke-webrequest",  // PowerShell web request
+            @"start-bitstransfer",  // BITS transfer
+
+            // Suspicious PowerShell flags
+            @"-windowstyle\s+hidden",  // Hidden window
+            @"-w\s+hidden",  // Short form hidden
+            @"-executionpolicy\s+bypass",  // Bypass execution policy
+            @"-ep\s+bypass",  // Short form bypass
+            @"-nop\b",  // No profile
+            @"-noprofile",  // No profile full
+            @"-sta\b",  // Single-threaded apartment
+            @"-noninteractive",  // Non-interactive
+
+            // CMD obfuscation
             @"\^",  // Caret obfuscation in cmd
             @"cmd\.exe.*/c.*powershell",  // CMD launching PowerShell
+
+            // Other suspicious patterns
+            @"regsvr32.*\/s.*\/u.*\/i:",  // Regsvr32 bypass
+            @"mshta.*vbscript:",  // MSHTA VBScript
+            @"certutil.*-urlcache",  // Certutil download
+            @"bitsadmin.*/transfer",  // BITS download
         };
 
         var lower = commandLine.ToLowerInvariant();

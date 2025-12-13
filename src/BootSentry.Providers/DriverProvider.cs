@@ -200,36 +200,82 @@ public sealed class DriverProvider : IStartupProvider
         return $"Pilote {startName}{groupInfo}";
     }
 
+    // Drivers that should NEVER be disabled - system will not boot without them
+    private static readonly HashSet<string> CriticalBootDrivers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Storage/Boot critical
+        "disk", "volmgr", "volsnap", "partmgr", "volume", "fvevol",
+        "iorate", "rdyboost", "vdrvroot", "wof",
+        // Storage controllers
+        "storahci", "stornvme", "storufs", "spaceport", "EhStorClass",
+        // File systems
+        "ntfs", "refs", "fastfat", "exfat", "cdfs", "udfs",
+        // Core system
+        "acpi", "pci", "isapnp", "msisadrv", "pdc", "intelpep", "amdppm",
+        // Filter manager
+        "fltmgr", "fileinfo",
+        // Security
+        "ksecdd", "ksecpkg", "cng", "pcw", "wfplwfs"
+    };
+
+    // Drivers that are critical but may be disabled with extreme caution
+    private static readonly HashSet<string> CriticalSystemDrivers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Network (system functional but no network)
+        "tcpip", "netbt", "afd", "tdx", "netio", "ndis", "nsiproxy",
+        // File sharing
+        "rdbss", "mrxsmb", "mrxsmb20", "srv", "srv2", "srvnet",
+        // Named pipes/mailslots
+        "npfs", "msfs",
+        // Power management
+        "acpiex", "acpipagr", "compbatt", "battc"
+    };
+
+    private static readonly HashSet<string> CriticalGroups = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Boot Bus Extender", "System Bus Extender", "SCSI miniport",
+        "SCSI Class", "SCSI CDROM Class", "FSFilter Infrastructure",
+        "FSFilter System", "FSFilter Bottom", "FSFilter Copy Protection",
+        "FSFilter Security Enhancer", "Filter", "Boot File System",
+        "File System", "PnP Filter", "Base"
+    };
+
     private static bool IsProtectedDriver(string driverName, string? group)
     {
-        // Protect critical system drivers
-        var criticalDrivers = new[]
-        {
-            "ntfs", "volmgr", "volsnap", "disk", "partmgr", "fltmgr",
-            "ksecdd", "ksecpkg", "tcpip", "netbt", "afd", "rdbss",
-            "mrxsmb", "srv", "srv2", "srvnet", "npfs", "msfs"
-        };
-
-        var criticalGroups = new[]
-        {
-            "Boot Bus Extender", "System Bus Extender", "SCSI miniport",
-            "Filter", "Boot File System", "File System"
-        };
-
-        if (criticalDrivers.Contains(driverName.ToLowerInvariant()))
+        if (CriticalBootDrivers.Contains(driverName))
             return true;
 
-        if (!string.IsNullOrEmpty(group) && criticalGroups.Any(g =>
-            group.Contains(g, StringComparison.OrdinalIgnoreCase)))
+        if (CriticalSystemDrivers.Contains(driverName))
+            return true;
+
+        if (!string.IsNullOrEmpty(group) && CriticalGroups.Any(g =>
+            group.Equals(g, StringComparison.OrdinalIgnoreCase)))
             return true;
 
         return false;
     }
 
+    /// <summary>
+    /// Checks if a driver is absolutely critical for boot.
+    /// These drivers should NEVER be disabled under any circumstances.
+    /// </summary>
+    public static bool IsCriticalBootDriver(string driverName)
+    {
+        return CriticalBootDrivers.Contains(driverName);
+    }
+
     private static string? GetProtectionReason(string driverName, string? group)
     {
-        if (IsProtectedDriver(driverName, group))
-            return "Pilote système critique - modification peut rendre le système non démarrable";
+        if (CriticalBootDrivers.Contains(driverName))
+            return "CRITIQUE: Pilote de démarrage essentiel - Désactiver ce pilote rendra Windows NON DÉMARRABLE (BSOD)";
+
+        if (CriticalSystemDrivers.Contains(driverName))
+            return "Pilote système important - La désactivation peut causer des dysfonctionnements majeurs";
+
+        if (!string.IsNullOrEmpty(group) && CriticalGroups.Any(g =>
+            group.Equals(g, StringComparison.OrdinalIgnoreCase)))
+            return $"Pilote du groupe critique '{group}' - Modification déconseillée";
+
         return null;
     }
 
