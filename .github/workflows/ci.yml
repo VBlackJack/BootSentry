@@ -39,22 +39,26 @@ jobs:
         path: ./TestResults/**/coverage.cobertura.xml
         retention-days: 7
 
-    - name: Code Coverage Summary
-      uses: irongut/CodeCoverageSummary@v1.3.0
-      if: always()
+    - name: Generate Coverage Report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5
       with:
-        filename: TestResults/**/coverage.cobertura.xml
-        badge: true
-        format: markdown
-        output: both
-        thresholds: '60 80'
+        reports: TestResults/**/coverage.cobertura.xml
+        targetdir: coveragereport
+        reporttypes: MarkdownSummaryGithub;HtmlInline_AzurePipelines
 
-    - name: Add Coverage PR Comment
-      uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request'
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
       with:
-        recreate: true
-        path: code-coverage-results.md
+        name: coverage-report-html
+        path: coveragereport
+        retention-days: 7
+
+    - name: Add Coverage Summary to Job
+      run: |
+        if (Test-Path "coveragereport/SummaryGithub.md") {
+          Get-Content "coveragereport/SummaryGithub.md" >> $env:GITHUB_STEP_SUMMARY
+        }
+      shell: pwsh
 
   package:
     needs: build
