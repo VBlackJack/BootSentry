@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IActionStrategy, StartupFolderActionStrategy>();
         services.AddSingleton<IActionStrategy, ScheduledTaskActionStrategy>();
         services.AddSingleton<IActionStrategy, ServiceActionStrategy>();
+        services.AddSingleton<IActionStrategy, IFEOActionStrategy>();
 
         // Register executor
         services.AddSingleton<ActionExecutor>();

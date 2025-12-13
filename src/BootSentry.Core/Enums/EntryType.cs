@@ -33,5 +33,8 @@ public enum EntryType
     BHO,
 
     /// <summary>Winlogon Shell/Userinit entries</summary>
-    Winlogon
+    Winlogon,
+
+    /// <summary>Registry Policies Run key</summary>
+    RegistryPolicies
 }

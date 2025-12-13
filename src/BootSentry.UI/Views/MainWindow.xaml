@@ -4,28 +4,127 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
+        xmlns:conv="clr-namespace:BootSentry.UI.Converters"
         mc:Ignorable="d"
         Title="BootSentry - Gestionnaire de démarrage Windows"
-        Height="700" Width="1100"
-        MinHeight="500" MinWidth="800"
-        WindowStartupLocation="CenterScreen">
+        Height="750" Width="1200"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackground}"
+        Foreground="{DynamicResource WindowForeground}">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility"/>
+        <conv:NotNullToVisibilityConverter x:Key="NotNullToVisibility"/>
+        <conv:RiskLevelToColorConverter x:Key="RiskToColor"/>
+        <conv:SignatureStatusToColorConverter x:Key="SignatureToColor"/>
+        <conv:EntryStatusToColorConverter x:Key="StatusToColor"/>
+
+        <!-- Theme Colors (defaults - overridden by ThemeService) -->
+        <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
+        <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
+        <SolidColorBrush x:Key="PanelBackground" Color="White"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#DCDCDC"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+        <SolidColorBrush x:Key="AccentForeground" Color="White"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
+        <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
+        <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
+        <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
+
+        <!-- Button Style -->
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
-        <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding SearchCommand}"/>
+        <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FocusSearchCommand}"/>
         <KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding ToggleExpertModeCommand}"/>
+        <KeyBinding Key="Delete" Command="{Binding DisableSelectedCommand}"/>
+        <KeyBinding Key="Delete" Modifiers="Ctrl" Command="{Binding DeleteSelectedCommand}"/>
+        <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}"/>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding ExportCommand}"/>
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ShowHistoryCommand}"/>
+        <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}"/>
+        <KeyBinding Key="Escape" Command="{Binding ClearSelectionCommand}"/>
     </Window.InputBindings>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0" Background="{DynamicResource PanelBackground}">
+            <MenuItem Header="_Fichier">
+                <MenuItem Header="_Exporter en JSON..." Command="{Binding ExportJsonCommand}" InputGestureText="Ctrl+S"/>
+                <MenuItem Header="Exporter en _CSV..." Command="{Binding ExportCsvCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Paramètres..." Command="{Binding OpenSettingsCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Quitter" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"/>
+            </MenuItem>
+            <MenuItem Header="_Affichage">
+                <MenuItem Header="_Actualiser" Command="{Binding RefreshCommand}" InputGestureText="F5"/>
+                <Separator/>
+                <MenuItem Header="Mode _Expert" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"/>
+                <Separator/>
+                <MenuItem Header="_Historique" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"/>
+            </MenuItem>
+            <MenuItem Header="_Actions">
+                <MenuItem Header="_Activer" Command="{Binding EnableSelectedCommand}"/>
+                <MenuItem Header="_Désactiver" Command="{Binding DisableSelectedCommand}" InputGestureText="Suppr"/>
+                <MenuItem Header="_Supprimer" Command="{Binding DeleteSelectedCommand}" InputGestureText="Ctrl+Suppr"/>
+                <Separator/>
+                <MenuItem Header="_Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"/>
+                <MenuItem Header="_Copier le chemin" Command="{Binding CopyPathCommand}"/>
+                <MenuItem Header="Rechercher sur le _Web" Command="{Binding WebSearchCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Aide">
+                <MenuItem Header="_Documentation" Command="{Binding ShowDocumentationCommand}" InputGestureText="F1"/>
+                <Separator/>
+                <MenuItem Header="Vérifier les _mises à jour" Command="{Binding CheckUpdatesCommand}"/>
+                <Separator/>
+                <MenuItem Header="À _propos de BootSentry" Command="{Binding ShowAboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
         <!-- Header -->
-        <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="16">
+        <Border Grid.Row="1" Background="{DynamicResource AccentBrush}" Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -33,27 +132,70 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="BootSentry" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - Gestionnaire de démarrage" FontSize="14" Foreground="#CCFFFFFF"
-                               VerticalAlignment="Bottom" Margin="8,0,0,4"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="/Resources/app.png" Width="32" Height="32" Margin="0,0,12,0"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <StackPanel>
+                        <TextBlock Text="BootSentry" FontSize="20" FontWeight="SemiBold" Foreground="White"/>
+                        <TextBlock Text="Gestionnaire de démarrage Windows" FontSize="11" Foreground="#CCFFFFFF"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Dashboard Stats -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="32,0">
+                    <Border Background="#1AFFFFFF" CornerRadius="4" Padding="16,8" Margin="4,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding TotalEntriesCount}" FontSize="24" FontWeight="Bold"
+                                       Foreground="White" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Total" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1A10B981" CornerRadius="4" Padding="16,8" Margin="4,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding EnabledCount}" FontSize="24" FontWeight="Bold"
+                                       Foreground="#10B981" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Actives" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1AEF4444" CornerRadius="4" Padding="16,8" Margin="4,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding DisabledCount}" FontSize="24" FontWeight="Bold"
+                                       Foreground="#EF4444" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Désactivées" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1AF59E0B" CornerRadius="4" Padding="16,8" Margin="4,0"
+                            Visibility="{Binding HasSuspiciousEntries, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding SuspiciousCount}" FontSize="24" FontWeight="Bold"
+                                       Foreground="#F59E0B" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Suspectes" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <ToggleButton Content="Mode Expert"
-                                  IsChecked="{Binding IsExpertMode}"
+                    <ToggleButton IsChecked="{Binding IsExpertMode}"
+                                  ToolTip="Mode Expert (Ctrl+E)"
                                   Padding="12,6" Margin="8,0"
                                   Background="Transparent" Foreground="White"
-                                  BorderBrush="White" BorderThickness="1"/>
-                    <Button Content="⚙" ToolTip="Paramètres" Padding="8,6"
-                            Background="Transparent" Foreground="White"
+                                  BorderBrush="White" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="👁" Margin="0,0,6,0"/>
+                            <TextBlock Text="Expert"/>
+                        </StackPanel>
+                    </ToggleButton>
+                    <Button Content="⚙" ToolTip="Paramètres" Padding="10,6"
+                            Background="Transparent" Foreground="White" FontSize="18"
+                            BorderThickness="0" Cursor="Hand"
                             Command="{Binding OpenSettingsCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Toolbar -->
-        <Border Grid.Row="1" Background="#F5F5F5" Padding="8">
+        <Border Grid.Row="2" Background="{DynamicResource PanelBackground}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -63,43 +205,42 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Content="🔄 Actualiser" Command="{Binding RefreshCommand}"
-                            Background="#0078D4" ToolTip="Actualiser (F5)"/>
-                    <Button Content="⏸ Désactiver" Command="{Binding DisableSelectedCommand}"
-                            Background="#FF8C00"/>
+                            Style="{StaticResource ToolbarButton}" Background="#0078D4" ToolTip="Actualiser (F5)"/>
                     <Button Content="▶ Activer" Command="{Binding EnableSelectedCommand}"
-                            Background="#107C10"/>
+                            Style="{StaticResource ToolbarButton}" Background="#10B981"/>
+                    <Button Content="⏸ Désactiver" Command="{Binding DisableSelectedCommand}"
+                            Style="{StaticResource ToolbarButton}" Background="#F59E0B"/>
                     <Button Content="🗑 Supprimer" Command="{Binding DeleteSelectedCommand}"
-                            Background="#D13438"
+                            Style="{StaticResource ToolbarButton}" Background="#EF4444"
                             Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"/>
+                    <Separator Margin="8,4"/>
+                    <Button Content="📂" Command="{Binding OpenFileLocationCommand}"
+                            Style="{StaticResource ToolbarButton}" Background="#6B7280"
+                            ToolTip="Ouvrir l'emplacement"/>
+                    <Button Content="📋" Command="{Binding CopyPathCommand}"
+                            Style="{StaticResource ToolbarButton}" Background="#6B7280"
+                            ToolTip="Copier le chemin"/>
                 </StackPanel>
 
-                <TextBox Grid.Column="1"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="16,0"
-                         Padding="8,4"
-                         VerticalContentAlignment="Center">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Style.Triggers>
-                                <Trigger Property="Text" Value="">
-                                    <Setter Property="Background">
-                                        <Setter.Value>
-                                            <VisualBrush Stretch="None" AlignmentX="Left">
-                                                <VisualBrush.Visual>
-                                                    <TextBlock Text="🔍 Rechercher..." Foreground="Gray" Margin="4,0"/>
-                                                </VisualBrush.Visual>
-                                            </VisualBrush>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
+                <Border Grid.Column="1" Background="{DynamicResource ControlBackground}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="4" Margin="16,0">
+                    <Grid>
+                        <TextBlock Text="🔍 Rechercher... (Ctrl+F)" Foreground="Gray"
+                                   Margin="10,0" VerticalAlignment="Center"
+                                   Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"/>
+                        <TextBox x:Name="SearchBox"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="Transparent" BorderThickness="0"
+                                 Padding="10,8" VerticalContentAlignment="Center"/>
+                    </Grid>
+                </Border>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Run Text="{Binding VisibleEntriesCount, Mode=OneWay}"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Margin="8,0">
+                        <Run Text="{Binding VisibleEntriesCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text=" / "/>
+                        <Run Text="{Binding TotalEntriesCount, Mode=OneWay}"/>
                         <Run Text=" entrées"/>
                     </TextBlock>
                 </StackPanel>
@@ -107,132 +248,224 @@
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="350" MinWidth="250"/>
+                <ColumnDefinition Width="350" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
             <!-- Entry List -->
-            <DataGrid Grid.Column="0"
-                      ItemsSource="{Binding FilteredEntries}"
-                      SelectedItem="{Binding SelectedEntry}"
-                      Margin="8">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nom" Binding="{Binding DisplayName}" Width="*"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
-                    <DataGridTextColumn Header="Éditeur" Binding="{Binding Publisher}" Width="150"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Status}" Width="80"/>
-                    <DataGridTemplateColumn Header="Risque" Width="70">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Ellipse Width="12" Height="12" Margin="4">
-                                    <Ellipse.Style>
-                                        <Style TargetType="Ellipse">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
-                                                    <Setter Property="Fill" Value="{StaticResource RiskSafeBrush}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding RiskLevel}" Value="Unknown">
-                                                    <Setter Property="Fill" Value="{StaticResource RiskUnknownBrush}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding RiskLevel}" Value="Suspicious">
-                                                    <Setter Property="Fill" Value="{StaticResource RiskSuspiciousBrush}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding RiskLevel}" Value="Critical">
-                                                    <Setter Property="Fill" Value="{StaticResource RiskCriticalBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Ellipse.Style>
-                                </Ellipse>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Border Grid.Column="0" Margin="8" Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
+                <DataGrid ItemsSource="{Binding FilteredEntries}"
+                          SelectedItem="{Binding SelectedEntry}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          CanUserResizeRows="False"
+                          CanUserReorderColumns="True"
+                          EnableRowVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          RowBackground="{DynamicResource PanelBackground}"
+                          AlternatingRowBackground="{DynamicResource RowAlternate}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource RowHover}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource RowSelected}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nom" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                        <DataGridTextColumn Header="Portée" Binding="{Binding Scope}" Width="80"/>
+                        <DataGridTextColumn Header="Éditeur" Binding="{Binding Publisher}" Width="150"/>
+                        <DataGridTemplateColumn Header="Signature" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding SignatureStatus, Converter={StaticResource SignatureToColor}}"
+                                            CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding SignatureStatus}" FontSize="11" Foreground="White"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Statut" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding Status, Converter={StaticResource StatusToColor}}"
+                                            CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Status}" FontSize="11" Foreground="White"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Risque" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Ellipse Width="16" Height="16"
+                                             Fill="{Binding RiskLevel, Converter={StaticResource RiskToColor}}"
+                                             ToolTip="{Binding RiskLevel}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
 
             <!-- Splitter -->
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center"
-                          VerticalAlignment="Stretch" Background="#E0E0E0"/>
+                          VerticalAlignment="Stretch" Background="Transparent" Cursor="SizeWE"/>
 
             <!-- Details Panel -->
-            <Border Grid.Column="2" Background="#FAFAFA" Padding="16" Margin="0,8,8,8">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border Grid.Column="2" Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="4" Margin="0,8,8,8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
                         <TextBlock Text="Détails" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
 
-                        <TextBlock Text="Aucune entrée sélectionnée"
-                                   Visibility="{Binding SelectedEntry, Converter={StaticResource NullToVisibility}}"
-                                   Foreground="Gray" FontStyle="Italic"/>
+                        <!-- No Selection -->
+                        <StackPanel Visibility="{Binding SelectedEntry, Converter={StaticResource NullToVisibility}}"
+                                    HorizontalAlignment="Center" Margin="0,40">
+                            <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="Sélectionnez une entrée pour voir ses détails"
+                                       Foreground="Gray" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                        </StackPanel>
 
+                        <!-- Entry Details -->
                         <StackPanel Visibility="{Binding SelectedEntry, Converter={StaticResource NotNullToVisibility}}">
-                            <TextBlock Text="{Binding SelectedEntry.DisplayName}"
-                                       FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <!-- Header with status badge -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding SelectedEntry.DisplayName}"
+                                           FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <Border Grid.Column="1"
+                                        Background="{Binding SelectedEntry.RiskLevel, Converter={StaticResource RiskToColor}}"
+                                        CornerRadius="4" Padding="8,4" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding SelectedEntry.RiskLevel}"
+                                               FontSize="11" Foreground="White"/>
+                                </Border>
+                            </Grid>
+
+                            <Separator Margin="0,0,0,12"/>
+
+                            <!-- Info Grid -->
+                            <Grid Margin="0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Type:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.Type}" Margin="0,4" TextWrapping="Wrap"/>
+
+                                <TextBlock Grid.Row="1" Text="Portée:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.Scope}" Margin="0,4"/>
+
+                                <TextBlock Grid.Row="2" Text="Source:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.SourcePath}"
+                                           Margin="0,4" TextWrapping="Wrap" FontSize="11"/>
+
+                                <TextBlock Grid.Row="3" Text="Cible:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEntry.TargetPath}"
+                                           Margin="0,4" TextWrapping="Wrap" FontSize="11"/>
+
+                                <TextBlock Grid.Row="4" Text="Éditeur:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedEntry.Publisher}" Margin="0,4" TextWrapping="Wrap"/>
+
+                                <TextBlock Grid.Row="5" Text="Signature:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEntry.SignatureStatus}" Margin="0,4"/>
+
+                                <TextBlock Grid.Row="6" Text="Statut:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEntry.Status}" Margin="0,4"/>
+                            </Grid>
 
                             <Separator Margin="0,12"/>
 
-                            <Grid Margin="0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Type:" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedEntry.Type}" TextWrapping="Wrap"/>
-                            </Grid>
+                            <!-- Command Line -->
+                            <TextBlock Text="Ligne de commande:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <Border Background="{DynamicResource RowAlternate}" CornerRadius="4" Padding="8">
+                                <TextBox Text="{Binding SelectedEntry.CommandLineRaw, Mode=OneWay}"
+                                         IsReadOnly="True" TextWrapping="Wrap" FontSize="11"
+                                         Background="Transparent" BorderThickness="0"
+                                         FontFamily="Consolas"/>
+                            </Border>
 
-                            <Grid Margin="0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Source:" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedEntry.SourcePath}" TextWrapping="Wrap"/>
-                            </Grid>
-
-                            <Grid Margin="0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Cible:" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedEntry.TargetPath}" TextWrapping="Wrap"/>
-                            </Grid>
-
-                            <Grid Margin="0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Éditeur:" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedEntry.Publisher}" TextWrapping="Wrap"/>
-                            </Grid>
-
-                            <Grid Margin="0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Signature:" FontWeight="SemiBold"/>
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedEntry.SignatureStatus}" TextWrapping="Wrap"/>
-                            </Grid>
-
-                            <Separator Margin="0,12"/>
-
-                            <TextBlock Text="Commande:" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding SelectedEntry.CommandLineRaw, Mode=OneWay}"
-                                     IsReadOnly="True" TextWrapping="Wrap"
-                                     Background="#F0F0F0" Padding="8"/>
-
-                            <Separator Margin="0,12"/>
-
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="📂 Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"
-                                        Margin="4" Background="#6B6B6B"/>
-                                <Button Content="📋 Copier le chemin" Command="{Binding CopyPathCommand}"
-                                        Margin="4" Background="#6B6B6B"/>
+                            <!-- Notes -->
+                            <StackPanel Visibility="{Binding SelectedEntry.Notes, Converter={StaticResource NotNullToVisibility}}"
+                                        Margin="0,12,0,0">
+                                <TextBlock Text="Notes:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <Border Background="#FEF3C7" CornerRadius="4" Padding="8">
+                                    <TextBlock Text="{Binding SelectedEntry.Notes}" TextWrapping="Wrap" Foreground="#92400E"/>
+                                </Border>
                             </StackPanel>
+
+                            <!-- File Info -->
+                            <Expander Header="Informations fichier" Margin="0,12,0,0" IsExpanded="False">
+                                <StackPanel Margin="0,8,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Version:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.FileVersion}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="1" Text="Produit:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.ProductName}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="2" Text="Taille:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.FileSize, StringFormat={}{0:N0} octets}" Margin="0,2"/>
+
+                                        <TextBlock Grid.Row="3" Text="Modifié:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEntry.LastModified, StringFormat=g}" Margin="0,2"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Expander>
+
+                            <Separator Margin="0,16"/>
+
+                            <!-- Action Buttons -->
+                            <WrapPanel HorizontalAlignment="Center">
+                                <Button Content="📂 Ouvrir" Command="{Binding OpenFileLocationCommand}"
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                                <Button Content="📋 Copier" Command="{Binding CopyPathCommand}"
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                                <Button Content="🌐 Web" Command="{Binding WebSearchCommand}"
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                            </WrapPanel>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
@@ -240,26 +473,43 @@
         </Grid>
 
         <!-- Status Bar -->
-        <Border Grid.Row="3" Background="#E0E0E0" Padding="8,4">
+        <Border Grid.Row="4" Background="{DynamicResource PanelBackground}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+                <!-- Admin status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}, ConverterParameter=Green|Orange}"
+                            CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                        <TextBlock Text="{Binding AdminStatusText}" FontSize="11" Foreground="White"/>
+                    </Border>
+                </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock VerticalAlignment="Center" Margin="16,0">
-                        <Run Text="Actives: "/>
-                        <Run Text="{Binding EnabledCount, Mode=OneWay}" FontWeight="SemiBold"/>
-                    </TextBlock>
-                    <TextBlock VerticalAlignment="Center" Margin="16,0">
-                        <Run Text="Désactivées: "/>
-                        <Run Text="{Binding DisabledCount, Mode=OneWay}" FontWeight="SemiBold"/>
-                    </TextBlock>
+                <!-- Status message -->
+                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+
+                <!-- Loading indicator -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="⏳" Margin="0,0,4,0"/>
+                    <TextBlock Text="Chargement..." Foreground="Gray"/>
                 </StackPanel>
             </Grid>
+        </Border>
+
+        <!-- Loading Overlay -->
+        <Border Grid.RowSpan="5" Background="#80000000"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="White"
+                           HorizontalAlignment="Center" Margin="0,16,0,0"/>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

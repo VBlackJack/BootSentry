@@ -13,11 +13,17 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddBootSentryProviders(this IServiceCollection services)
     {
+        // Core providers (always included)
         services.AddSingleton<IStartupProvider, RegistryRunProvider>();
         services.AddSingleton<IStartupProvider, StartupFolderProvider>();
         services.AddSingleton<IStartupProvider, ScheduledTaskProvider>();
         services.AddSingleton<IStartupProvider, ServiceProvider>();
         services.AddSingleton<IStartupProvider, WinlogonProvider>();
+
+        // Advanced providers
+        services.AddSingleton<IStartupProvider, IFEOProvider>();
+        services.AddSingleton<IStartupProvider, DriverProvider>();
+        services.AddSingleton<IStartupProvider, RegistryPoliciesProvider>();
 
         return services;
     }
