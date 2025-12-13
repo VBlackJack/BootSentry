@@ -56,7 +56,7 @@
                     <Separator Margin="0,8"/>
 
                     <!-- System Info -->
-                    <Grid Margin="0,16,0,0">
+                    <Grid Margin="0,16,0,0" TextElement.Foreground="{DynamicResource WindowForeground}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
