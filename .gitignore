@@ -38,6 +38,10 @@ publish/
 *.exe
 !src/BootSentry.UI/Resources/*.exe
 
+# Releases (generated binaries)
+releases/
+*.zip
+
 # Test results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
