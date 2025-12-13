@@ -26,6 +26,14 @@ public partial class AboutDialog : Window
         }
     }
 
+    private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
     private void LoadInfo()
     {
         VersionText.Text = $"Version {UpdateChecker.CurrentVersion}";
@@ -37,7 +45,7 @@ public partial class AboutDialog : Window
     {
         try
         {
-            Process.Start(new ProcessStartInfo("https://github.com/julien-music/BootSentry")
+            Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry")
             {
                 UseShellExecute = true
             });
@@ -49,7 +57,7 @@ public partial class AboutDialog : Window
     {
         try
         {
-            Process.Start(new ProcessStartInfo("https://github.com/julien-music/BootSentry/blob/main/LICENSE")
+            Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry/blob/main/LICENSE")
             {
                 UseShellExecute = true
             });

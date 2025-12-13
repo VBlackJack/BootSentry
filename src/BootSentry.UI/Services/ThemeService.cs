@@ -112,7 +112,8 @@ public class ThemeService
             resources["WarningBrush"] = new SolidColorBrush(Color.FromRgb(217, 119, 6));
             resources["ErrorBrush"] = new SolidColorBrush(Color.FromRgb(220, 38, 38));
             resources["InfoBrush"] = new SolidColorBrush(Color.FromRgb(37, 99, 235));
-            resources["DisabledForeground"] = new SolidColorBrush(Color.FromRgb(160, 160, 160));
+            // #757575 = 4.6:1 contrast ratio on white (WCAG AA compliant)
+            resources["DisabledForeground"] = new SolidColorBrush(Color.FromRgb(117, 117, 117));
             resources["RowAlternate"] = new SolidColorBrush(Color.FromRgb(245, 245, 245));
             resources["RowHover"] = new SolidColorBrush(Color.FromRgb(235, 235, 235));
             resources["RowSelected"] = new SolidColorBrush(Color.FromRgb(0, 120, 215));

@@ -20,8 +20,11 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Logo -->
-            <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+            <!-- Header with Logo - Draggable area -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center"
+                        MouseLeftButtonDown="Header_MouseLeftButtonDown"
+                        Background="Transparent"
+                        Cursor="SizeAll">
                 <TextBlock Text="BootSentry"
                            FontSize="32" FontWeight="Bold"
                            Foreground="{DynamicResource AccentBrush}"
