@@ -36,5 +36,17 @@ public enum EntryType
     Winlogon,
 
     /// <summary>Registry Policies Run key</summary>
-    RegistryPolicies
+    RegistryPolicies,
+
+    /// <summary>Print Monitor (spooler subsystem)</summary>
+    PrintMonitor,
+
+    /// <summary>Session Manager BootExecute (runs before Windows starts)</summary>
+    SessionManager,
+
+    /// <summary>AppInit_DLLs (loaded into every process)</summary>
+    AppInitDlls,
+
+    /// <summary>Winsock Layered Service Provider (LSP)</summary>
+    WinsockLSP
 }

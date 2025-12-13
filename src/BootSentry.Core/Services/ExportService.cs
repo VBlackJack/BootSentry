@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -204,6 +205,139 @@ public class ExportService
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Creates a diagnostics ZIP file containing logs, entries export, and system info.
+    /// </summary>
+    public async Task ExportDiagnosticsZipAsync(
+        IEnumerable<StartupEntry> entries,
+        string zipFilePath,
+        CancellationToken cancellationToken = default)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"BootSentry_Diag_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            // 1. Export entries (anonymized)
+            var entriesJson = ExportToJson(entries, new ExportOptions { Anonymize = true, IncludeDetails = true });
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "entries.json"), entriesJson, cancellationToken);
+
+            // 2. System information
+            var systemInfo = GetSystemInfo();
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "system_info.txt"), systemInfo, cancellationToken);
+
+            // 3. Copy recent logs
+            var logsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BootSentry", "Logs");
+            if (Directory.Exists(logsDir))
+            {
+                var diagLogsDir = Path.Combine(tempDir, "logs");
+                Directory.CreateDirectory(diagLogsDir);
+
+                var logFiles = Directory.GetFiles(logsDir, "*.log")
+                    .OrderByDescending(f => File.GetLastWriteTime(f))
+                    .Take(5);
+
+                foreach (var logFile in logFiles)
+                {
+                    try
+                    {
+                        var destPath = Path.Combine(diagLogsDir, Path.GetFileName(logFile));
+                        File.Copy(logFile, destPath, overwrite: true);
+                    }
+                    catch { }
+                }
+            }
+
+            // 4. Copy backup manifests (no payload data)
+            var backupsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BootSentry", "Backups");
+            if (Directory.Exists(backupsDir))
+            {
+                var diagBackupsDir = Path.Combine(tempDir, "backup_manifests");
+                Directory.CreateDirectory(diagBackupsDir);
+
+                var manifestFiles = Directory.GetFiles(backupsDir, "manifest.json", SearchOption.AllDirectories)
+                    .OrderByDescending(f => File.GetLastWriteTime(f))
+                    .Take(10);
+
+                var i = 0;
+                foreach (var manifest in manifestFiles)
+                {
+                    try
+                    {
+                        var destPath = Path.Combine(diagBackupsDir, $"manifest_{i++}.json");
+                        File.Copy(manifest, destPath, overwrite: true);
+                    }
+                    catch { }
+                }
+            }
+
+            // 5. App settings (without sensitive data)
+            var settingsFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BootSentry", "settings.json");
+            if (File.Exists(settingsFile))
+            {
+                try
+                {
+                    File.Copy(settingsFile, Path.Combine(tempDir, "settings.json"), overwrite: true);
+                }
+                catch { }
+            }
+
+            // Create ZIP
+            if (File.Exists(zipFilePath))
+                File.Delete(zipFilePath);
+
+            ZipFile.CreateFromDirectory(tempDir, zipFilePath, CompressionLevel.Optimal, includeBaseDirectory: false);
+        }
+        finally
+        {
+            // Cleanup temp directory
+            try
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+            catch { }
+        }
+    }
+
+    private static string GetSystemInfo()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== BootSentry Diagnostics ===");
+        sb.AppendLine($"Export Date: {DateTime.UtcNow:O}");
+        sb.AppendLine();
+
+        sb.AppendLine("=== System Information ===");
+        sb.AppendLine($"OS Version: {Environment.OSVersion}");
+        sb.AppendLine($"OS 64-bit: {Environment.Is64BitOperatingSystem}");
+        sb.AppendLine($"Process 64-bit: {Environment.Is64BitProcess}");
+        sb.AppendLine($".NET Version: {Environment.Version}");
+        sb.AppendLine($"Machine Name: [REDACTED]");
+        sb.AppendLine($"User Name: [REDACTED]");
+        sb.AppendLine($"Processor Count: {Environment.ProcessorCount}");
+        sb.AppendLine($"System Directory: {Environment.SystemDirectory}");
+        sb.AppendLine();
+
+        sb.AppendLine("=== Memory ===");
+        try
+        {
+            var process = System.Diagnostics.Process.GetCurrentProcess();
+            sb.AppendLine($"Working Set: {process.WorkingSet64 / 1024 / 1024} MB");
+            sb.AppendLine($"Private Memory: {process.PrivateMemorySize64 / 1024 / 1024} MB");
+        }
+        catch
+        {
+            sb.AppendLine("(Unable to retrieve memory info)");
+        }
+        sb.AppendLine();
+
+        sb.AppendLine("=== Application ===");
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        sb.AppendLine($"Assembly Version: {assembly.GetName().Version}");
+        sb.AppendLine($"Location: [REDACTED]");
+
+        return sb.ToString();
     }
 }
 

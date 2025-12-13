@@ -73,6 +73,8 @@
         <KeyBinding Key="Delete" Command="{Binding DisableSelectedCommand}"/>
         <KeyBinding Key="Delete" Modifiers="Ctrl" Command="{Binding DeleteSelectedCommand}"/>
         <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}"/>
+        <KeyBinding Key="Z" Modifiers="Ctrl+Shift" Command="{Binding RestoreCommand}"/>
+        <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding SelectAllCommand}"/>
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding ExportCommand}"/>
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ShowHistoryCommand}"/>
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}"/>
@@ -89,37 +91,70 @@
         </Grid.RowDefinitions>
 
         <!-- Menu Bar -->
-        <Menu Grid.Row="0" Background="{DynamicResource PanelBackground}">
-            <MenuItem Header="_Fichier">
-                <MenuItem Header="_Exporter en JSON..." Command="{Binding ExportJsonCommand}" InputGestureText="Ctrl+S"/>
-                <MenuItem Header="Exporter en _CSV..." Command="{Binding ExportCsvCommand}"/>
+        <Menu Grid.Row="0" Background="{DynamicResource PanelBackground}"
+              AutomationProperties.Name="Menu principal">
+            <MenuItem Header="_Fichier" AutomationProperties.Name="Menu Fichier">
+                <MenuItem Header="_Exporter en JSON..." Command="{Binding ExportJsonCommand}" InputGestureText="Ctrl+S"
+                          AutomationProperties.Name="Exporter en JSON"/>
+                <MenuItem Header="Exporter en _CSV..." Command="{Binding ExportCsvCommand}"
+                          AutomationProperties.Name="Exporter en CSV"/>
+                <MenuItem Header="Exporter _diagnostics (ZIP)..." Command="{Binding ExportDiagnosticsCommand}"
+                          AutomationProperties.Name="Exporter diagnostics"/>
                 <Separator/>
-                <MenuItem Header="_Paramètres..." Command="{Binding OpenSettingsCommand}"/>
+                <MenuItem Header="_Paramètres..." Command="{Binding OpenSettingsCommand}"
+                          AutomationProperties.Name="Paramètres"/>
                 <Separator/>
-                <MenuItem Header="_Quitter" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"/>
+                <MenuItem Header="_Quitter" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"
+                          AutomationProperties.Name="Quitter l'application"/>
             </MenuItem>
-            <MenuItem Header="_Affichage">
-                <MenuItem Header="_Actualiser" Command="{Binding RefreshCommand}" InputGestureText="F5"/>
+            <MenuItem Header="_Affichage" AutomationProperties.Name="Menu Affichage">
+                <MenuItem Header="_Actualiser" Command="{Binding RefreshCommand}" InputGestureText="F5"
+                          AutomationProperties.Name="Actualiser la liste"/>
                 <Separator/>
-                <MenuItem Header="Mode _Expert" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"/>
+                <MenuItem Header="Mode _Expert" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"
+                          AutomationProperties.Name="Basculer mode expert"/>
                 <Separator/>
-                <MenuItem Header="_Historique" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"/>
+                <MenuItem Header="_Historique" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"
+                          AutomationProperties.Name="Afficher l'historique"/>
             </MenuItem>
-            <MenuItem Header="_Actions">
-                <MenuItem Header="_Activer" Command="{Binding EnableSelectedCommand}"/>
-                <MenuItem Header="_Désactiver" Command="{Binding DisableSelectedCommand}" InputGestureText="Suppr"/>
-                <MenuItem Header="_Supprimer" Command="{Binding DeleteSelectedCommand}" InputGestureText="Ctrl+Suppr"/>
+            <MenuItem Header="_Actions" AutomationProperties.Name="Menu Actions">
+                <MenuItem Header="_Activer" Command="{Binding EnableSelectedCommand}"
+                          AutomationProperties.Name="Activer l'entrée"/>
+                <MenuItem Header="_Désactiver" Command="{Binding DisableSelectedCommand}" InputGestureText="Suppr"
+                          AutomationProperties.Name="Désactiver l'entrée"/>
+                <MenuItem Header="_Supprimer" Command="{Binding DeleteSelectedCommand}" InputGestureText="Ctrl+Suppr"
+                          AutomationProperties.Name="Supprimer l'entrée"/>
                 <Separator/>
-                <MenuItem Header="_Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"/>
-                <MenuItem Header="_Copier le chemin" Command="{Binding CopyPathCommand}"/>
-                <MenuItem Header="Rechercher sur le _Web" Command="{Binding WebSearchCommand}"/>
+                <MenuItem Header="A_nnuler" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"
+                          AutomationProperties.Name="Annuler la dernière action"/>
+                <MenuItem Header="_Restaurer" Command="{Binding RestoreCommand}" InputGestureText="Ctrl+Maj+Z"
+                          AutomationProperties.Name="Restaurer depuis l'historique"/>
+                <Separator/>
+                <MenuItem Header="_Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"
+                          AutomationProperties.Name="Ouvrir l'emplacement du fichier"/>
+                <MenuItem Header="_Copier le chemin" Command="{Binding CopyPathCommand}"
+                          AutomationProperties.Name="Copier le chemin"/>
+                <MenuItem Header="Calculer le _hash" Command="{Binding CalculateHashCommand}"
+                          AutomationProperties.Name="Calculer le hash SHA-256"/>
+                <MenuItem Header="Rechercher sur le _Web" Command="{Binding WebSearchCommand}"
+                          AutomationProperties.Name="Rechercher sur le web"/>
+                <Separator/>
+                <MenuItem Header="Ouvrir dans _Regedit" Command="{Binding OpenInRegeditCommand}"
+                          AutomationProperties.Name="Ouvrir dans l'éditeur de registre"/>
+                <MenuItem Header="Ouvrir _Services.msc" Command="{Binding OpenInServicesCommand}"
+                          AutomationProperties.Name="Ouvrir la console Services"/>
+                <MenuItem Header="Ouvrir _Planificateur de tâches" Command="{Binding OpenInTaskSchedulerCommand}"
+                          AutomationProperties.Name="Ouvrir le planificateur de tâches"/>
             </MenuItem>
-            <MenuItem Header="_Aide">
-                <MenuItem Header="_Documentation" Command="{Binding ShowDocumentationCommand}" InputGestureText="F1"/>
+            <MenuItem Header="_Aide" AutomationProperties.Name="Menu Aide">
+                <MenuItem Header="_Documentation" Command="{Binding ShowDocumentationCommand}" InputGestureText="F1"
+                          AutomationProperties.Name="Ouvrir la documentation"/>
                 <Separator/>
-                <MenuItem Header="Vérifier les _mises à jour" Command="{Binding CheckUpdatesCommand}"/>
+                <MenuItem Header="Vérifier les _mises à jour" Command="{Binding CheckUpdatesCommand}"
+                          AutomationProperties.Name="Vérifier les mises à jour"/>
                 <Separator/>
-                <MenuItem Header="À _propos de BootSentry" Command="{Binding ShowAboutCommand}"/>
+                <MenuItem Header="À _propos de BootSentry" Command="{Binding ShowAboutCommand}"
+                          AutomationProperties.Name="À propos de BootSentry"/>
             </MenuItem>
         </Menu>
 
@@ -205,21 +240,33 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Content="🔄 Actualiser" Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#0078D4" ToolTip="Actualiser (F5)"/>
+                            Style="{StaticResource ToolbarButton}" Background="#0078D4" ToolTip="Actualiser (F5)"
+                            AutomationProperties.Name="Actualiser la liste"
+                            AutomationProperties.HelpText="Relance l'analyse de toutes les entrées de démarrage"/>
                     <Button Content="▶ Activer" Command="{Binding EnableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#10B981"/>
+                            Style="{StaticResource ToolbarButton}" Background="#10B981"
+                            AutomationProperties.Name="Activer l'entrée sélectionnée"
+                            AutomationProperties.HelpText="Réactive l'entrée de démarrage sélectionnée"/>
                     <Button Content="⏸ Désactiver" Command="{Binding DisableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#F59E0B"/>
+                            Style="{StaticResource ToolbarButton}" Background="#F59E0B"
+                            AutomationProperties.Name="Désactiver l'entrée sélectionnée"
+                            AutomationProperties.HelpText="Désactive l'entrée de démarrage sélectionnée"/>
                     <Button Content="🗑 Supprimer" Command="{Binding DeleteSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#EF4444"
-                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"/>
+                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
+                            AutomationProperties.Name="Supprimer l'entrée sélectionnée"
+                            AutomationProperties.HelpText="Supprime définitivement l'entrée (un backup sera créé)"/>
                     <Separator Margin="8,4"/>
                     <Button Content="📂" Command="{Binding OpenFileLocationCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#6B7280"
-                            ToolTip="Ouvrir l'emplacement"/>
+                            ToolTip="Ouvrir l'emplacement"
+                            AutomationProperties.Name="Ouvrir l'emplacement du fichier"
+                            AutomationProperties.HelpText="Ouvre l'explorateur Windows à l'emplacement du fichier"/>
                     <Button Content="📋" Command="{Binding CopyPathCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#6B7280"
-                            ToolTip="Copier le chemin"/>
+                            ToolTip="Copier le chemin"
+                            AutomationProperties.Name="Copier le chemin"
+                            AutomationProperties.HelpText="Copie le chemin du fichier dans le presse-papiers"/>
                 </StackPanel>
 
                 <Border Grid.Column="1" Background="{DynamicResource ControlBackground}"
@@ -228,16 +275,27 @@
                     <Grid>
                         <TextBlock Text="🔍 Rechercher... (Ctrl+F)" Foreground="Gray"
                                    Margin="10,0" VerticalAlignment="Center"
-                                   Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"/>
+                                   Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"
+                                   IsHitTestVisible="False"/>
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent" BorderThickness="0"
-                                 Padding="10,8" VerticalContentAlignment="Center"/>
+                                 Padding="10,8" VerticalContentAlignment="Center"
+                                 AutomationProperties.Name="Rechercher des entrées"
+                                 AutomationProperties.HelpText="Filtrez les entrées par nom, éditeur ou chemin"/>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Margin="8,0">
+                    <ComboBox ItemsSource="{Binding TypeFilters}"
+                              SelectedItem="{Binding SelectedTypeFilter}"
+                              Width="130" Margin="0,0,8,0"
+                              AutomationProperties.Name="Filtrer par type"/>
+                    <ComboBox ItemsSource="{Binding StatusFilters}"
+                              SelectedItem="{Binding SelectedStatusFilter}"
+                              Width="110" Margin="0,0,8,0"
+                              AutomationProperties.Name="Filtrer par statut"/>
+                    <TextBlock Margin="8,0" VerticalAlignment="Center">
                         <Run Text="{Binding VisibleEntriesCount, Mode=OneWay}" FontWeight="SemiBold"/>
                         <Run Text=" / "/>
                         <Run Text="{Binding TotalEntriesCount, Mode=OneWay}"/>
@@ -258,11 +316,13 @@
             <!-- Entry List -->
             <Border Grid.Column="0" Margin="8" Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
-                <DataGrid ItemsSource="{Binding FilteredEntries}"
+                <DataGrid x:Name="EntriesGrid"
+                          ItemsSource="{Binding FilteredEntries}"
                           SelectedItem="{Binding SelectedEntry}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
-                          SelectionMode="Single"
+                          SelectionMode="Extended"
+                          SelectionChanged="EntriesGrid_SelectionChanged"
                           GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column"
                           CanUserResizeRows="False"
@@ -273,7 +333,30 @@
                           Background="Transparent"
                           BorderThickness="0"
                           RowBackground="{DynamicResource PanelBackground}"
-                          AlternatingRowBackground="{DynamicResource RowAlternate}">
+                          AlternatingRowBackground="{DynamicResource RowAlternate}"
+                          AutomationProperties.Name="Liste des entrées de démarrage"
+                          AutomationProperties.HelpText="Utilisez les flèches pour naviguer, Entrée pour sélectionner">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Activer" Command="{Binding EnableSelectedCommand}"/>
+                            <MenuItem Header="Désactiver" Command="{Binding DisableSelectedCommand}"/>
+                            <MenuItem Header="Supprimer" Command="{Binding DeleteSelectedCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Activer la sélection" Command="{Binding EnableBatchCommand}"
+                                      Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
+                            <MenuItem Header="Désactiver la sélection" Command="{Binding DisableBatchCommand}"
+                                      Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
+                            <Separator Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
+                            <MenuItem Header="Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"/>
+                            <MenuItem Header="Copier le chemin" Command="{Binding CopyPathCommand}"/>
+                            <MenuItem Header="Calculer le hash" Command="{Binding CalculateHashCommand}"/>
+                            <MenuItem Header="Rechercher sur le Web" Command="{Binding WebSearchCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Ouvrir dans Regedit" Command="{Binding OpenInRegeditCommand}"/>
+                            <MenuItem Header="Ouvrir Services.msc" Command="{Binding OpenInServicesCommand}"/>
+                            <MenuItem Header="Ouvrir Planificateur de tâches" Command="{Binding OpenInTaskSchedulerCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
@@ -292,7 +375,8 @@
                         <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
                         <DataGridTextColumn Header="Portée" Binding="{Binding Scope}" Width="80"/>
                         <DataGridTextColumn Header="Éditeur" Binding="{Binding Publisher}" Width="150"/>
-                        <DataGridTemplateColumn Header="Signature" Width="90">
+                        <DataGridTemplateColumn Header="Signature" Width="90"
+                                            SortMemberPath="SignatureStatus" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding SignatureStatus, Converter={StaticResource SignatureToColor}}"
@@ -302,7 +386,8 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Statut" Width="80">
+                        <DataGridTemplateColumn Header="Statut" Width="80"
+                                            SortMemberPath="Status" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding Status, Converter={StaticResource StatusToColor}}"
@@ -312,7 +397,8 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Risque" Width="70">
+                        <DataGridTemplateColumn Header="Risque" Width="70"
+                                            SortMemberPath="RiskLevel" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Ellipse Width="16" Height="16"
@@ -460,11 +546,18 @@
                             <!-- Action Buttons -->
                             <WrapPanel HorizontalAlignment="Center">
                                 <Button Content="📂 Ouvrir" Command="{Binding OpenFileLocationCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        AutomationProperties.Name="Ouvrir l'emplacement du fichier"/>
                                 <Button Content="📋 Copier" Command="{Binding CopyPathCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        AutomationProperties.Name="Copier le chemin"/>
                                 <Button Content="🌐 Web" Command="{Binding WebSearchCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"/>
+                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        AutomationProperties.Name="Rechercher sur le web"/>
+                                <Button Content="#️⃣ Hash" Command="{Binding CalculateHashCommand}"
+                                        Style="{StaticResource ToolbarButton}" Background="#8B5CF6" Margin="4"
+                                        ToolTip="Calculer le hash SHA-256 du fichier"
+                                        AutomationProperties.Name="Calculer le hash SHA-256"/>
                             </WrapPanel>
                         </StackPanel>
                     </StackPanel>
@@ -491,7 +584,9 @@
                 </StackPanel>
 
                 <!-- Status message -->
-                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" VerticalAlignment="Center"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="Message de statut"/>
 
                 <!-- Loading indicator -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"

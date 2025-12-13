@@ -8,7 +8,8 @@
         Title="Historique - BootSentry"
         Height="500" Width="800"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource WindowBackground}">
+        Background="{DynamicResource WindowBackground}"
+        KeyDown="Window_KeyDown">
 
     <Window.Resources>
         <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
@@ -40,6 +41,7 @@
                        FontSize="20" FontWeight="Bold"
                        Foreground="{DynamicResource WindowForeground}"/>
             <TextBlock Text="Consultez et restaurez les modifications précédentes"
+                       AutomationProperties.LiveSetting="Polite"
                        Foreground="{DynamicResource DisabledForeground}"
                        Margin="0,4,0,0"/>
         </StackPanel>

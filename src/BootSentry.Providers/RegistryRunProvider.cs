@@ -16,6 +16,8 @@ public sealed class RegistryRunProvider : IStartupProvider
     private readonly ILogger<RegistryRunProvider> _logger;
     private readonly ISignatureVerifier? _signatureVerifier;
 
+    private const string DisabledKeyPath = @"Software\BootSentry\Disabled";
+
     private static readonly (RegistryHive Hive, string Path, EntryScope Scope, RegistryView View)[] RegistryLocations =
     [
         // HKCU Run keys (64-bit view)
@@ -58,14 +60,28 @@ public sealed class RegistryRunProvider : IStartupProvider
 
             try
             {
+                // Scan active entries
                 var locationEntries = await ScanRegistryKeyAsync(
                     location.Hive,
                     location.Path,
                     location.Scope,
                     location.View,
+                    isDisabled: false,
                     cancellationToken);
 
                 entries.AddRange(locationEntries);
+
+                // Scan disabled entries (stored in BootSentry backup key)
+                var disabledPath = $"{DisabledKeyPath}\\{location.Path}";
+                var disabledEntries = await ScanRegistryKeyAsync(
+                    location.Hive,
+                    disabledPath,
+                    location.Scope,
+                    location.View,
+                    isDisabled: true,
+                    cancellationToken);
+
+                entries.AddRange(disabledEntries);
             }
             catch (Exception ex)
             {
@@ -81,6 +97,7 @@ public sealed class RegistryRunProvider : IStartupProvider
         string path,
         EntryScope scope,
         RegistryView view,
+        bool isDisabled,
         CancellationToken cancellationToken)
     {
         var entries = new List<StartupEntry>();
@@ -92,7 +109,12 @@ public sealed class RegistryRunProvider : IStartupProvider
             return entries;
 
         var hiveName = hive == RegistryHive.CurrentUser ? "HKCU" : "HKLM";
-        var fullKeyPath = $"{hiveName}\\{path}";
+
+        // For disabled entries, use the original path for display/identification
+        var originalPath = isDisabled
+            ? path.Replace($"{DisabledKeyPath}\\", "", StringComparison.OrdinalIgnoreCase)
+            : path;
+        var fullKeyPath = $"{hiveName}\\{originalPath}";
 
         foreach (var valueName in key.GetValueNames())
         {
@@ -110,7 +132,8 @@ public sealed class RegistryRunProvider : IStartupProvider
                     value,
                     scope,
                     view == RegistryView.Registry32 ? "32" : "64",
-                    path.Contains("RunOnce", StringComparison.OrdinalIgnoreCase),
+                    originalPath.Contains("RunOnce", StringComparison.OrdinalIgnoreCase),
+                    isDisabled,
                     cancellationToken);
 
                 entries.Add(entry);
@@ -131,6 +154,7 @@ public sealed class RegistryRunProvider : IStartupProvider
         EntryScope scope,
         string registryView,
         bool isRunOnce,
+        bool isDisabled,
         CancellationToken cancellationToken)
     {
         var parsed = CommandLineParser.Parse(commandLine);
@@ -153,7 +177,7 @@ public sealed class RegistryRunProvider : IStartupProvider
             TargetPath = targetPath,
             Arguments = parsed?.Arguments,
             FileExists = fileExists,
-            Status = EntryStatus.Enabled,
+            Status = isDisabled ? EntryStatus.Disabled : EntryStatus.Enabled,
             RegistryView = registryView
         };
 

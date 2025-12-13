@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using BootSentry.UI.Services;
 
@@ -19,6 +20,22 @@ public partial class OnboardingDialog : Window
     {
         InitializeComponent();
         UpdateUI();
+        KeyDown += OnboardingDialog_KeyDown;
+    }
+
+    private void OnboardingDialog_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+            Close();
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            NextButton_Click(sender, e);
+            e.Handled = true;
+        }
     }
 
     private void UpdateUI()

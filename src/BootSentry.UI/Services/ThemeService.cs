@@ -47,6 +47,11 @@ public class ThemeService
     }
 
     /// <summary>
+    /// Gets whether High Contrast mode is enabled in Windows.
+    /// </summary>
+    public static bool IsHighContrastEnabled => SystemParameters.HighContrast;
+
+    /// <summary>
     /// Initializes the theme service.
     /// </summary>
     public void Initialize()
@@ -61,8 +66,16 @@ public class ThemeService
     /// </summary>
     public void ApplyTheme()
     {
-        var isDark = IsDarkTheme;
         var resources = Application.Current.Resources;
+
+        // High Contrast mode - use system colors for accessibility
+        if (IsHighContrastEnabled)
+        {
+            ApplyHighContrastTheme(resources);
+            return;
+        }
+
+        var isDark = IsDarkTheme;
 
         if (isDark)
         {
@@ -104,6 +117,30 @@ public class ThemeService
             resources["RowHover"] = new SolidColorBrush(Color.FromRgb(235, 235, 235));
             resources["RowSelected"] = new SolidColorBrush(Color.FromRgb(0, 120, 215));
         }
+    }
+
+    /// <summary>
+    /// Applies High Contrast theme using system colors.
+    /// </summary>
+    private static void ApplyHighContrastTheme(ResourceDictionary resources)
+    {
+        // Use Windows system colors for High Contrast mode
+        resources["WindowBackground"] = new SolidColorBrush(SystemColors.WindowColor);
+        resources["WindowForeground"] = new SolidColorBrush(SystemColors.WindowTextColor);
+        resources["PanelBackground"] = new SolidColorBrush(SystemColors.WindowColor);
+        resources["BorderBrush"] = new SolidColorBrush(SystemColors.WindowFrameColor);
+        resources["ControlBackground"] = new SolidColorBrush(SystemColors.ControlColor);
+        resources["ControlForeground"] = new SolidColorBrush(SystemColors.ControlTextColor);
+        resources["AccentBrush"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["AccentForeground"] = new SolidColorBrush(SystemColors.HighlightTextColor);
+        resources["SuccessBrush"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["WarningBrush"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["ErrorBrush"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["InfoBrush"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["DisabledForeground"] = new SolidColorBrush(SystemColors.GrayTextColor);
+        resources["RowAlternate"] = new SolidColorBrush(SystemColors.WindowColor);
+        resources["RowHover"] = new SolidColorBrush(SystemColors.HighlightColor);
+        resources["RowSelected"] = new SolidColorBrush(SystemColors.HighlightColor);
     }
 
     private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)

@@ -14,6 +14,7 @@ using BootSentry.Core.Helpers;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
 using BootSentry.Core.Services;
+using BootSentry.Security;
 
 namespace BootSentry.UI.ViewModels;
 
@@ -25,6 +26,7 @@ public partial class MainViewModel : ObservableObject
     private readonly ILogger<MainViewModel> _logger;
     private readonly IEnumerable<IStartupProvider> _providers;
     private readonly ActionExecutor _actionExecutor;
+    private readonly ITransactionManager _transactionManager;
     private readonly ICollectionView _entriesView;
     private readonly ExportService _exportService;
     private readonly RiskAnalyzer _riskAnalyzer;
@@ -37,6 +39,20 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private StartupEntry? _selectedEntry;
+
+    private List<StartupEntry> _selectedEntries = [];
+
+    public int SelectedCount => _selectedEntries.Count;
+    public bool HasMultipleSelection => _selectedEntries.Count > 1;
+
+    [ObservableProperty]
+    private string _selectedTypeFilter = "Tous";
+
+    [ObservableProperty]
+    private string _selectedStatusFilter = "Tous";
+
+    public string[] TypeFilters { get; } = ["Tous", "Registre", "Dossier Démarrage", "Tâches", "Services", "Drivers", "Expert"];
+    public string[] StatusFilters { get; } = ["Tous", "Actives", "Désactivées", "Suspectes"];
 
     [ObservableProperty]
     private string _statusMessage = "Prêt";
@@ -64,11 +80,13 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel(
         ILogger<MainViewModel> logger,
         IEnumerable<IStartupProvider> providers,
-        ActionExecutor actionExecutor)
+        ActionExecutor actionExecutor,
+        ITransactionManager transactionManager)
     {
         _logger = logger;
         _providers = providers;
         _actionExecutor = actionExecutor;
+        _transactionManager = transactionManager;
         _exportService = new ExportService();
         _riskAnalyzer = new RiskAnalyzer();
 
@@ -97,6 +115,18 @@ public partial class MainViewModel : ObservableObject
         _logger.LogInformation("Expert mode: {Mode}", value ? "enabled" : "disabled");
     }
 
+    partial void OnSelectedTypeFilterChanged(string value)
+    {
+        _entriesView.Refresh();
+        OnPropertyChanged(nameof(VisibleEntriesCount));
+    }
+
+    partial void OnSelectedStatusFilterChanged(string value)
+    {
+        _entriesView.Refresh();
+        OnPropertyChanged(nameof(VisibleEntriesCount));
+    }
+
     private bool FilterEntries(object obj)
     {
         if (obj is not StartupEntry entry)
@@ -112,9 +142,43 @@ public partial class MainViewModel : ObservableObject
             if (entry.IsProtected)
                 return false;
 
-            // Hide drivers in non-expert mode
-            if (entry.Type == EntryType.Driver)
+            // Hide drivers and expert-only types in non-expert mode
+            if (entry.Type == EntryType.Driver || entry.Type == EntryType.SessionManager ||
+                entry.Type == EntryType.AppInitDlls || entry.Type == EntryType.PrintMonitor ||
+                entry.Type == EntryType.ShellExtension || entry.Type == EntryType.BHO ||
+                entry.Type == EntryType.WinsockLSP)
                 return false;
+        }
+
+        // Apply type filter
+        if (SelectedTypeFilter != "Tous")
+        {
+            var matchesType = SelectedTypeFilter switch
+            {
+                "Registre" => entry.Type is EntryType.RegistryRun or EntryType.RegistryRunOnce or EntryType.RegistryPolicies,
+                "Dossier Démarrage" => entry.Type == EntryType.StartupFolder,
+                "Tâches" => entry.Type == EntryType.ScheduledTask,
+                "Services" => entry.Type == EntryType.Service,
+                "Drivers" => entry.Type == EntryType.Driver,
+                "Expert" => entry.Type is EntryType.IFEO or EntryType.Winlogon or EntryType.ShellExtension or
+                            EntryType.BHO or EntryType.PrintMonitor or EntryType.SessionManager or
+                            EntryType.AppInitDlls or EntryType.WinsockLSP,
+                _ => true
+            };
+            if (!matchesType) return false;
+        }
+
+        // Apply status filter
+        if (SelectedStatusFilter != "Tous")
+        {
+            var matchesStatus = SelectedStatusFilter switch
+            {
+                "Actives" => entry.Status == EntryStatus.Enabled,
+                "Désactivées" => entry.Status == EntryStatus.Disabled,
+                "Suspectes" => entry.RiskLevel is RiskLevel.Suspicious or RiskLevel.Critical,
+                _ => true
+            };
+            if (!matchesStatus) return false;
         }
 
         // Apply search filter
@@ -217,6 +281,20 @@ public partial class MainViewModel : ObservableObject
     private void ClearSelection()
     {
         SelectedEntry = null;
+        _selectedEntries.Clear();
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasMultipleSelection));
+    }
+
+    /// <summary>
+    /// Updates the list of selected entries from the DataGrid.
+    /// Called by the View when selection changes.
+    /// </summary>
+    public void UpdateSelectedEntries(List<StartupEntry> entries)
+    {
+        _selectedEntries = entries;
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasMultipleSelection));
     }
 
     [RelayCommand]
@@ -397,6 +475,124 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task EnableBatchAsync()
+    {
+        if (_selectedEntries.Count == 0)
+            return;
+
+        var entriesToEnable = _selectedEntries.Where(e => e.Status == EntryStatus.Disabled).ToList();
+        if (entriesToEnable.Count == 0)
+        {
+            MessageBox.Show(
+                "Aucune entrée désactivée sélectionnée.",
+                "Information",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Voulez-vous activer {entriesToEnable.Count} entrée(s)?",
+            "Confirmation",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        _logger.LogInformation("Batch enabling {Count} entries", entriesToEnable.Count);
+        StatusMessage = $"Activation de {entriesToEnable.Count} entrées...";
+
+        var successCount = 0;
+        var failCount = 0;
+
+        foreach (var entry in entriesToEnable)
+        {
+            var actionResult = await _actionExecutor.EnableAsync(entry);
+            if (actionResult.Success)
+                successCount++;
+            else
+                failCount++;
+        }
+
+        _entriesView.Refresh();
+        UpdateCounts();
+
+        if (failCount == 0)
+        {
+            StatusMessage = $"{successCount} entrée(s) activée(s)";
+        }
+        else
+        {
+            StatusMessage = $"{successCount} activée(s), {failCount} échec(s)";
+            MessageBox.Show(
+                $"{successCount} entrée(s) activée(s) avec succès.\n{failCount} échec(s).",
+                "Résultat",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DisableBatchAsync()
+    {
+        if (_selectedEntries.Count == 0)
+            return;
+
+        var entriesToDisable = _selectedEntries.Where(e => e.Status == EntryStatus.Enabled && !e.IsProtected).ToList();
+        if (entriesToDisable.Count == 0)
+        {
+            MessageBox.Show(
+                "Aucune entrée active non-protégée sélectionnée.",
+                "Information",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Voulez-vous désactiver {entriesToDisable.Count} entrée(s)?",
+            "Confirmation",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        _logger.LogInformation("Batch disabling {Count} entries", entriesToDisable.Count);
+        StatusMessage = $"Désactivation de {entriesToDisable.Count} entrées...";
+
+        var successCount = 0;
+        var failCount = 0;
+
+        foreach (var entry in entriesToDisable)
+        {
+            var actionResult = await _actionExecutor.DisableAsync(entry);
+            if (actionResult.Success)
+                successCount++;
+            else
+                failCount++;
+        }
+
+        _entriesView.Refresh();
+        UpdateCounts();
+
+        if (failCount == 0)
+        {
+            StatusMessage = $"{successCount} entrée(s) désactivée(s)";
+        }
+        else
+        {
+            StatusMessage = $"{successCount} désactivée(s), {failCount} échec(s)";
+            MessageBox.Show(
+                $"{successCount} entrée(s) désactivée(s) avec succès.\n{failCount} échec(s).",
+                "Résultat",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    [RelayCommand]
     private void OpenFileLocation()
     {
         if (SelectedEntry?.TargetPath == null)
@@ -467,6 +663,141 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening web search");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenInRegedit()
+    {
+        if (SelectedEntry?.SourcePath == null)
+            return;
+
+        // Only works for registry entries
+        if (!SelectedEntry.SourcePath.StartsWith("HK", StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(
+                "Cette entrée n'est pas une clé de registre.",
+                "Action impossible",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            // Convert short hive names to full names for regedit
+            var regPath = SelectedEntry.SourcePath
+                .Replace("HKCU\\", "HKEY_CURRENT_USER\\")
+                .Replace("HKLM\\", "HKEY_LOCAL_MACHINE\\");
+
+            // Set the last key in regedit's history
+            using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit");
+            key?.SetValue("LastKey", regPath);
+
+            Process.Start(new ProcessStartInfo("regedit.exe") { UseShellExecute = true });
+            StatusMessage = "Regedit ouvert";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error opening regedit");
+            MessageBox.Show(
+                $"Erreur lors de l'ouverture de Regedit: {ex.Message}",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private void OpenInServices()
+    {
+        if (SelectedEntry?.Type != EntryType.Service)
+        {
+            MessageBox.Show(
+                "Cette entrée n'est pas un service.",
+                "Action impossible",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("services.msc") { UseShellExecute = true });
+            StatusMessage = "Services.msc ouvert";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error opening services.msc");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenInTaskScheduler()
+    {
+        if (SelectedEntry?.Type != EntryType.ScheduledTask)
+        {
+            MessageBox.Show(
+                "Cette entrée n'est pas une tâche planifiée.",
+                "Action impossible",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("taskschd.msc") { UseShellExecute = true });
+            StatusMessage = "Planificateur de tâches ouvert";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error opening task scheduler");
+        }
+    }
+
+    [RelayCommand]
+    private async Task CalculateHashAsync()
+    {
+        if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
+        {
+            MessageBox.Show(
+                "Impossible de calculer le hash: fichier introuvable.",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            StatusMessage = "Calcul du hash SHA-256...";
+            var hashCalculator = new HashCalculator();
+            var hash = await hashCalculator.CalculateSha256Async(SelectedEntry.TargetPath);
+
+            SelectedEntry.Sha256 = hash;
+            OnPropertyChanged(nameof(SelectedEntry));
+
+            // Copy to clipboard and show result
+            Clipboard.SetText(hash);
+            StatusMessage = $"Hash calculé et copié: {hash[..16]}...";
+
+            MessageBox.Show(
+                $"SHA-256:\n{hash}\n\nLe hash a été copié dans le presse-papiers.",
+                "Hash calculé",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating hash");
+            StatusMessage = $"Erreur lors du calcul du hash: {ex.Message}";
+            MessageBox.Show(
+                $"Erreur lors du calcul du hash:\n{ex.Message}",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -552,10 +883,80 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Undo()
+    private void Restore()
     {
-        // TODO: Implement undo functionality
-        StatusMessage = "Annulation non disponible";
+        // Open history window for restoration
+        ShowHistory();
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        // This is handled by the DataGrid's built-in Ctrl+A, but we provide
+        // a command for consistency. The actual selection is done in the View.
+        StatusMessage = "Sélectionner tout via Ctrl+A";
+    }
+
+    [RelayCommand]
+    private async Task UndoAsync()
+    {
+        try
+        {
+            // Get the latest transaction
+            var transactions = await _transactionManager.GetTransactionsAsync(limit: 1);
+            var lastTransaction = transactions.FirstOrDefault(t => t.CanRestore);
+
+            if (lastTransaction == null)
+            {
+                MessageBox.Show(
+                    "Aucune action à annuler.",
+                    "Historique vide",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var confirmResult = MessageBox.Show(
+                $"Voulez-vous annuler l'action '{lastTransaction.ActionType}' sur '{lastTransaction.EntryDisplayName}'?",
+                "Confirmation d'annulation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirmResult != MessageBoxResult.Yes)
+                return;
+
+            _logger.LogInformation("Undoing transaction: {Id}", lastTransaction.Id);
+            StatusMessage = $"Annulation de {lastTransaction.ActionType} sur {lastTransaction.EntryDisplayName}...";
+
+            var result = await _transactionManager.RollbackAsync(lastTransaction.Id);
+
+            if (result.Success)
+            {
+                StatusMessage = $"Action annulée: {lastTransaction.EntryDisplayName}";
+
+                // Refresh the list to show the restored entry
+                await RefreshAsync();
+            }
+            else
+            {
+                StatusMessage = $"Erreur: {result.ErrorMessage}";
+                MessageBox.Show(
+                    result.ErrorMessage,
+                    "Erreur d'annulation",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error undoing last action");
+            StatusMessage = $"Erreur: {ex.Message}";
+            MessageBox.Show(
+                $"Erreur lors de l'annulation: {ex.Message}",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     [RelayCommand]
@@ -621,15 +1022,53 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ShowAbout()
     {
-        MessageBox.Show(
-            $"BootSentry v{UpdateChecker.CurrentVersion}\n\n" +
-            "Gestionnaire de démarrage Windows\n" +
-            "Safe and user-friendly\n\n" +
-            "© 2025 Julien Bombled\n" +
-            "Apache License 2.0",
-            "À propos de BootSentry",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        var aboutDialog = new Views.AboutDialog
+        {
+            Owner = Application.Current.MainWindow
+        };
+        aboutDialog.ShowDialog();
+    }
+
+    [RelayCommand]
+    private async Task ExportDiagnosticsAsync()
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "ZIP Files (*.zip)|*.zip",
+            DefaultExt = ".zip",
+            FileName = $"BootSentry_Diagnostics_{DateTime.Now:yyyyMMdd_HHmmss}"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                StatusMessage = "Création du fichier de diagnostics...";
+                await _exportService.ExportDiagnosticsZipAsync(Entries, dialog.FileName);
+                StatusMessage = $"Diagnostics exportés: {dialog.FileName}";
+
+                var result = MessageBox.Show(
+                    $"Le fichier de diagnostics a été créé:\n{dialog.FileName}\n\nVoulez-vous ouvrir le dossier contenant le fichier?",
+                    "Export terminé",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start("explorer.exe", $"/select,\"{dialog.FileName}\"");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting diagnostics");
+                StatusMessage = $"Erreur d'export: {ex.Message}";
+                MessageBox.Show(
+                    $"Erreur lors de l'export: {ex.Message}",
+                    "Erreur",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
     }
 
     [RelayCommand]

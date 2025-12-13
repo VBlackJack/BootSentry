@@ -32,6 +32,8 @@ public sealed class IFEOProvider : IStartupProvider
 
     public async Task<IReadOnlyCollection<StartupEntry>> ScanAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var entries = new List<StartupEntry>();
 
         // Scan HKLM IFEO

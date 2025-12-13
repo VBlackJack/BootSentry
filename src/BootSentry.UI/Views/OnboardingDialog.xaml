@@ -26,7 +26,7 @@
                            FontSize="32" FontWeight="Bold"
                            Foreground="{DynamicResource AccentBrush}"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Gestionnaire de demarrage Windows"
+                <TextBlock Text="Gestionnaire de démarrage Windows"
                            FontSize="14"
                            Foreground="{DynamicResource DisabledForeground}"
                            HorizontalAlignment="Center"
@@ -45,13 +45,13 @@
                                TextAlignment="Center"
                                Foreground="{DynamicResource WindowForeground}"
                                Margin="0,16,0,0">
-                        BootSentry vous permet de gerer facilement les programmes qui demarrent automatiquement avec Windows.
+                        BootSentry vous permet de gérer facilement les programmes qui démarrent automatiquement avec Windows.
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap"
                                TextAlignment="Center"
                                Foreground="{DynamicResource DisabledForeground}"
                                Margin="0,16,0,0">
-                        Vous pouvez desactiver, reactiver ou supprimer les entrees de demarrage en toute securite grace au systeme de backup integre.
+                        Vous pouvez désactiver, réactiver ou supprimer les entrées de démarrage en toute sécurité grâce au système de backup intégré.
                     </TextBlock>
                 </StackPanel>
 
@@ -82,13 +82,13 @@
                                                      Stroke="{DynamicResource AccentBrush}"
                                                      StrokeThickness="2"
                                                      Fill="{TemplateBinding Tag}"/>
-                                            <TextBlock Text="Mode Standard (Recommande)"
+                                            <TextBlock Text="Mode Standard (Recommandé)"
                                                        FontWeight="SemiBold"
                                                        Foreground="{DynamicResource WindowForeground}"
                                                        VerticalAlignment="Center"
                                                        Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <TextBlock Text="Cache les entrees systeme Microsoft et les elements critiques. Ideal pour la plupart des utilisateurs."
+                                        <TextBlock Text="Cache les entrées système Microsoft et les éléments critiques. Idéal pour la plupart des utilisateurs."
                                                    TextWrapping="Wrap"
                                                    Foreground="{DynamicResource DisabledForeground}"
                                                    Margin="28,8,0,0"/>
@@ -132,7 +132,7 @@
                                                        VerticalAlignment="Center"
                                                        Margin="8,0,0,0"/>
                                         </StackPanel>
-                                        <TextBlock Text="Affiche toutes les entrees y compris les services systeme et les pilotes. Pour utilisateurs avances uniquement."
+                                        <TextBlock Text="Affiche toutes les entrées y compris les services système et les pilotes. Pour utilisateurs avancés uniquement."
                                                    TextWrapping="Wrap"
                                                    Foreground="{DynamicResource DisabledForeground}"
                                                    Margin="28,8,0,0"/>
@@ -168,7 +168,7 @@
 
                 <Button x:Name="PreviousButton"
                         Grid.Column="1"
-                        Content="Precedent"
+                        Content="Précédent"
                         Click="PreviousButton_Click"
                         Visibility="Collapsed"
                         Padding="16,8"

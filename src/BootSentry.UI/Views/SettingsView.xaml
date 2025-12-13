@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Parametres - BootSentry"
+        Title="Paramètres - BootSentry"
         Height="550" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource WindowBackground}">
+        Background="{DynamicResource WindowBackground}"
+        KeyDown="Window_KeyDown">
 
     <Window.Resources>
         <Style x:Key="SectionHeader" TargetType="TextBlock">
@@ -38,7 +39,7 @@
 
         <!-- Header -->
         <TextBlock Grid.Row="0"
-                   Text="Parametres"
+                   Text="Paramètres"
                    FontSize="24" FontWeight="Bold"
                    Foreground="{DynamicResource WindowForeground}"/>
 
@@ -46,7 +47,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
             <StackPanel>
                 <!-- General Section -->
-                <TextBlock Text="General" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="Général" Style="{StaticResource SectionHeader}"/>
 
                 <Grid Margin="0,8">
                     <Grid.ColumnDefinitions>
@@ -55,7 +56,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Langue" Style="{StaticResource SettingLabel}"/>
-                        <TextBlock Text="Redemarrage requis pour certains elements" Style="{StaticResource SettingDescription}"/>
+                        <TextBlock Text="Redémarrage requis pour certains éléments" Style="{StaticResource SettingDescription}"/>
                     </StackPanel>
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding Languages}"
@@ -65,17 +66,17 @@
                               VerticalAlignment="Center"/>
                 </Grid>
 
-                <CheckBox Content="Demarrer en mode Expert par defaut"
+                <CheckBox Content="Démarrer en mode Expert par défaut"
                           IsChecked="{Binding IsExpertModeDefault}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
-                <CheckBox Content="Verifier les mises a jour au demarrage"
+                <CheckBox Content="Vérifier les mises à jour au démarrage"
                           IsChecked="{Binding CheckForUpdatesOnStartup}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
-                <CheckBox Content="Afficher l'assistant au premier demarrage"
+                <CheckBox Content="Afficher l'assistant au premier démarrage"
                           IsChecked="{Binding ShowOnboarding}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
@@ -88,7 +89,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Theme" Style="{StaticResource SettingLabel}"/>
+                    <TextBlock Text="Thème" Style="{StaticResource SettingLabel}"/>
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding Themes}"
                               SelectedIndex="{Binding SelectedThemeIndex}"
@@ -107,19 +108,21 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Conservation des backups" Style="{StaticResource SettingLabel}"/>
-                        <TextBlock Text="0 = conserver indefiniment" Style="{StaticResource SettingDescription}"/>
+                        <TextBlock Text="0 = conserver indéfiniment" Style="{StaticResource SettingDescription}"/>
                     </StackPanel>
                     <TextBox Grid.Column="1"
                              Text="{Binding BackupRetentionDays, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center"
-                             HorizontalContentAlignment="Center"/>
+                             HorizontalContentAlignment="Center"
+                             PreviewTextInput="NumericTextBox_PreviewTextInput"
+                             AutomationProperties.Name="Nombre de jours de conservation"/>
                     <TextBlock Grid.Column="2" Text=" jours"
                                Style="{StaticResource SettingLabel}"
                                Margin="4,0,0,0"/>
                 </Grid>
 
                 <!-- Advanced Section -->
-                <TextBlock Text="Avance" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="Avancé" Style="{StaticResource SectionHeader}"/>
 
                 <CheckBox Content="Calculer automatiquement les hashes SHA-256"
                           IsChecked="{Binding AutoCalculateHashes}"
@@ -134,7 +137,7 @@
                 <TextBlock Text="Zone de danger" Style="{StaticResource SectionHeader}"
                            Foreground="{DynamicResource ErrorBrush}"/>
 
-                <Button Content="Reinitialiser les parametres"
+                <Button Content="Réinitialiser les paramètres"
                         Command="{Binding ResetToDefaultsCommand}"
                         Padding="12,8"
                         Margin="0,8"
@@ -143,7 +146,7 @@
                         Foreground="{DynamicResource ControlForeground}"
                         BorderBrush="{DynamicResource BorderBrush}"/>
 
-                <Button Content="Purger toutes les donnees"
+                <Button Content="Purger toutes les données"
                         Command="{Binding PurgeAllDataCommand}"
                         Padding="12,8"
                         Margin="0,8"
@@ -152,7 +155,7 @@
                         Foreground="White"
                         BorderThickness="0"/>
 
-                <TextBlock Text="Supprime les logs, backups et preferences"
+                <TextBlock Text="Supprime les logs, backups et préférences"
                            Style="{StaticResource SettingDescription}"
                            Foreground="{DynamicResource ErrorBrush}"
                            Margin="0,0,0,16"/>
