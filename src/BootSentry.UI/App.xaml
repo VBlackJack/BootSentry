@@ -44,6 +44,24 @@
             <SolidColorBrush x:Key="NoteBackgroundBrush" Color="#FEF3C7"/>
             <SolidColorBrush x:Key="NoteForegroundBrush" Color="#92400E"/>
 
+            <!-- Theme-aware brushes (defaults, overridden by ThemeService) -->
+            <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
+            <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
+            <SolidColorBrush x:Key="PanelBackground" Color="White"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#DCDCDC"/>
+            <SolidColorBrush x:Key="ControlBackground" Color="White"/>
+            <SolidColorBrush x:Key="ControlForeground" Color="#202020"/>
+            <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+            <SolidColorBrush x:Key="AccentForeground" Color="White"/>
+            <SolidColorBrush x:Key="InfoBrush" Color="#3B82F6"/>
+            <SolidColorBrush x:Key="DisabledForeground" Color="#757575"/>
+            <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
+            <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
+            <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
+            <SolidColorBrush x:Key="HeaderSecondaryForeground" Color="#CCFFFFFF"/>
+            <SolidColorBrush x:Key="OverlayBackground" Color="#80000000"/>
+            <SolidColorBrush x:Key="MutedForeground" Color="#6B7280"/>
+
             <!-- Spacing Scale (8px base) -->
             <system:Double x:Key="SpacingXS">4</system:Double>
             <system:Double x:Key="SpacingS">8</system:Double>
@@ -171,10 +189,226 @@
                 <Setter Property="CanUserAddRows" Value="False"/>
                 <Setter Property="CanUserDeleteRows" Value="False"/>
                 <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-                <Setter Property="AlternatingRowBackground" Value="#F8F8F8"/>
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="RowBackground" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="AlternatingRowBackground" Value="{DynamicResource RowAlternate}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
                 <Setter Property="RowHeight" Value="32"/>
                 <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
                 <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+            </Style>
+
+            <!-- DataGridColumnHeader Style -->
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
+
+            <!-- DataGridCell Style -->
+            <Style TargetType="DataGridCell">
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="4"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RowSelected}"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Menu Style -->
+            <Style TargetType="Menu">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+            </Style>
+
+            <!-- MenuItem Style -->
+            <Style TargetType="MenuItem">
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+            </Style>
+
+            <!-- ContextMenu Style -->
+            <Style TargetType="ContextMenu">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            </Style>
+
+            <!-- TextBox Style -->
+            <Style TargetType="TextBox">
+                <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ControlForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="CaretBrush" Value="{DynamicResource WindowForeground}"/>
+            </Style>
+
+            <!-- ComboBox Style -->
+            <Style TargetType="ComboBox">
+                <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ControlForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            </Style>
+
+            <!-- TabControl Style -->
+            <Style TargetType="TabControl">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            </Style>
+
+            <!-- Expander Style -->
+            <Style TargetType="Expander">
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+            </Style>
+
+            <!-- Label Style -->
+            <Style TargetType="Label">
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+            </Style>
+
+            <!-- Separator Style -->
+            <Style TargetType="Separator">
+                <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+            </Style>
+
+            <!-- ScrollBar Style -->
+            <Style TargetType="ScrollBar">
+                <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+            </Style>
+
+            <!-- ScrollBar Thumb Style -->
+            <Style x:Key="ScrollBarThumbStyle" TargetType="Thumb">
+                <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Thumb">
+                            <Border Background="{DynamicResource DisabledForeground}"
+                                    CornerRadius="4" Margin="2"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Vertical ScrollBar Style -->
+            <Style x:Key="VerticalScrollBarStyle" TargetType="ScrollBar">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Width" Value="12"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="{DynamicResource PanelBackground}">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Border Background="{DynamicResource DisabledForeground}"
+                                                            CornerRadius="4" Margin="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource NeutralBrush}"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Horizontal ScrollBar Style -->
+            <Style x:Key="HorizontalScrollBarStyle" TargetType="ScrollBar">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Height" Value="12"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="{DynamicResource PanelBackground}">
+                                <Track x:Name="PART_Track">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Border Background="{DynamicResource DisabledForeground}"
+                                                            CornerRadius="4" Margin="2">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource NeutralBrush}"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ScrollViewer Style with themed ScrollBars -->
+            <Style TargetType="ScrollViewer">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollViewer">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <ScrollContentPresenter Grid.Column="0" Grid.Row="0"/>
+                                <ScrollBar x:Name="PART_VerticalScrollBar"
+                                           Grid.Column="1" Grid.Row="0"
+                                           Style="{StaticResource VerticalScrollBarStyle}"
+                                           Value="{TemplateBinding VerticalOffset}"
+                                           Maximum="{TemplateBinding ScrollableHeight}"
+                                           ViewportSize="{TemplateBinding ViewportHeight}"
+                                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                           Grid.Column="0" Grid.Row="1"
+                                           Style="{StaticResource HorizontalScrollBarStyle}"
+                                           Orientation="Horizontal"
+                                           Value="{TemplateBinding HorizontalOffset}"
+                                           Maximum="{TemplateBinding ScrollableWidth}"
+                                           ViewportSize="{TemplateBinding ViewportWidth}"
+                                           Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- GroupBox Style -->
+            <Style TargetType="GroupBox">
+                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

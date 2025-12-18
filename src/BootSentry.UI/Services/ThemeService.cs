@@ -100,6 +100,16 @@ public class ThemeService
             // Note/warning box colors for dark theme
             resources["NoteBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(78, 65, 23));  // Dark amber
             resources["NoteForegroundBrush"] = new SolidColorBrush(Color.FromRgb(253, 230, 138)); // Light amber
+            // Neutral button color for dark theme
+            resources["NeutralBrush"] = new SolidColorBrush(Color.FromRgb(82, 82, 91)); // Lighter gray for dark
+            // Header bar colors
+            resources["HeaderBackground"] = new SolidColorBrush(Color.FromRgb(0, 90, 158));
+            resources["HeaderForeground"] = new SolidColorBrush(Colors.White);
+            resources["HeaderSecondaryForeground"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));
+            // Overlay
+            resources["OverlayBackground"] = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0));
+            // Muted text
+            resources["MutedForeground"] = new SolidColorBrush(Color.FromRgb(156, 163, 175));
         }
         else
         {
@@ -124,6 +134,16 @@ public class ThemeService
             // Note/warning box colors for light theme
             resources["NoteBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(254, 243, 199)); // #FEF3C7
             resources["NoteForegroundBrush"] = new SolidColorBrush(Color.FromRgb(146, 64, 14));   // #92400E
+            // Neutral button color for light theme
+            resources["NeutralBrush"] = new SolidColorBrush(Color.FromRgb(107, 114, 128)); // #6B7280
+            // Header bar colors
+            resources["HeaderBackground"] = new SolidColorBrush(Color.FromRgb(0, 120, 212));
+            resources["HeaderForeground"] = new SolidColorBrush(Colors.White);
+            resources["HeaderSecondaryForeground"] = new SolidColorBrush(Color.FromArgb(204, 255, 255, 255)); // #CCFFFFFF
+            // Overlay
+            resources["OverlayBackground"] = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0));
+            // Muted text
+            resources["MutedForeground"] = new SolidColorBrush(Color.FromRgb(107, 114, 128));
         }
     }
 

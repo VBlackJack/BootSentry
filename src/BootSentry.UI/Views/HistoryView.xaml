@@ -129,12 +129,12 @@
 
         <!-- Loading Overlay -->
         <Border Grid.RowSpan="4"
-                Background="#80000000"
+                Background="{DynamicResource OverlayBackground}"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
                 <TextBlock Text="Chargement..."
-                           Foreground="White"
+                           Foreground="{DynamicResource AccentForeground}"
                            HorizontalAlignment="Center"
                            Margin="0,8,0,0"/>
             </StackPanel>

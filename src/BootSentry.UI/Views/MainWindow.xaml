@@ -12,22 +12,6 @@
         Background="{DynamicResource WindowBackground}"
         Foreground="{DynamicResource WindowForeground}">
 
-    <Window.Resources>
-        <!-- Theme Colors (defaults - overridden by ThemeService) -->
-        <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
-        <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
-        <SolidColorBrush x:Key="PanelBackground" Color="White"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#DCDCDC"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
-        <SolidColorBrush x:Key="AccentForeground" Color="White"/>
-        <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
-        <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
-        <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
-        <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
-        <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
-        <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
-    </Window.Resources>
-
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
         <KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding FocusSearchCommand}"/>
@@ -135,8 +119,8 @@
                     <Image Source="/Resources/app.png" Width="32" Height="32" Margin="0,0,12,0"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <StackPanel>
-                        <TextBlock Text="BootSentry" FontSize="20" FontWeight="SemiBold" Foreground="White"/>
-                        <TextBlock Text="Gestionnaire de démarrage Windows" FontSize="11" Foreground="#CCFFFFFF"/>
+                        <TextBlock Text="BootSentry" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}"/>
+                        <TextBlock Text="Gestionnaire de démarrage Windows" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -145,30 +129,30 @@
                     <Border Background="#1AFFFFFF" CornerRadius="4" Padding="16,8" Margin="4,0">
                         <StackPanel>
                             <TextBlock Text="{Binding TotalEntriesCount}" FontSize="24" FontWeight="Bold"
-                                       Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Total" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                                       Foreground="{DynamicResource AccentForeground}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Total" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1A10B981" CornerRadius="4" Padding="16,8" Margin="4,0">
                         <StackPanel>
                             <TextBlock Text="{Binding EnabledCount}" FontSize="24" FontWeight="Bold"
-                                       Foreground="#10B981" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Actives" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                                       Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Actives" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1AEF4444" CornerRadius="4" Padding="16,8" Margin="4,0">
                         <StackPanel>
                             <TextBlock Text="{Binding DisabledCount}" FontSize="24" FontWeight="Bold"
-                                       Foreground="#EF4444" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Désactivées" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                                       Foreground="{DynamicResource ErrorBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Désactivées" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1AF59E0B" CornerRadius="4" Padding="16,8" Margin="4,0"
                             Visibility="{Binding HasSuspiciousEntries, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel>
                             <TextBlock Text="{Binding SuspiciousCount}" FontSize="24" FontWeight="Bold"
-                                       Foreground="#F59E0B" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Suspectes" FontSize="11" Foreground="#CCFFFFFF" HorizontalAlignment="Center"/>
+                                       Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Suspectes" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -177,15 +161,15 @@
                     <ToggleButton IsChecked="{Binding IsExpertMode}"
                                   ToolTip="Mode Expert (Ctrl+E)"
                                   Padding="12,6" Margin="8,0"
-                                  Background="Transparent" Foreground="White"
-                                  BorderBrush="White" BorderThickness="1">
+                                  Background="Transparent" Foreground="{DynamicResource AccentForeground}"
+                                  BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" Margin="0,0,6,0"/>
                             <TextBlock Text="Expert"/>
                         </StackPanel>
                     </ToggleButton>
                     <Button ToolTip="Paramètres" Padding="10,6"
-                            Background="Transparent" Foreground="White"
+                            Background="Transparent" Foreground="{DynamicResource AccentForeground}"
                             BorderThickness="0" Cursor="Hand"
                             Command="{Binding OpenSettingsCommand}">
                         <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
@@ -206,7 +190,7 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#0078D4" ToolTip="Actualiser (F5)"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource AccentBrush}" ToolTip="Actualiser (F5)"
                             AutomationProperties.Name="Actualiser la liste"
                             AutomationProperties.HelpText="Relance l'analyse de toutes les entrées de démarrage">
                         <StackPanel Orientation="Horizontal">
@@ -215,7 +199,7 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding EnableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#10B981"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}"
                             AutomationProperties.Name="Activer l'entrée sélectionnée"
                             AutomationProperties.HelpText="Réactive l'entrée de démarrage sélectionnée">
                         <StackPanel Orientation="Horizontal">
@@ -224,7 +208,7 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding DisableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#F59E0B"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource WarningBrush}"
                             AutomationProperties.Name="Désactiver l'entrée sélectionnée"
                             AutomationProperties.HelpText="Désactive l'entrée de démarrage sélectionnée">
                         <StackPanel Orientation="Horizontal">
@@ -233,7 +217,7 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding DeleteSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#EF4444"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource ErrorBrush}"
                             Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
                             AutomationProperties.Name="Supprimer l'entrée sélectionnée"
                             AutomationProperties.HelpText="Supprime définitivement l'entrée (un backup sera créé)">
@@ -244,14 +228,14 @@
                     </Button>
                     <Separator Margin="8,4"/>
                     <Button Command="{Binding OpenFileLocationCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#6B7280"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
                             ToolTip="Ouvrir l'emplacement"
                             AutomationProperties.Name="Ouvrir l'emplacement du fichier"
                             AutomationProperties.HelpText="Ouvre l'explorateur Windows à l'emplacement du fichier">
                         <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets"/>
                     </Button>
                     <Button Command="{Binding CopyPathCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="#6B7280"
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
                             ToolTip="Copier le chemin"
                             AutomationProperties.Name="Copier le chemin"
                             AutomationProperties.HelpText="Copie le chemin du fichier dans le presse-papiers">
@@ -266,8 +250,8 @@
                         <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center"
                                     Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"
                                     IsHitTestVisible="False">
-                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="Gray" Margin="0,0,6,0"/>
-                            <TextBlock Text="Rechercher... (Ctrl+F)" Foreground="Gray"/>
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource DisabledForeground}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Rechercher... (Ctrl+F)" Foreground="{DynamicResource DisabledForeground}"/>
                         </StackPanel>
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
@@ -523,7 +507,7 @@
                                     HorizontalAlignment="Center" Margin="0,40">
                             <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
                             <TextBlock Text="Sélectionnez une entrée pour voir ses détails"
-                                       Foreground="Gray" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
                         </StackPanel>
 
                         <!-- Entry Details -->
@@ -639,7 +623,7 @@
                                         </TextBlock>
                                     </Border>
                                     <TextBlock Text="{Binding SelectedEntry.LastMalwareScan, StringFormat=' ({0:g})'}"
-                                               FontSize="10" Foreground="Gray" VerticalAlignment="Center"/>
+                                               FontSize="10" Foreground="{DynamicResource DisabledForeground}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
 
@@ -749,9 +733,9 @@
                                 <!-- Impact if disabled -->
                                 <Expander Header="Impact si désactivé" IsExpanded="False" Margin="0,0,0,8"
                                           Visibility="{Binding KnowledgeInfo.DisableImpact, Converter={StaticResource NotNullToVisibility}}">
-                                    <Border Background="#FEF3C7" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                    <Border Background="{DynamicResource NoteBackgroundBrush}" CornerRadius="4" Padding="8" Margin="0,8,0,0">
                                         <TextBlock Text="{Binding KnowledgeInfo.DisableImpact}" TextWrapping="Wrap"
-                                                   Foreground="#92400E"/>
+                                                   Foreground="{DynamicResource NoteForegroundBrush}"/>
                                     </Border>
                                 </Expander>
 
@@ -821,7 +805,7 @@
                             <!-- Action Buttons -->
                             <WrapPanel HorizontalAlignment="Center">
                                 <Button Command="{Binding OpenFileLocationCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
                                         AutomationProperties.Name="Ouvrir l'emplacement du fichier">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -829,7 +813,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding CopyPathCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
                                         AutomationProperties.Name="Copier le chemin">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -837,7 +821,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding WebSearchCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
                                         AutomationProperties.Name="Rechercher sur le web">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -845,7 +829,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding CalculateHashCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#8B5CF6" Margin="4"
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource InfoBrush}" Margin="4"
                                         ToolTip="Calculer le hash SHA-256 du fichier"
                                         AutomationProperties.Name="Calculer le hash SHA-256">
                                     <StackPanel Orientation="Horizontal">
@@ -854,7 +838,7 @@
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding ScanSelectedCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="#059669" Margin="4"
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}" Margin="4"
                                         ToolTip="Scanner le fichier avec l'antivirus (AMSI)"
                                         AutomationProperties.Name="Scanner avec l'antivirus">
                                     <StackPanel Orientation="Horizontal">
@@ -895,26 +879,26 @@
                 <!-- Loading indicator -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="&#xE712;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" Foreground="Gray"/>
-                    <TextBlock Text="Chargement..." Foreground="Gray"/>
+                    <TextBlock Text="&#xE712;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" Foreground="{DynamicResource DisabledForeground}"/>
+                    <TextBlock Text="Chargement..." Foreground="{DynamicResource DisabledForeground}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Loading Overlay -->
-        <Border Grid.RowSpan="5" Background="#80000000"
+        <Border Grid.RowSpan="5" Background="{DynamicResource OverlayBackground}"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
-                <TextBlock Text="{Binding StatusMessage}" Foreground="White"
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource AccentForeground}"
                            HorizontalAlignment="Center" Margin="0,16,0,0"/>
-                <TextBlock Text="{Binding ProgressText}" Foreground="#CCFFFFFF" FontSize="12"
+                <TextBlock Text="{Binding ProgressText}" Foreground="{DynamicResource HeaderSecondaryForeground}" FontSize="12"
                            HorizontalAlignment="Center" Margin="0,8,0,0"
                            Visibility="{Binding ProgressText, Converter={StaticResource NotNullToVisibility}}"/>
                 <Button Command="{Binding CancelOperationCommand}"
                         Visibility="{Binding CanCancel, Converter={StaticResource BoolToVisibility}}"
                         Margin="0,16,0,0" Padding="16,8"
-                        Background="#EF4444" Foreground="White" BorderThickness="0"
+                        Background="{DynamicResource ErrorBrush}" Foreground="{DynamicResource AccentForeground}" BorderThickness="0"
                         Cursor="Hand">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
