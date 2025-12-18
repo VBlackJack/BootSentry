@@ -125,7 +125,10 @@ public sealed class SessionManagerProvider : IStartupProvider
                 entry.FileVersion = versionInfo.FileVersion;
                 entry.Publisher = versionInfo.CompanyName;
             }
-            catch { }
+            catch
+            {
+                // File info retrieval can fail for locked/inaccessible files
+            }
         }
 
         if (!isSafe)

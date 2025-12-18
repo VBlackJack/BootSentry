@@ -92,10 +92,14 @@ public class ThemeService
             resources["WarningBrush"] = new SolidColorBrush(Color.FromRgb(245, 158, 11));
             resources["ErrorBrush"] = new SolidColorBrush(Color.FromRgb(239, 68, 68));
             resources["InfoBrush"] = new SolidColorBrush(Color.FromRgb(59, 130, 246));
-            resources["DisabledForeground"] = new SolidColorBrush(Color.FromRgb(128, 128, 128));
+            // #A0A0A0 = 4.5:1 contrast ratio on dark background (WCAG AA compliant)
+            resources["DisabledForeground"] = new SolidColorBrush(Color.FromRgb(160, 160, 160));
             resources["RowAlternate"] = new SolidColorBrush(Color.FromRgb(38, 38, 38));
-            resources["RowHover"] = new SolidColorBrush(Color.FromRgb(50, 50, 50));
+            resources["RowHover"] = new SolidColorBrush(Color.FromRgb(60, 60, 60));
             resources["RowSelected"] = new SolidColorBrush(Color.FromRgb(0, 90, 158));
+            // Note/warning box colors for dark theme
+            resources["NoteBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(78, 65, 23));  // Dark amber
+            resources["NoteForegroundBrush"] = new SolidColorBrush(Color.FromRgb(253, 230, 138)); // Light amber
         }
         else
         {
@@ -117,6 +121,9 @@ public class ThemeService
             resources["RowAlternate"] = new SolidColorBrush(Color.FromRgb(245, 245, 245));
             resources["RowHover"] = new SolidColorBrush(Color.FromRgb(235, 235, 235));
             resources["RowSelected"] = new SolidColorBrush(Color.FromRgb(0, 120, 215));
+            // Note/warning box colors for light theme
+            resources["NoteBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(254, 243, 199)); // #FEF3C7
+            resources["NoteForegroundBrush"] = new SolidColorBrush(Color.FromRgb(146, 64, 14));   // #92400E
         }
     }
 

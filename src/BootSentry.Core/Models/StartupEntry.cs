@@ -27,7 +27,7 @@ public class StartupEntry
     /// <summary>
     /// Display name shown in the UI.
     /// </summary>
-    public required string DisplayName { get; set; }
+    public required string DisplayName { get; init; }
 
     /// <summary>
     /// Full path to the source (registry key path, folder path, task name, service name).
@@ -165,6 +165,29 @@ public class StartupEntry
     /// Reason why this entry is protected.
     /// </summary>
     public string? ProtectionReason { get; set; }
+
+    /// <summary>
+    /// Category grouping based on entry type.
+    /// </summary>
+    public EntryCategory Category => Type switch
+    {
+        EntryType.RegistryRun => EntryCategory.Startup,
+        EntryType.RegistryRunOnce => EntryCategory.Startup,
+        EntryType.StartupFolder => EntryCategory.Startup,
+        EntryType.RegistryPolicies => EntryCategory.Startup,
+        EntryType.ScheduledTask => EntryCategory.Tasks,
+        EntryType.Service => EntryCategory.Services,
+        EntryType.Driver => EntryCategory.Services,
+        EntryType.IFEO => EntryCategory.System,
+        EntryType.Winlogon => EntryCategory.System,
+        EntryType.SessionManager => EntryCategory.System,
+        EntryType.AppInitDlls => EntryCategory.System,
+        EntryType.ShellExtension => EntryCategory.Extensions,
+        EntryType.BHO => EntryCategory.Extensions,
+        EntryType.PrintMonitor => EntryCategory.Extensions,
+        EntryType.WinsockLSP => EntryCategory.Extensions,
+        _ => EntryCategory.System
+    };
 
     /// <summary>
     /// Generates a stable ID for a startup entry.

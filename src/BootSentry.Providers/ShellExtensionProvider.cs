@@ -106,7 +106,10 @@ public sealed class ShellExtensionProvider : IStartupProvider
                 return (path, description);
             }
         }
-        catch { }
+        catch
+        {
+            // CLSID resolution can fail for orphaned entries - this is expected
+        }
         return (null, null);
     }
 
@@ -145,7 +148,10 @@ public sealed class ShellExtensionProvider : IStartupProvider
                 if (versionInfo.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
                     entry.RiskLevel = RiskLevel.Safe;
             }
-            catch { }
+            catch
+            {
+                // File info retrieval can fail for locked/inaccessible files
+            }
         }
 
         if (!entry.FileExists && entry.RiskLevel != RiskLevel.Safe)

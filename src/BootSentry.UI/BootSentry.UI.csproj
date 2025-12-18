@@ -32,6 +32,7 @@
     <ProjectReference Include="..\BootSentry.Actions\BootSentry.Actions.csproj" />
     <ProjectReference Include="..\BootSentry.Backup\BootSentry.Backup.csproj" />
     <ProjectReference Include="..\BootSentry.Security\BootSentry.Security.csproj" />
+    <ProjectReference Include="..\BootSentry.Knowledge\BootSentry.Knowledge.csproj" />
   </ItemGroup>
 
   <ItemGroup>

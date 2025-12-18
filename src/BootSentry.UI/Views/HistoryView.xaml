@@ -11,22 +11,6 @@
         Background="{DynamicResource WindowBackground}"
         KeyDown="Window_KeyDown">
 
-    <Window.Resources>
-        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
-        </Style>
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource AccentForeground}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-    </Window.Resources>
-
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -81,7 +65,7 @@
                 CornerRadius="4"
                 Margin="0,12,0,0"
                 Padding="12"
-                Visibility="{Binding SelectedTransaction, Converter={StaticResource NotNullToVisibilityConverter}}">
+                Visibility="{Binding SelectedTransaction, Converter={StaticResource NotNullToVisibility}}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -99,7 +83,7 @@
                 </StackPanel>
 
                 <Button Grid.Column="1"
-                        Style="{StaticResource ActionButtonStyle}"
+                        Style="{StaticResource ToolbarButton}"
                         Command="{Binding RollbackSelectedCommand}"
                         IsEnabled="{Binding SelectedTransaction.CanRestore}"
                         Content="Restaurer"/>
@@ -146,7 +130,7 @@
         <!-- Loading Overlay -->
         <Border Grid.RowSpan="4"
                 Background="#80000000"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
                 <TextBlock Text="Chargement..."

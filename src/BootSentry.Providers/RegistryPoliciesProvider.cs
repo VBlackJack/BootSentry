@@ -31,7 +31,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.RegistryPolicies;
-    public string DisplayName => "Stratégies (Policies)";
+    public string DisplayName => "Policies";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true; // Policies typically require admin
 
@@ -47,6 +47,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
             await ScanPolicyKeyAsync(root, path, scope, entries, cancellationToken);
         }
 
+        _logger.LogInformation("Found {Count} policy entries", entries.Count);
         return entries;
     }
 

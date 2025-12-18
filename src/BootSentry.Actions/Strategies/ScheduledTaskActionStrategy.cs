@@ -14,12 +14,10 @@ namespace BootSentry.Actions.Strategies;
 public sealed class ScheduledTaskActionStrategy : IActionStrategy
 {
     private readonly ILogger<ScheduledTaskActionStrategy> _logger;
-    private readonly ITransactionManager _transactionManager;
 
-    public ScheduledTaskActionStrategy(ILogger<ScheduledTaskActionStrategy> logger, ITransactionManager transactionManager)
+    public ScheduledTaskActionStrategy(ILogger<ScheduledTaskActionStrategy> logger)
     {
         _logger = logger;
-        _transactionManager = transactionManager;
     }
 
     public EntryType EntryType => EntryType.ScheduledTask;

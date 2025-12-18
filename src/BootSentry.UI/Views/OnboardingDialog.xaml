@@ -68,7 +68,9 @@
                     <RadioButton x:Name="StandardModeRadio"
                                  GroupName="Mode"
                                  IsChecked="True"
-                                 Margin="0,24,0,0">
+                                 Margin="0,24,0,0"
+                                 AutomationProperties.Name="Mode Standard (Recommandé)"
+                                 AutomationProperties.HelpText="Cache les entrées système Microsoft et les éléments critiques. Idéal pour la plupart des utilisateurs.">
                         <RadioButton.Template>
                             <ControlTemplate TargetType="RadioButton">
                                 <Border x:Name="Border"
@@ -112,7 +114,9 @@
 
                     <RadioButton x:Name="ExpertModeRadio"
                                  GroupName="Mode"
-                                 Margin="0,8,0,0">
+                                 Margin="0,8,0,0"
+                                 AutomationProperties.Name="Mode Expert"
+                                 AutomationProperties.HelpText="Affiche toutes les entrées y compris les services système et les pilotes. Pour utilisateurs avancés uniquement.">
                         <RadioButton.Template>
                             <ControlTemplate TargetType="RadioButton">
                                 <Border x:Name="Border"

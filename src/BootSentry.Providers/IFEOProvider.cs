@@ -39,6 +39,7 @@ public sealed class IFEOProvider : IStartupProvider
         // Scan HKLM IFEO
         await ScanIFEOAsync(Registry.LocalMachine, EntryScope.Machine, entries, cancellationToken);
 
+        _logger.LogInformation("Found {Count} IFEO entries", entries.Count);
         return entries;
     }
 

@@ -179,21 +179,21 @@ public class RiskAnalyzer
             SignatureStatus.SignedTrusted => new RiskFactor
             {
                 Name = "Signature",
-                Description = "Signé avec une chaîne de confiance valide",
+                Description = "Signed with a valid trust chain",
                 Score = -30,
                 Type = RiskFactorType.Positive
             },
             SignatureStatus.SignedUntrusted => new RiskFactor
             {
                 Name = "Signature",
-                Description = "Signé mais certificat non approuvé",
+                Description = "Signed but certificate not trusted",
                 Score = 20,
                 Type = RiskFactorType.Warning
             },
             SignatureStatus.Unsigned => new RiskFactor
             {
                 Name = "Signature",
-                Description = "Fichier non signé",
+                Description = "Unsigned file",
                 Score = 10,
                 Type = RiskFactorType.Warning
             },
@@ -207,8 +207,8 @@ public class RiskAnalyzer
         {
             return new RiskFactor
             {
-                Name = "Éditeur",
-                Description = "Éditeur inconnu",
+                Name = "Publisher",
+                Description = "Unknown publisher",
                 Score = 5,
                 Type = RiskFactorType.Warning
             };
@@ -218,8 +218,8 @@ public class RiskAnalyzer
         {
             return new RiskFactor
             {
-                Name = "Éditeur",
-                Description = $"Éditeur de confiance: {entry.Publisher}",
+                Name = "Publisher",
+                Description = $"Trusted publisher: {entry.Publisher}",
                 Score = -20,
                 Type = RiskFactorType.Positive
             };
@@ -242,8 +242,8 @@ public class RiskAnalyzer
             {
                 return new RiskFactor
                 {
-                    Name = "Emplacement",
-                    Description = $"Fichier dans un emplacement suspect ({suspiciousLoc.Trim('\\')})",
+                    Name = "Location",
+                    Description = $"File in suspicious location ({suspiciousLoc.Trim('\\')})",
                     Score = 25,
                     Type = RiskFactorType.Negative
                 };
@@ -257,8 +257,8 @@ public class RiskAnalyzer
         {
             return new RiskFactor
             {
-                Name = "Emplacement",
-                Description = "Fichier dans un emplacement standard",
+                Name = "Location",
+                Description = "File in standard location",
                 Score = -10,
                 Type = RiskFactorType.Positive
             };
@@ -276,8 +276,8 @@ public class RiskAnalyzer
         {
             return new RiskFactor
             {
-                Name = "Ligne de commande",
-                Description = "Commande contenant des patterns suspects (encodage, téléchargement, etc.)",
+                Name = "Command Line",
+                Description = "Command contains suspicious patterns (encoding, download, etc.)",
                 Score = 40,
                 Type = RiskFactorType.Negative
             };
@@ -292,8 +292,8 @@ public class RiskAnalyzer
         {
             return new RiskFactor
             {
-                Name = "Fichier",
-                Description = "Le fichier cible n'existe pas",
+                Name = "File",
+                Description = "Target file does not exist",
                 Score = 15,
                 Type = RiskFactorType.Warning
             };
@@ -309,14 +309,14 @@ public class RiskAnalyzer
             EntryType.IFEO => new RiskFactor
             {
                 Name = "Type",
-                Description = "Entrée IFEO (Image File Execution Options) - vecteur malware courant",
+                Description = "IFEO entry (Image File Execution Options) - common malware vector",
                 Score = 30,
                 Type = RiskFactorType.Warning
             },
             EntryType.Winlogon => new RiskFactor
             {
                 Name = "Type",
-                Description = "Entrée Winlogon - zone système sensible",
+                Description = "Winlogon entry - sensitive system area",
                 Score = 20,
                 Type = RiskFactorType.Warning
             },
@@ -340,8 +340,8 @@ public class RiskAnalyzer
             {
                 return new RiskFactor
                 {
-                    Name = "Mimétisme",
-                    Description = $"Fichier '{fileName}' en dehors de son emplacement système normal",
+                    Name = "Mimicry",
+                    Description = $"File '{fileName}' outside its normal system location",
                     Score = 50,
                     Type = RiskFactorType.Negative
                 };

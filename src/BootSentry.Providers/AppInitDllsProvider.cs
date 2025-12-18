@@ -137,7 +137,10 @@ public sealed class AppInitDllsProvider : IStartupProvider
                     entry.Notes = "DLL Microsoft dans AppInit_DLLs - inhabituel";
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to get file info for {Path}", resolvedPath);
+            }
         }
         else
         {

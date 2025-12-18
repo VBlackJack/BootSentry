@@ -14,7 +14,7 @@ public class UpdateChecker : IDisposable
     private readonly string _repoName;
     private bool _disposed;
 
-    public UpdateChecker(string repoOwner = "your-username", string repoName = "BootSentry")
+    public UpdateChecker(string repoOwner = "VBlackJack", string repoName = "BootSentry")
     {
         _repoOwner = repoOwner;
         _repoName = repoName;

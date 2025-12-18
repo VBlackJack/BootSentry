@@ -85,20 +85,30 @@
 
                     <!-- Links -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8">
-                        <Button x:Name="GitHubButton" Content="🔗 GitHub"
+                        <Button x:Name="GitHubButton"
                                 Click="GitHubButton_Click"
                                 Padding="12,6" Margin="4"
                                 Background="Transparent"
                                 BorderBrush="{DynamicResource AccentBrush}"
                                 Foreground="{DynamicResource AccentBrush}"
-                                Cursor="Hand"/>
-                        <Button x:Name="LicenseButton" Content="📄 Licence"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="GitHub" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="LicenseButton"
                                 Click="LicenseButton_Click"
                                 Padding="12,6" Margin="4"
                                 Background="Transparent"
                                 BorderBrush="{DynamicResource AccentBrush}"
                                 Foreground="{DynamicResource AccentBrush}"
-                                Cursor="Hand"/>
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Licence" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

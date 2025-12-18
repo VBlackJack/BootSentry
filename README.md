@@ -47,7 +47,9 @@ BootSentry analyzes the following startup locations:
 2. Place it in a folder of your choice
 3. Run it
 
-No installation required. All data is stored in `%ProgramData%\BootSentry\`.
+No installation required. Data is stored in:
+- Settings: `%LocalAppData%\BootSentry\settings.json`
+- Logs and Backups: `%ProgramData%\BootSentry\`
 
 ### Build from Source
 

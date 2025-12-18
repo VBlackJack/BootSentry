@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
-        xmlns:conv="clr-namespace:BootSentry.UI.Converters"
         mc:Ignorable="d"
         Title="BootSentry - Gestionnaire de démarrage Windows"
         Height="750" Width="1200"
@@ -14,14 +13,6 @@
         Foreground="{DynamicResource WindowForeground}">
 
     <Window.Resources>
-        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
-        <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
-        <conv:NullToVisibilityConverter x:Key="NullToVisibility"/>
-        <conv:NotNullToVisibilityConverter x:Key="NotNullToVisibility"/>
-        <conv:RiskLevelToColorConverter x:Key="RiskToColor"/>
-        <conv:SignatureStatusToColorConverter x:Key="SignatureToColor"/>
-        <conv:EntryStatusToColorConverter x:Key="StatusToColor"/>
-
         <!-- Theme Colors (defaults - overridden by ThemeService) -->
         <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
         <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
@@ -35,35 +26,6 @@
         <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
         <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
         <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
-
-        <!-- Button Style -->
-        <Style x:Key="ToolbarButton" TargetType="Button">
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="0.9"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.5"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </Window.Resources>
 
     <Window.InputBindings>
@@ -216,14 +178,16 @@
                                   Background="Transparent" Foreground="White"
                                   BorderBrush="White" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="👁" Margin="0,0,6,0"/>
+                            <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" Margin="0,0,6,0"/>
                             <TextBlock Text="Expert"/>
                         </StackPanel>
                     </ToggleButton>
-                    <Button Content="⚙" ToolTip="Paramètres" Padding="10,6"
-                            Background="Transparent" Foreground="White" FontSize="18"
+                    <Button ToolTip="Paramètres" Padding="10,6"
+                            Background="Transparent" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Command="{Binding OpenSettingsCommand}"/>
+                            Command="{Binding OpenSettingsCommand}">
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="18"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -239,44 +203,70 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button Content="🔄 Actualiser" Command="{Binding RefreshCommand}"
+                    <Button Command="{Binding RefreshCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#0078D4" ToolTip="Actualiser (F5)"
                             AutomationProperties.Name="Actualiser la liste"
-                            AutomationProperties.HelpText="Relance l'analyse de toutes les entrées de démarrage"/>
-                    <Button Content="▶ Activer" Command="{Binding EnableSelectedCommand}"
+                            AutomationProperties.HelpText="Relance l'analyse de toutes les entrées de démarrage">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Actualiser" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding EnableSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#10B981"
                             AutomationProperties.Name="Activer l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Réactive l'entrée de démarrage sélectionnée"/>
-                    <Button Content="⏸ Désactiver" Command="{Binding DisableSelectedCommand}"
+                            AutomationProperties.HelpText="Réactive l'entrée de démarrage sélectionnée">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Activer" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DisableSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#F59E0B"
                             AutomationProperties.Name="Désactiver l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Désactive l'entrée de démarrage sélectionnée"/>
-                    <Button Content="🗑 Supprimer" Command="{Binding DeleteSelectedCommand}"
+                            AutomationProperties.HelpText="Désactive l'entrée de démarrage sélectionnée">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE769;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Désactiver" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DeleteSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#EF4444"
                             Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
                             AutomationProperties.Name="Supprimer l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Supprime définitivement l'entrée (un backup sera créé)"/>
+                            AutomationProperties.HelpText="Supprime définitivement l'entrée (un backup sera créé)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Supprimer" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                     <Separator Margin="8,4"/>
-                    <Button Content="📂" Command="{Binding OpenFileLocationCommand}"
+                    <Button Command="{Binding OpenFileLocationCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#6B7280"
                             ToolTip="Ouvrir l'emplacement"
                             AutomationProperties.Name="Ouvrir l'emplacement du fichier"
-                            AutomationProperties.HelpText="Ouvre l'explorateur Windows à l'emplacement du fichier"/>
-                    <Button Content="📋" Command="{Binding CopyPathCommand}"
+                            AutomationProperties.HelpText="Ouvre l'explorateur Windows à l'emplacement du fichier">
+                        <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets"/>
+                    </Button>
+                    <Button Command="{Binding CopyPathCommand}"
                             Style="{StaticResource ToolbarButton}" Background="#6B7280"
                             ToolTip="Copier le chemin"
                             AutomationProperties.Name="Copier le chemin"
-                            AutomationProperties.HelpText="Copie le chemin du fichier dans le presse-papiers"/>
+                            AutomationProperties.HelpText="Copie le chemin du fichier dans le presse-papiers">
+                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets"/>
+                    </Button>
                 </StackPanel>
 
                 <Border Grid.Column="1" Background="{DynamicResource ControlBackground}"
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                         CornerRadius="4" Margin="16,0">
                     <Grid>
-                        <TextBlock Text="🔍 Rechercher... (Ctrl+F)" Foreground="Gray"
-                                   Margin="10,0" VerticalAlignment="Center"
-                                   Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"
-                                   IsHitTestVisible="False"/>
+                        <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center"
+                                    Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"
+                                    IsHitTestVisible="False">
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="Gray" Margin="0,0,6,0"/>
+                            <TextBlock Text="Rechercher... (Ctrl+F)" Foreground="Gray"/>
+                        </StackPanel>
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent" BorderThickness="0"
@@ -287,14 +277,11 @@
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ComboBox ItemsSource="{Binding TypeFilters}"
-                              SelectedItem="{Binding SelectedTypeFilter}"
-                              Width="130" Margin="0,0,8,0"
-                              AutomationProperties.Name="Filtrer par type"/>
                     <ComboBox ItemsSource="{Binding StatusFilters}"
                               SelectedItem="{Binding SelectedStatusFilter}"
-                              Width="110" Margin="0,0,8,0"
-                              AutomationProperties.Name="Filtrer par statut"/>
+                              Width="120" Margin="0,0,8,0"
+                              AutomationProperties.Name="Filtrer par statut"
+                              AutomationProperties.HelpText="Sélectionnez un statut pour filtrer la liste"/>
                     <TextBlock Margin="8,0" VerticalAlignment="Center">
                         <Run Text="{Binding VisibleEntriesCount, Mode=OneWay}" FontWeight="SemiBold"/>
                         <Run Text=" / "/>
@@ -313,10 +300,113 @@
                 <ColumnDefinition Width="350" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Entry List -->
+            <!-- Entry List with Category Tabs -->
             <Border Grid.Column="0" Margin="8" Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
-                <DataGrid x:Name="EntriesGrid"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Category Tabs -->
+                    <TabControl x:Name="CategoryTabs" Grid.Row="0"
+                                SelectionChanged="CategoryTabs_SelectionChanged"
+                                Background="Transparent" BorderThickness="0"
+                                Padding="0" Margin="0">
+                        <TabControl.Resources>
+                            <Style TargetType="TabItem">
+                                <Setter Property="Padding" Value="16,8"/>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TabItem">
+                                            <Border x:Name="Border" Background="Transparent"
+                                                    BorderThickness="0,0,0,2" BorderBrush="Transparent"
+                                                    Padding="{TemplateBinding Padding}" Cursor="Hand">
+                                                <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource RowHover}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TabControl.Resources>
+                        <TabItem Tag="Startup">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Démarrage" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding StartupCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem Tag="Tasks">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Tâches" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TasksCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem Tag="Services">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE912;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Services" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ServicesCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem Tag="System" Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE770;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Système" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SystemCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem Tag="Extensions" Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE74C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Extensions" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ExtensionsCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                    </TabControl>
+
+                    <!-- Entry List Content -->
+                    <Grid Grid.Row="1">
+                        <!-- No Results Message -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Visibility="{Binding HasNoVisibleEntries, Converter={StaticResource BoolToVisibility}}"
+                                    Margin="0,40">
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="Aucun résultat trouvé" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,8"/>
+                            <TextBlock Text="Modifiez vos critères de recherche ou de filtrage"
+                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <DataGrid x:Name="EntriesGrid"
                           ItemsSource="{Binding FilteredEntries}"
                           SelectedItem="{Binding SelectedEntry}"
                           AutoGenerateColumns="False"
@@ -408,7 +498,9 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
-                </DataGrid>
+                        </DataGrid>
+                    </Grid>
+                </Grid>
             </Border>
 
             <!-- Splitter -->
@@ -426,7 +518,7 @@
                         <!-- No Selection -->
                         <StackPanel Visibility="{Binding SelectedEntry, Converter={StaticResource NullToVisibility}}"
                                     HorizontalAlignment="Center" Margin="0,40">
-                            <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
                             <TextBlock Text="Sélectionnez une entrée pour voir ses détails"
                                        Foreground="Gray" HorizontalAlignment="Center" Margin="0,16,0,0"/>
                         </StackPanel>
@@ -506,10 +598,133 @@
                             <StackPanel Visibility="{Binding SelectedEntry.Notes, Converter={StaticResource NotNullToVisibility}}"
                                         Margin="0,12,0,0">
                                 <TextBlock Text="Notes:" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                <Border Background="#FEF3C7" CornerRadius="4" Padding="8">
-                                    <TextBlock Text="{Binding SelectedEntry.Notes}" TextWrapping="Wrap" Foreground="#92400E"/>
+                                <Border Background="{DynamicResource NoteBackgroundBrush}" CornerRadius="4" Padding="8">
+                                    <TextBlock Text="{Binding SelectedEntry.Notes}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource NoteForegroundBrush}"/>
                                 </Border>
                             </StackPanel>
+
+                            <!-- Knowledge Base Info -->
+                            <StackPanel Visibility="{Binding KnowledgeInfo, Converter={StaticResource NotNullToVisibility}}"
+                                        Margin="0,16,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Informations" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentBrush}"/>
+                                </StackPanel>
+
+                                <!-- Safety Level Badge -->
+                                <Border CornerRadius="4" Padding="8" Margin="0,0,0,8"
+                                        Background="{DynamicResource PanelBackground}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="Niveau de sécurité:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                            <Border CornerRadius="3" Padding="8,2" HorizontalAlignment="Left">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#6B7280"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Critical">
+                                                                <Setter Property="Background" Value="#DC2626"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Important">
+                                                                <Setter Property="Background" Value="#F59E0B"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Safe">
+                                                                <Setter Property="Background" Value="#10B981"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="RecommendedDisable">
+                                                                <Setter Property="Background" Value="#3B82F6"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="ShouldRemove">
+                                                                <Setter Property="Background" Value="#7C3AED"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Foreground="White" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="Inconnu"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Critical">
+                                                                    <Setter Property="Text" Value="Critique - Ne pas désactiver"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Important">
+                                                                    <Setter Property="Text" Value="Important"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Safe">
+                                                                    <Setter Property="Text" Value="Peut être désactivé"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="RecommendedDisable">
+                                                                    <Setter Property="Text" Value="Désactivation recommandée"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="ShouldRemove">
+                                                                    <Setter Property="Text" Value="À supprimer"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding KnowledgeInfo.Category}" FontSize="11"
+                                                   Foreground="{DynamicResource DisabledForeground}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Description -->
+                                <TextBlock Text="{Binding KnowledgeInfo.ShortDescription}" TextWrapping="Wrap"
+                                           Margin="0,0,0,8"/>
+
+                                <!-- Full Description (Expander) -->
+                                <Expander Header="Description détaillée" IsExpanded="False" Margin="0,0,0,8"
+                                          Visibility="{Binding KnowledgeInfo.FullDescription, Converter={StaticResource NotNullToVisibility}}">
+                                    <TextBlock Text="{Binding KnowledgeInfo.FullDescription}" TextWrapping="Wrap"
+                                               Margin="0,8,0,0" Foreground="{DynamicResource WindowForeground}"/>
+                                </Expander>
+
+                                <!-- Impact if disabled -->
+                                <Expander Header="Impact si désactivé" IsExpanded="False" Margin="0,0,0,8"
+                                          Visibility="{Binding KnowledgeInfo.DisableImpact, Converter={StaticResource NotNullToVisibility}}">
+                                    <Border Background="#FEF3C7" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                        <TextBlock Text="{Binding KnowledgeInfo.DisableImpact}" TextWrapping="Wrap"
+                                                   Foreground="#92400E"/>
+                                    </Border>
+                                </Expander>
+
+                                <!-- Performance Impact -->
+                                <Expander Header="Impact sur les performances" IsExpanded="False" Margin="0,0,0,8"
+                                          Visibility="{Binding KnowledgeInfo.PerformanceImpact, Converter={StaticResource NotNullToVisibility}}">
+                                    <TextBlock Text="{Binding KnowledgeInfo.PerformanceImpact}" TextWrapping="Wrap"
+                                               Margin="0,8,0,0" Foreground="{DynamicResource WindowForeground}"/>
+                                </Expander>
+
+                                <!-- Recommendation -->
+                                <Border Background="{DynamicResource AccentBrush}" CornerRadius="4" Padding="8" Margin="0,4,0,0"
+                                        Opacity="0.9"
+                                        Visibility="{Binding KnowledgeInfo.Recommendation, Converter={StaticResource NotNullToVisibility}}">
+                                    <StackPanel>
+                                        <TextBlock Text="Recommandation" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding KnowledgeInfo.Recommendation}" TextWrapping="Wrap" Foreground="White"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- No Knowledge Info -->
+                            <Border Visibility="{Binding KnowledgeInfo, Converter={StaticResource NullToVisibility}}"
+                                    Background="{DynamicResource RowAlternate}" CornerRadius="4" Padding="12" Margin="0,16,0,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="24"
+                                               HorizontalAlignment="Center" Opacity="0.5" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Aucune information disponible" TextWrapping="Wrap"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource DisabledForeground}"/>
+                                    <TextBlock Text="dans la base de connaissances" TextWrapping="Wrap" FontSize="11"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource DisabledForeground}"/>
+                                </StackPanel>
+                            </Border>
 
                             <!-- File Info -->
                             <Expander Header="Informations fichier" Margin="0,12,0,0" IsExpanded="False">
@@ -545,19 +760,39 @@
 
                             <!-- Action Buttons -->
                             <WrapPanel HorizontalAlignment="Center">
-                                <Button Content="📂 Ouvrir" Command="{Binding OpenFileLocationCommand}"
+                                <Button Command="{Binding OpenFileLocationCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
-                                        AutomationProperties.Name="Ouvrir l'emplacement du fichier"/>
-                                <Button Content="📋 Copier" Command="{Binding CopyPathCommand}"
+                                        AutomationProperties.Name="Ouvrir l'emplacement du fichier">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Ouvrir" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding CopyPathCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
-                                        AutomationProperties.Name="Copier le chemin"/>
-                                <Button Content="🌐 Web" Command="{Binding WebSearchCommand}"
+                                        AutomationProperties.Name="Copier le chemin">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Copier" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding WebSearchCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="#6B7280" Margin="4"
-                                        AutomationProperties.Name="Rechercher sur le web"/>
-                                <Button Content="#️⃣ Hash" Command="{Binding CalculateHashCommand}"
+                                        AutomationProperties.Name="Rechercher sur le web">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Web" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding CalculateHashCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="#8B5CF6" Margin="4"
                                         ToolTip="Calculer le hash SHA-256 du fichier"
-                                        AutomationProperties.Name="Calculer le hash SHA-256"/>
+                                        AutomationProperties.Name="Calculer le hash SHA-256">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Hash" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </WrapPanel>
                         </StackPanel>
                     </StackPanel>
@@ -591,7 +826,7 @@
                 <!-- Loading indicator -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="⏳" Margin="0,0,4,0"/>
+                    <TextBlock Text="&#xE712;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" Foreground="Gray"/>
                     <TextBlock Text="Chargement..." Foreground="Gray"/>
                 </StackPanel>
             </Grid>
@@ -604,6 +839,19 @@
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="White"
                            HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                <TextBlock Text="{Binding ProgressText}" Foreground="#CCFFFFFF" FontSize="12"
+                           HorizontalAlignment="Center" Margin="0,8,0,0"
+                           Visibility="{Binding ProgressText, Converter={StaticResource NotNullToVisibility}}"/>
+                <Button Command="{Binding CancelOperationCommand}"
+                        Visibility="{Binding CanCancel, Converter={StaticResource BoolToVisibility}}"
+                        Margin="0,16,0,0" Padding="16,8"
+                        Background="#EF4444" Foreground="White" BorderThickness="0"
+                        Cursor="Hand">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="Annuler" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </Border>
     </Grid>

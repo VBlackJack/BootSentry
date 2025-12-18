@@ -14,6 +14,8 @@ using BootSentry.Core.Helpers;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
 using BootSentry.Core.Services;
+using BootSentry.Knowledge.Models;
+using BootSentry.Knowledge.Services;
 using BootSentry.Security;
 
 namespace BootSentry.UI.ViewModels;
@@ -30,6 +32,8 @@ public partial class MainViewModel : ObservableObject
     private readonly ICollectionView _entriesView;
     private readonly ExportService _exportService;
     private readonly RiskAnalyzer _riskAnalyzer;
+    private readonly KnowledgeService _knowledgeService;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
     private bool _isExpertMode;
@@ -51,6 +55,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedStatusFilter = "Tous";
 
+    [ObservableProperty]
+    private EntryCategory? _selectedCategory;
+
     public string[] TypeFilters { get; } = ["Tous", "Registre", "Dossier Démarrage", "Tâches", "Services", "Drivers", "Expert"];
     public string[] StatusFilters { get; } = ["Tous", "Actives", "Désactivées", "Suspectes"];
 
@@ -61,10 +68,19 @@ public partial class MainViewModel : ObservableObject
     private bool _isLoading;
 
     [ObservableProperty]
+    private string _progressText = string.Empty;
+
+    [ObservableProperty]
+    private bool _canCancel;
+
+    [ObservableProperty]
     private bool _isAdmin;
 
     [ObservableProperty]
     private string _adminStatusText = string.Empty;
+
+    [ObservableProperty]
+    private KnowledgeEntry? _knowledgeInfo;
 
     public ObservableCollection<StartupEntry> Entries { get; } = [];
 
@@ -76,17 +92,37 @@ public partial class MainViewModel : ObservableObject
     public int DisabledCount => Entries.Count(e => e.Status == EntryStatus.Disabled);
     public int SuspiciousCount => Entries.Count(e => e.RiskLevel == RiskLevel.Suspicious || e.RiskLevel == RiskLevel.Critical);
     public bool HasSuspiciousEntries => SuspiciousCount > 0;
+    public bool HasNoVisibleEntries => VisibleEntriesCount == 0 && TotalEntriesCount > 0;
+
+    // Category counts for tab headers
+    public int StartupCount => Entries.Count(e => e.Category == EntryCategory.Startup && ShouldShowInNonExpertMode(e));
+    public int TasksCount => Entries.Count(e => e.Category == EntryCategory.Tasks && ShouldShowInNonExpertMode(e));
+    public int ServicesCount => Entries.Count(e => e.Category == EntryCategory.Services && ShouldShowInNonExpertMode(e));
+    public int SystemCount => Entries.Count(e => e.Category == EntryCategory.System);
+    public int ExtensionsCount => Entries.Count(e => e.Category == EntryCategory.Extensions);
+
+    private bool ShouldShowInNonExpertMode(StartupEntry entry)
+    {
+        if (IsExpertMode) return true;
+        if (entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true
+            && entry.SignatureStatus == SignatureStatus.SignedTrusted)
+            return false;
+        if (entry.IsProtected) return false;
+        return true;
+    }
 
     public MainViewModel(
         ILogger<MainViewModel> logger,
         IEnumerable<IStartupProvider> providers,
         ActionExecutor actionExecutor,
-        ITransactionManager transactionManager)
+        ITransactionManager transactionManager,
+        KnowledgeService knowledgeService)
     {
         _logger = logger;
         _providers = providers;
         _actionExecutor = actionExecutor;
         _transactionManager = transactionManager;
+        _knowledgeService = knowledgeService;
         _exportService = new ExportService();
         _riskAnalyzer = new RiskAnalyzer();
 
@@ -101,16 +137,34 @@ public partial class MainViewModel : ObservableObject
         _ = RefreshAsync();
     }
 
+    partial void OnSelectedEntryChanged(StartupEntry? value)
+    {
+        // Look up knowledge info for the selected entry
+        if (value != null)
+        {
+            KnowledgeInfo = _knowledgeService.FindEntry(
+                value.DisplayName,
+                value.TargetPath,
+                value.Publisher);
+        }
+        else
+        {
+            KnowledgeInfo = null;
+        }
+    }
+
     partial void OnSearchTextChanged(string value)
     {
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
     }
 
     partial void OnIsExpertModeChanged(bool value)
     {
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
         StatusMessage = value ? "Mode Expert activé" : "Mode Expert désactivé";
         _logger.LogInformation("Expert mode: {Mode}", value ? "enabled" : "disabled");
     }
@@ -119,17 +173,30 @@ public partial class MainViewModel : ObservableObject
     {
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
     }
 
     partial void OnSelectedStatusFilterChanged(string value)
     {
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
+    }
+
+    partial void OnSelectedCategoryChanged(EntryCategory? value)
+    {
+        _entriesView.Refresh();
+        OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
     }
 
     private bool FilterEntries(object obj)
     {
         if (obj is not StartupEntry entry)
+            return false;
+
+        // Filter by category (tab) if one is selected
+        if (SelectedCategory.HasValue && entry.Category != SelectedCategory.Value)
             return false;
 
         // In non-expert mode, hide Microsoft entries and critical items
@@ -142,15 +209,16 @@ public partial class MainViewModel : ObservableObject
             if (entry.IsProtected)
                 return false;
 
-            // Hide drivers and expert-only types in non-expert mode
-            if (entry.Type == EntryType.Driver || entry.Type == EntryType.SessionManager ||
-                entry.Type == EntryType.AppInitDlls || entry.Type == EntryType.PrintMonitor ||
-                entry.Type == EntryType.ShellExtension || entry.Type == EntryType.BHO ||
-                entry.Type == EntryType.WinsockLSP)
+            // Hide expert-only categories in non-expert mode
+            if (entry.Category == EntryCategory.System || entry.Category == EntryCategory.Extensions)
+                return false;
+
+            // Hide drivers in non-expert mode
+            if (entry.Type == EntryType.Driver)
                 return false;
         }
 
-        // Apply type filter
+        // Apply type filter (for sub-filtering within category)
         if (SelectedTypeFilter != "Tous")
         {
             var matchesType = SelectedTypeFilter switch
@@ -198,7 +266,13 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task RefreshAsync()
     {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
         IsLoading = true;
+        CanCancel = true;
+        ProgressText = string.Empty;
         StatusMessage = "Analyse en cours...";
 
         try
@@ -207,9 +281,15 @@ public partial class MainViewModel : ObservableObject
 
             Entries.Clear();
             var totalEntries = 0;
+            var providerList = _providers.ToList();
+            var providerIndex = 0;
 
-            foreach (var provider in _providers)
+            foreach (var provider in providerList)
             {
+                token.ThrowIfCancellationRequested();
+                providerIndex++;
+                ProgressText = $"{providerIndex}/{providerList.Count}";
+
                 if (!provider.IsAvailable())
                 {
                     _logger.LogWarning("Provider {Provider} is not available", provider.DisplayName);
@@ -219,7 +299,7 @@ public partial class MainViewModel : ObservableObject
                 try
                 {
                     StatusMessage = $"Analyse: {provider.DisplayName}...";
-                    var providerEntries = await provider.ScanAsync();
+                    var providerEntries = await provider.ScanAsync(token);
 
                     foreach (var entry in providerEntries)
                     {
@@ -231,6 +311,10 @@ public partial class MainViewModel : ObservableObject
 
                     _logger.LogInformation("Provider {Provider} found {Count} entries",
                         provider.DisplayName, providerEntries.Count);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -244,6 +328,11 @@ public partial class MainViewModel : ObservableObject
             StatusMessage = $"Scan terminé - {totalEntries} entrées trouvées";
             _logger.LogInformation("Scan complete: {Count} entries found", totalEntries);
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Analyse annulée";
+            _logger.LogInformation("Scan cancelled by user");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during scan");
@@ -252,6 +341,8 @@ public partial class MainViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+            CanCancel = false;
+            ProgressText = string.Empty;
         }
     }
 
@@ -263,6 +354,21 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(DisabledCount));
         OnPropertyChanged(nameof(SuspiciousCount));
         OnPropertyChanged(nameof(HasSuspiciousEntries));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
+        // Category counts for tabs
+        OnPropertyChanged(nameof(StartupCount));
+        OnPropertyChanged(nameof(TasksCount));
+        OnPropertyChanged(nameof(ServicesCount));
+        OnPropertyChanged(nameof(SystemCount));
+        OnPropertyChanged(nameof(ExtensionsCount));
+    }
+
+    [RelayCommand]
+    private void CancelOperation()
+    {
+        _cancellationTokenSource?.Cancel();
+        StatusMessage = "Annulation en cours...";
+        _logger.LogInformation("Operation cancelled by user");
     }
 
     [RelayCommand]
@@ -501,35 +607,50 @@ public partial class MainViewModel : ObservableObject
             return;
 
         _logger.LogInformation("Batch enabling {Count} entries", entriesToEnable.Count);
+        IsLoading = true;
         StatusMessage = $"Activation de {entriesToEnable.Count} entrées...";
 
         var successCount = 0;
         var failCount = 0;
+        var total = entriesToEnable.Count;
+        var current = 0;
 
-        foreach (var entry in entriesToEnable)
+        try
         {
-            var actionResult = await _actionExecutor.EnableAsync(entry);
-            if (actionResult.Success)
-                successCount++;
+            foreach (var entry in entriesToEnable)
+            {
+                current++;
+                ProgressText = $"{current}/{total}";
+                StatusMessage = $"Activation: {entry.DisplayName}...";
+
+                var actionResult = await _actionExecutor.EnableAsync(entry);
+                if (actionResult.Success)
+                    successCount++;
+                else
+                    failCount++;
+            }
+
+            _entriesView.Refresh();
+            UpdateCounts();
+
+            if (failCount == 0)
+            {
+                StatusMessage = $"{successCount} entrée(s) activée(s)";
+            }
             else
-                failCount++;
+            {
+                StatusMessage = $"{successCount} activée(s), {failCount} échec(s)";
+                MessageBox.Show(
+                    $"{successCount} entrée(s) activée(s) avec succès.\n{failCount} échec(s).",
+                    "Résultat",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
-
-        _entriesView.Refresh();
-        UpdateCounts();
-
-        if (failCount == 0)
+        finally
         {
-            StatusMessage = $"{successCount} entrée(s) activée(s)";
-        }
-        else
-        {
-            StatusMessage = $"{successCount} activée(s), {failCount} échec(s)";
-            MessageBox.Show(
-                $"{successCount} entrée(s) activée(s) avec succès.\n{failCount} échec(s).",
-                "Résultat",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            IsLoading = false;
+            ProgressText = string.Empty;
         }
     }
 
@@ -560,35 +681,50 @@ public partial class MainViewModel : ObservableObject
             return;
 
         _logger.LogInformation("Batch disabling {Count} entries", entriesToDisable.Count);
+        IsLoading = true;
         StatusMessage = $"Désactivation de {entriesToDisable.Count} entrées...";
 
         var successCount = 0;
         var failCount = 0;
+        var total = entriesToDisable.Count;
+        var current = 0;
 
-        foreach (var entry in entriesToDisable)
+        try
         {
-            var actionResult = await _actionExecutor.DisableAsync(entry);
-            if (actionResult.Success)
-                successCount++;
+            foreach (var entry in entriesToDisable)
+            {
+                current++;
+                ProgressText = $"{current}/{total}";
+                StatusMessage = $"Désactivation: {entry.DisplayName}...";
+
+                var actionResult = await _actionExecutor.DisableAsync(entry);
+                if (actionResult.Success)
+                    successCount++;
+                else
+                    failCount++;
+            }
+
+            _entriesView.Refresh();
+            UpdateCounts();
+
+            if (failCount == 0)
+            {
+                StatusMessage = $"{successCount} entrée(s) désactivée(s)";
+            }
             else
-                failCount++;
+            {
+                StatusMessage = $"{successCount} désactivée(s), {failCount} échec(s)";
+                MessageBox.Show(
+                    $"{successCount} entrée(s) désactivée(s) avec succès.\n{failCount} échec(s).",
+                    "Résultat",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
-
-        _entriesView.Refresh();
-        UpdateCounts();
-
-        if (failCount == 0)
+        finally
         {
-            StatusMessage = $"{successCount} entrée(s) désactivée(s)";
-        }
-        else
-        {
-            StatusMessage = $"{successCount} désactivée(s), {failCount} échec(s)";
-            MessageBox.Show(
-                $"{successCount} entrée(s) désactivée(s) avec succès.\n{failCount} échec(s).",
-                "Résultat",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            IsLoading = false;
+            ProgressText = string.Empty;
         }
     }
 

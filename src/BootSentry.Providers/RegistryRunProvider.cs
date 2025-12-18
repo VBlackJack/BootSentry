@@ -44,7 +44,7 @@ public sealed class RegistryRunProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.RegistryRun;
-    public string DisplayName => "Registre Run/RunOnce";
+    public string DisplayName => "Registry Run/RunOnce";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true; // For HKLM keys
 
@@ -89,6 +89,7 @@ public sealed class RegistryRunProvider : IStartupProvider
             }
         }
 
+        _logger.LogInformation("Found {Count} registry Run entries", entries.Count);
         return entries;
     }
 

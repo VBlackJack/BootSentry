@@ -37,12 +37,17 @@ public sealed class IFEOActionStrategy : IActionStrategy
 
     public async Task<ActionResult> DisableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
+        if (entry.Type != EntryType.IFEO)
+        {
+            return ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE");
+        }
+
         try
         {
             // Extract the application name from the source path
             var appName = ExtractAppName(entry.SourcePath);
             if (string.IsNullOrEmpty(appName))
-                return ActionResult.Fail("ERR_INVALID_SOURCE", "Impossible d'extraire le nom de l'application");
+                return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
 
             // Start transaction
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
@@ -52,11 +57,11 @@ public sealed class IFEOActionStrategy : IActionStrategy
                 // Read current value
                 using var sourceKey = Registry.LocalMachine.OpenSubKey($@"{IFEOPath}\{appName}", false);
                 if (sourceKey == null)
-                    return ActionResult.Fail("ERR_KEY_NOT_FOUND", "Clé IFEO introuvable");
+                    return ActionResult.Fail("IFEO key not found", "ERR_KEY_NOT_FOUND");
 
                 var debuggerValue = sourceKey.GetValue("Debugger") as string;
                 if (string.IsNullOrEmpty(debuggerValue))
-                    return ActionResult.Fail("ERR_VALUE_NOT_FOUND", "Valeur Debugger introuvable");
+                    return ActionResult.Fail("Debugger value not found", "ERR_VALUE_NOT_FOUND");
 
                 // Create disabled key
                 using var disabledRoot = Registry.LocalMachine.CreateSubKey(DisabledIFEOPath);
@@ -89,22 +94,27 @@ public sealed class IFEOActionStrategy : IActionStrategy
         }
         catch (UnauthorizedAccessException)
         {
-            return ActionResult.Fail("ERR_ACCESS_DENIED", "Droits administrateur requis");
+            return ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error disabling IFEO entry {Id}", entry.Id);
-            return ActionResult.Fail("ERR_DISABLE_FAILED", ex.Message);
+            return ActionResult.Fail(ex.Message, "ERR_DISABLE_FAILED");
         }
     }
 
     public async Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
+        if (entry.Type != EntryType.IFEO)
+        {
+            return ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE");
+        }
+
         try
         {
             var appName = ExtractAppName(entry.SourcePath);
             if (string.IsNullOrEmpty(appName))
-                return ActionResult.Fail("ERR_INVALID_SOURCE", "Impossible d'extraire le nom de l'application");
+                return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
 
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
 
@@ -113,11 +123,11 @@ public sealed class IFEOActionStrategy : IActionStrategy
                 // Read from disabled location
                 using var disabledKey = Registry.LocalMachine.OpenSubKey($@"{DisabledIFEOPath}\{appName}", false);
                 if (disabledKey == null)
-                    return ActionResult.Fail("ERR_BACKUP_NOT_FOUND", "Backup non trouvé");
+                    return ActionResult.Fail("Backup not found", "ERR_BACKUP_NOT_FOUND");
 
                 var debuggerValue = disabledKey.GetValue("Debugger") as string;
                 if (string.IsNullOrEmpty(debuggerValue))
-                    return ActionResult.Fail("ERR_VALUE_NOT_FOUND", "Valeur Debugger non trouvée dans le backup");
+                    return ActionResult.Fail("Debugger value not found in backup", "ERR_VALUE_NOT_FOUND");
 
                 // Restore to source
                 using var sourceKey = Registry.LocalMachine.CreateSubKey($@"{IFEOPath}\{appName}");
@@ -140,22 +150,27 @@ public sealed class IFEOActionStrategy : IActionStrategy
         }
         catch (UnauthorizedAccessException)
         {
-            return ActionResult.Fail("ERR_ACCESS_DENIED", "Droits administrateur requis");
+            return ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error enabling IFEO entry {Id}", entry.Id);
-            return ActionResult.Fail("ERR_ENABLE_FAILED", ex.Message);
+            return ActionResult.Fail(ex.Message, "ERR_ENABLE_FAILED");
         }
     }
 
     public async Task<ActionResult> DeleteAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
+        if (entry.Type != EntryType.IFEO)
+        {
+            return ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE");
+        }
+
         try
         {
             var appName = ExtractAppName(entry.SourcePath);
             if (string.IsNullOrEmpty(appName))
-                return ActionResult.Fail("ERR_INVALID_SOURCE", "Impossible d'extraire le nom de l'application");
+                return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
 
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
 
@@ -187,12 +202,12 @@ public sealed class IFEOActionStrategy : IActionStrategy
         }
         catch (UnauthorizedAccessException)
         {
-            return ActionResult.Fail("ERR_ACCESS_DENIED", "Droits administrateur requis");
+            return ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting IFEO entry {Id}", entry.Id);
-            return ActionResult.Fail("ERR_DELETE_FAILED", ex.Message);
+            return ActionResult.Fail(ex.Message, "ERR_DELETE_FAILED");
         }
     }
 

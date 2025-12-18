@@ -27,7 +27,7 @@ public sealed class DriverProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.Driver;
-    public string DisplayName => "Pilotes (Drivers)";
+    public string DisplayName => "Drivers";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true;
 
@@ -81,6 +81,7 @@ public sealed class DriverProvider : IStartupProvider
             _logger.LogError(ex, "Error scanning drivers");
         }
 
+        _logger.LogInformation("Found {Count} driver entries", entries.Count);
         return entries;
     }
 

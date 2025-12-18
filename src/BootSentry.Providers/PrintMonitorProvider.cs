@@ -144,7 +144,10 @@ public sealed class PrintMonitorProvider : IStartupProvider
                     entry.ProtectionReason = "Composant système Microsoft";
                 }
             }
-            catch { }
+            catch
+            {
+                // File info retrieval can fail for locked/inaccessible files
+            }
         }
 
         // Non-Microsoft print monitors are potentially suspicious

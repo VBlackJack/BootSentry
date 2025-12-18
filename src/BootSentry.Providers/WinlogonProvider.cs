@@ -40,7 +40,7 @@ public sealed class WinlogonProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.Winlogon;
-    public string DisplayName => "Winlogon (sensible)";
+    public string DisplayName => "Winlogon";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true;
 
@@ -59,6 +59,7 @@ public sealed class WinlogonProvider : IStartupProvider
             ScanWinlogonKey(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
         }, cancellationToken);
 
+        _logger.LogInformation("Found {Count} Winlogon entries", entries.Count);
         return entries;
     }
 

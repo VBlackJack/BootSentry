@@ -37,7 +37,7 @@ public sealed class ServiceProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.Service;
-    public string DisplayName => "Services Windows";
+    public string DisplayName => "Windows Services";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true;
 
@@ -84,6 +84,7 @@ public sealed class ServiceProvider : IStartupProvider
             }
         }, cancellationToken);
 
+        _logger.LogInformation("Found {Count} service entries", entries.Count);
         return entries;
     }
 

@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>BootSentry.Backup</RootNamespace>
     <AssemblyName>BootSentry.Backup</AssemblyName>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

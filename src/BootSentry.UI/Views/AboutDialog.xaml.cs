@@ -50,7 +50,10 @@ public partial class AboutDialog : Window
                 UseShellExecute = true
             });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to open GitHub URL: {ex.Message}");
+        }
     }
 
     private void LicenseButton_Click(object sender, RoutedEventArgs e)
@@ -62,7 +65,10 @@ public partial class AboutDialog : Window
                 UseShellExecute = true
             });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to open License URL: {ex.Message}");
+        }
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)

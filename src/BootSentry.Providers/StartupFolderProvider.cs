@@ -25,7 +25,7 @@ public sealed class StartupFolderProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.StartupFolder;
-    public string DisplayName => "Dossiers de démarrage";
+    public string DisplayName => "Startup Folders";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => false; // User folder, true for common folder
 
@@ -51,6 +51,7 @@ public sealed class StartupFolderProvider : IStartupProvider
             entries.AddRange(commonEntries);
         }
 
+        _logger.LogInformation("Found {Count} startup folder entries", entries.Count);
         return entries;
     }
 

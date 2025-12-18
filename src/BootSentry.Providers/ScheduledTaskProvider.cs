@@ -24,7 +24,7 @@ public sealed class ScheduledTaskProvider : IStartupProvider
     }
 
     public EntryType EntryType => EntryType.ScheduledTask;
-    public string DisplayName => "Tâches planifiées";
+    public string DisplayName => "Scheduled Tasks";
     public bool RequiresAdminToRead => false;
     public bool RequiresAdminToModify => true;
 
@@ -58,6 +58,7 @@ public sealed class ScheduledTaskProvider : IStartupProvider
             }
         }, cancellationToken);
 
+        _logger.LogInformation("Found {Count} scheduled task entries", entries.Count);
         return entries;
     }
 

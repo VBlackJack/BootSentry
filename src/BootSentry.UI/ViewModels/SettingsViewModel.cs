@@ -43,7 +43,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public ObservableCollection<LanguageItem> Languages { get; } =
     [
-        new LanguageItem("fr", "Francais"),
+        new LanguageItem("fr", "Français"),
         new LanguageItem("en", "English")
     ];
 
