@@ -98,6 +98,8 @@
                           AutomationProperties.Name="Copier le chemin"/>
                 <MenuItem Header="Calculer le _hash" Command="{Binding CalculateHashCommand}"
                           AutomationProperties.Name="Calculer le hash SHA-256"/>
+                <MenuItem Header="_Scanner avec l'antivirus" Command="{Binding ScanSelectedCommand}"
+                          AutomationProperties.Name="Scanner le fichier avec l'antivirus"/>
                 <MenuItem Header="Rechercher sur le _Web" Command="{Binding WebSearchCommand}"
                           AutomationProperties.Name="Rechercher sur le web"/>
                 <Separator/>
@@ -440,6 +442,7 @@
                             <MenuItem Header="Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"/>
                             <MenuItem Header="Copier le chemin" Command="{Binding CopyPathCommand}"/>
                             <MenuItem Header="Calculer le hash" Command="{Binding CalculateHashCommand}"/>
+                            <MenuItem Header="Scanner avec l'antivirus" Command="{Binding ScanSelectedCommand}"/>
                             <MenuItem Header="Rechercher sur le Web" Command="{Binding WebSearchCommand}"/>
                             <Separator/>
                             <MenuItem Header="Ouvrir dans Regedit" Command="{Binding OpenInRegeditCommand}"/>
@@ -557,6 +560,7 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition/>
+                                    <RowDefinition/>
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Text="Type:" FontWeight="SemiBold" Margin="0,4"/>
@@ -581,6 +585,62 @@
 
                                 <TextBlock Grid.Row="6" Text="Statut:" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEntry.Status}" Margin="0,4"/>
+
+                                <TextBlock Grid.Row="7" Text="Scan AV:" FontWeight="SemiBold" Margin="0,4"
+                                           Visibility="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource NotNullToVisibility}}"/>
+                                <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,4"
+                                            Visibility="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource NotNullToVisibility}}">
+                                    <Border CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#6B7280"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Clean">
+                                                        <Setter Property="Background" Value="#10B981"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Malware">
+                                                        <Setter Property="Background" Value="#EF4444"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Blocked">
+                                                        <Setter Property="Background" Value="#F59E0B"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NotScanned">
+                                                        <Setter Property="Background" Value="#6B7280"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Error">
+                                                        <Setter Property="Background" Value="#6B7280"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Foreground="White" FontSize="11">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Inconnu"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Clean">
+                                                            <Setter Property="Text" Value="Fichier sain"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Malware">
+                                                            <Setter Property="Text" Value="Menace détectée!"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Blocked">
+                                                            <Setter Property="Text" Value="Bloqué"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NotScanned">
+                                                            <Setter Property="Text" Value="Non scanné"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Error">
+                                                            <Setter Property="Text" Value="Erreur"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                    <TextBlock Text="{Binding SelectedEntry.LastMalwareScan, StringFormat=' ({0:g})'}"
+                                               FontSize="10" Foreground="Gray" VerticalAlignment="Center"/>
+                                </StackPanel>
                             </Grid>
 
                             <Separator Margin="0,12"/>
@@ -791,6 +851,15 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="Hash" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding ScanSelectedCommand}"
+                                        Style="{StaticResource ToolbarButton}" Background="#059669" Margin="4"
+                                        ToolTip="Scanner le fichier avec l'antivirus (AMSI)"
+                                        AutomationProperties.Name="Scanner avec l'antivirus">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Scan AV" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </WrapPanel>

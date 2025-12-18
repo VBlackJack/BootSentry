@@ -1,4 +1,5 @@
 using BootSentry.Core.Interfaces;
+using BootSentry.Security.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BootSentry.Security;
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<ISignatureVerifier, SignatureVerifier>();
         services.AddSingleton<IHashCalculator, HashCalculator>();
+        services.AddSingleton<IMalwareScanner, AmsiMalwareScanner>();
         return services;
     }
 }

@@ -194,6 +194,20 @@ public static class Strings
             ["DetailCalculateHash"] = "Calculer",
             ["DetailRiskAnalysis"] = "Analyse de risque",
 
+            // Malware Scan
+            ["ActionScanAntivirus"] = "Scanner avec l'antivirus",
+            ["ScanResult"] = "Résultat du scan",
+            ["ScanResultClean"] = "Fichier sain",
+            ["ScanResultMalware"] = "Menace détectée!",
+            ["ScanResultBlocked"] = "Bloqué",
+            ["ScanResultNotScanned"] = "Non scanné",
+            ["ScanResultError"] = "Erreur",
+            ["ScanInProgress"] = "Scan antivirus en cours...",
+            ["ScanComplete"] = "Scan terminé",
+            ["ScanNotAvailable"] = "Le scanner antivirus n'est pas disponible",
+            ["MalwareDetectedTitle"] = "Menace détectée",
+            ["MalwareDetectedMessage"] = "Le fichier a été identifié comme malveillant. Il est recommandé de le désactiver ou supprimer.",
+
             // Misc
             ["Yes"] = "Oui",
             ["No"] = "Non",
@@ -396,6 +410,20 @@ public static class Strings
             ["DetailHash"] = "SHA-256 Hash",
             ["DetailCalculateHash"] = "Calculate",
             ["DetailRiskAnalysis"] = "Risk Analysis",
+
+            // Malware Scan
+            ["ActionScanAntivirus"] = "Scan with antivirus",
+            ["ScanResult"] = "Scan Result",
+            ["ScanResultClean"] = "File is clean",
+            ["ScanResultMalware"] = "Threat detected!",
+            ["ScanResultBlocked"] = "Blocked",
+            ["ScanResultNotScanned"] = "Not scanned",
+            ["ScanResultError"] = "Error",
+            ["ScanInProgress"] = "Antivirus scan in progress...",
+            ["ScanComplete"] = "Scan complete",
+            ["ScanNotAvailable"] = "Antivirus scanner is not available",
+            ["MalwareDetectedTitle"] = "Threat Detected",
+            ["MalwareDetectedMessage"] = "The file has been identified as malicious. It is recommended to disable or remove it.",
 
             // Misc
             ["Yes"] = "Yes",

@@ -17,6 +17,7 @@ using BootSentry.Core.Services;
 using BootSentry.Knowledge.Models;
 using BootSentry.Knowledge.Services;
 using BootSentry.Security;
+using BootSentry.Security.Services;
 
 namespace BootSentry.UI.ViewModels;
 
@@ -33,6 +34,7 @@ public partial class MainViewModel : ObservableObject
     private readonly ExportService _exportService;
     private readonly RiskAnalyzer _riskAnalyzer;
     private readonly KnowledgeService _knowledgeService;
+    private readonly IMalwareScanner? _malwareScanner;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -116,13 +118,15 @@ public partial class MainViewModel : ObservableObject
         IEnumerable<IStartupProvider> providers,
         ActionExecutor actionExecutor,
         ITransactionManager transactionManager,
-        KnowledgeService knowledgeService)
+        KnowledgeService knowledgeService,
+        IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
         _providers = providers;
         _actionExecutor = actionExecutor;
         _transactionManager = transactionManager;
         _knowledgeService = knowledgeService;
+        _malwareScanner = malwareScanner;
         _exportService = new ExportService();
         _riskAnalyzer = new RiskAnalyzer();
 
@@ -931,6 +935,86 @@ public partial class MainViewModel : ObservableObject
             StatusMessage = $"Erreur lors du calcul du hash: {ex.Message}";
             MessageBox.Show(
                 $"Erreur lors du calcul du hash:\n{ex.Message}",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ScanSelectedAsync()
+    {
+        if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
+        {
+            MessageBox.Show(
+                "Impossible de scanner: fichier introuvable.",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (_malwareScanner == null)
+        {
+            MessageBox.Show(
+                "Le scanner antivirus n'est pas disponible.",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            StatusMessage = "Scan antivirus en cours...";
+            _logger.LogInformation("Scanning file: {Path}", SelectedEntry.TargetPath);
+
+            var result = await _malwareScanner.ScanAsync(SelectedEntry.TargetPath);
+
+            SelectedEntry.MalwareScanResult = result;
+            SelectedEntry.LastMalwareScan = DateTime.Now;
+            OnPropertyChanged(nameof(SelectedEntry));
+
+            switch (result)
+            {
+                case ScanResult.Clean:
+                    StatusMessage = "Scan terminé: fichier sain";
+                    break;
+
+                case ScanResult.Malware:
+                    StatusMessage = "ALERTE: Menace détectée!";
+                    SelectedEntry.RiskLevel = RiskLevel.Critical;
+                    _entriesView.Refresh();
+                    UpdateCounts();
+
+                    MessageBox.Show(
+                        $"MENACE DÉTECTÉE!\n\nLe fichier suivant a été identifié comme malveillant:\n{SelectedEntry.TargetPath}\n\nIl est fortement recommandé de désactiver ou supprimer cette entrée.",
+                        "Menace détectée",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    break;
+
+                case ScanResult.Blocked:
+                    StatusMessage = "Scan terminé: fichier bloqué par la politique de sécurité";
+                    break;
+
+                case ScanResult.NotScanned:
+                    StatusMessage = "Fichier non scanné (trop volumineux ou inaccessible)";
+                    break;
+
+                case ScanResult.Error:
+                    StatusMessage = "Erreur lors du scan antivirus";
+                    break;
+            }
+
+            _logger.LogInformation("Scan result for {Path}: {Result}", SelectedEntry.TargetPath, result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during malware scan");
+            StatusMessage = $"Erreur lors du scan: {ex.Message}";
+            MessageBox.Show(
+                $"Erreur lors du scan antivirus:\n{ex.Message}",
                 "Erreur",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);

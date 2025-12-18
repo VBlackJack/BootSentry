@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using BootSentry.Core.Enums;
 
 namespace BootSentry.Core.Models;
@@ -6,8 +8,15 @@ namespace BootSentry.Core.Models;
 /// Represents a single startup entry from any source.
 /// This is the normalized model used throughout the application.
 /// </summary>
-public class StartupEntry
+public class StartupEntry : INotifyPropertyChanged
 {
+    /// <inheritdoc />
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
     /// <summary>
     /// Unique, stable, deterministic identifier for this entry.
     /// Format: {Type}:{Scope}:{SourcePath}:{Name}
@@ -165,6 +174,42 @@ public class StartupEntry
     /// Reason why this entry is protected.
     /// </summary>
     public string? ProtectionReason { get; set; }
+
+    private ScanResult? _malwareScanResult;
+
+    /// <summary>
+    /// Result of the last malware scan for the target file.
+    /// </summary>
+    public ScanResult? MalwareScanResult
+    {
+        get => _malwareScanResult;
+        set
+        {
+            if (_malwareScanResult != value)
+            {
+                _malwareScanResult = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private DateTime? _lastMalwareScan;
+
+    /// <summary>
+    /// Date and time of the last malware scan.
+    /// </summary>
+    public DateTime? LastMalwareScan
+    {
+        get => _lastMalwareScan;
+        set
+        {
+            if (_lastMalwareScan != value)
+            {
+                _lastMalwareScan = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     /// <summary>
     /// Category grouping based on entry type.
