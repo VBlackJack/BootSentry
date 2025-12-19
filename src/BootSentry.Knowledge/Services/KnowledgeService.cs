@@ -59,6 +59,7 @@ public class KnowledgeService : IDisposable
 
     /// <summary>
     /// Search for a knowledge entry by name, executable, or publisher.
+    /// Uses multiple matching strategies for better coverage.
     /// </summary>
     public KnowledgeEntry? FindEntry(string? name, string? executable, string? publisher)
     {
@@ -67,39 +68,70 @@ public class KnowledgeService : IDisposable
 
         using var cmd = _connection.CreateCommand();
 
-        // Try exact name match first
+        // 1. Try executable match FIRST (most reliable)
+        if (!string.IsNullOrWhiteSpace(executable))
+        {
+            var exeName = Path.GetFileName(executable).ToLowerInvariant();
+            if (!string.IsNullOrWhiteSpace(exeName) && exeName.Length > 4)
+            {
+                cmd.CommandText = @"
+                    SELECT * FROM KnowledgeEntries
+                    WHERE ExecutableNames LIKE @exePattern COLLATE NOCASE
+                    LIMIT 1";
+                cmd.Parameters.AddWithValue("@exePattern", $"%{exeName}%");
+
+                var entry = ReadEntry(cmd);
+                if (entry != null) return entry;
+                cmd.Parameters.Clear();
+            }
+        }
+
+        // 2. Try exact name match
         if (!string.IsNullOrWhiteSpace(name))
         {
             cmd.CommandText = @"
                 SELECT * FROM KnowledgeEntries
                 WHERE Name = @name COLLATE NOCASE
-                   OR Aliases LIKE @namePattern COLLATE NOCASE
                 LIMIT 1";
             cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@namePattern", $"%{name}%");
 
             var entry = ReadEntry(cmd);
             if (entry != null) return entry;
             cmd.Parameters.Clear();
-        }
 
-        // Try executable match
-        if (!string.IsNullOrWhiteSpace(executable))
-        {
-            var exeName = Path.GetFileName(executable).ToLowerInvariant();
+            // 3. Try alias match (name contained in aliases)
             cmd.CommandText = @"
                 SELECT * FROM KnowledgeEntries
-                WHERE ExecutableNames LIKE @exePattern COLLATE NOCASE
+                WHERE Aliases LIKE @namePattern COLLATE NOCASE
                 LIMIT 1";
-            cmd.Parameters.AddWithValue("@exePattern", $"%{exeName}%");
+            cmd.Parameters.AddWithValue("@namePattern", $"%{name}%");
 
-            var entry = ReadEntry(cmd);
+            entry = ReadEntry(cmd);
             if (entry != null) return entry;
             cmd.Parameters.Clear();
+
+            // 4. Try partial name match (for names with GUIDs like "BraveSoftwareUpdate{GUID}")
+            // Extract base name before special characters
+            var baseName = ExtractBaseName(name);
+            if (!string.IsNullOrWhiteSpace(baseName) && baseName.Length >= 4 && baseName != name)
+            {
+                cmd.CommandText = @"
+                    SELECT * FROM KnowledgeEntries
+                    WHERE Name LIKE @basePattern COLLATE NOCASE
+                       OR Aliases LIKE @basePattern COLLATE NOCASE
+                    LIMIT 1";
+                cmd.Parameters.AddWithValue("@basePattern", $"%{baseName}%");
+
+                entry = ReadEntry(cmd);
+                if (entry != null) return entry;
+                cmd.Parameters.Clear();
+            }
         }
 
-        // Try publisher match
-        if (!string.IsNullOrWhiteSpace(publisher))
+        // 5. Try publisher match (least reliable, skip generic publishers)
+        if (!string.IsNullOrWhiteSpace(publisher) &&
+            !publisher.Equals("N/A", StringComparison.OrdinalIgnoreCase) &&
+            !publisher.Contains("Microsoft Windows", StringComparison.OrdinalIgnoreCase))
         {
             cmd.CommandText = @"
                 SELECT * FROM KnowledgeEntries
@@ -111,6 +143,40 @@ public class KnowledgeService : IDisposable
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Extracts base name from display names that contain GUIDs or version numbers.
+    /// e.g., "BraveSoftwareUpdate{GUID}" -> "BraveSoftwareUpdate"
+    /// e.g., "GoogleUpdaterTask144.0.7547.0{GUID}" -> "GoogleUpdater"
+    /// </summary>
+    private static string ExtractBaseName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return name;
+
+        // Remove GUID patterns {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
+        var result = System.Text.RegularExpressions.Regex.Replace(name, @"\{[a-fA-F0-9\-]+\}", "");
+
+        // Remove version numbers like 144.0.7547.0
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"\d+\.\d+\.\d+\.\d+", "");
+
+        // Remove trailing special characters and "Task", "Machine", "Core", "System"
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"(Task|Machine|Core|System|Logon|Service)+\s*$", "",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        // Remove "electron.app." prefix
+        if (result.StartsWith("electron.app.", StringComparison.OrdinalIgnoreCase))
+            result = result.Substring(13);
+
+        // Remove "com.todesktop." prefix
+        if (result.StartsWith("com.todesktop.", StringComparison.OrdinalIgnoreCase))
+            result = result.Substring(14);
+
+        // Clean up
+        result = result.Trim(' ', '.', '-', '_');
+
+        return result;
     }
 
     /// <summary>
