@@ -119,7 +119,6 @@ public partial class App : Application
         services.AddSingleton<ThemeService>();
 
         // Core services
-        services.AddSingleton<ExportService>();
         services.AddSingleton<RiskAnalyzer>();
 
         // Knowledge base
@@ -128,6 +127,13 @@ public partial class App : Application
             var service = new KnowledgeService();
             service.SeedIfEmpty();
             return service;
+        });
+
+        // ExportService (needs KnowledgeService for knowledge matching)
+        services.AddSingleton<ExportService>(sp =>
+        {
+            var knowledgeService = sp.GetRequiredService<KnowledgeService>();
+            return new ExportService((name, exe, pub) => knowledgeService.FindEntry(name, exe, pub));
         });
 
         // ViewModels

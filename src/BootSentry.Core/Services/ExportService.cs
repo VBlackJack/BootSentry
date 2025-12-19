@@ -7,16 +7,32 @@ using BootSentry.Core.Models;
 namespace BootSentry.Core.Services;
 
 /// <summary>
+/// Delegate for finding knowledge entries (to avoid circular dependency with Knowledge project).
+/// </summary>
+public delegate object? KnowledgeFinder(string? name, string? executable, string? publisher);
+
+/// <summary>
 /// Service for exporting startup entries to various formats.
 /// </summary>
 public class ExportService
 {
+    private readonly KnowledgeFinder? _knowledgeFinder;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    public ExportService()
+    {
+    }
+
+    public ExportService(KnowledgeFinder knowledgeFinder)
+    {
+        _knowledgeFinder = knowledgeFinder;
+    }
 
     /// <summary>
     /// Exports entries to JSON format.
@@ -51,6 +67,11 @@ public class ExportService
             "SignatureStatus", "RiskLevel", "TargetPath"
         };
 
+        if (options.IncludeKnowledgeInfo)
+        {
+            headers.AddRange(new[] { "HasDescription", "KnowledgeMatch", "KnowledgeDescription" });
+        }
+
         if (options.IncludeDetails)
         {
             headers.AddRange(new[] { "CommandLine", "Arguments", "FileVersion", "FileSize", "LastModified" });
@@ -73,6 +94,17 @@ public class ExportService
                 (options.Anonymize ? AnonymizePath(entry.TargetPath) : entry.TargetPath) ?? ""
             };
 
+            if (options.IncludeKnowledgeInfo)
+            {
+                var (hasDescription, matchName, description) = GetKnowledgeInfo(entry);
+                values.AddRange(new[]
+                {
+                    hasDescription ? "Yes" : "No",
+                    matchName,
+                    description
+                });
+            }
+
             if (options.IncludeDetails)
             {
                 values.AddRange(new[]
@@ -89,6 +121,23 @@ public class ExportService
         }
 
         return sb.ToString();
+    }
+
+    private (bool hasDescription, string matchName, string description) GetKnowledgeInfo(StartupEntry entry)
+    {
+        if (_knowledgeFinder == null)
+            return (false, "", "");
+
+        var knowledge = _knowledgeFinder(entry.DisplayName, entry.TargetPath, entry.Publisher);
+        if (knowledge == null)
+            return (false, "", "");
+
+        // Use reflection to get properties since we can't reference KnowledgeEntry directly
+        var type = knowledge.GetType();
+        var name = type.GetProperty("Name")?.GetValue(knowledge)?.ToString() ?? "";
+        var description = type.GetProperty("ShortDescription")?.GetValue(knowledge)?.ToString() ?? "";
+
+        return (true, name, description);
     }
 
     /// <summary>
@@ -138,6 +187,14 @@ public class ExportService
             basic["TargetPath"] = entry.TargetPath;
             basic["SourcePath"] = entry.SourcePath;
             basic["CommandLine"] = entry.CommandLineRaw;
+        }
+
+        if (options.IncludeKnowledgeInfo)
+        {
+            var (hasDescription, matchName, description) = GetKnowledgeInfo(entry);
+            basic["HasKnowledgeEntry"] = hasDescription;
+            basic["KnowledgeMatch"] = hasDescription ? matchName : null;
+            basic["KnowledgeDescription"] = hasDescription ? description : null;
         }
 
         if (options.IncludeDetails)
@@ -369,4 +426,9 @@ public class ExportOptions
     /// Whether to include file hashes.
     /// </summary>
     public bool IncludeHashes { get; set; }
+
+    /// <summary>
+    /// Whether to include knowledge base match information.
+    /// </summary>
+    public bool IncludeKnowledgeInfo { get; set; }
 }

@@ -1137,7 +1137,7 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 StatusMessage = "Exportation...";
-                var options = new ExportOptions { IncludeDetails = true };
+                var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
                 await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Json, options);
                 StatusMessage = $"Export terminé: {dialog.FileName}";
             }
@@ -1164,7 +1164,7 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 StatusMessage = "Exportation...";
-                var options = new ExportOptions { IncludeDetails = true };
+                var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
                 await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Csv, options);
                 StatusMessage = $"Export terminé: {dialog.FileName}";
             }
