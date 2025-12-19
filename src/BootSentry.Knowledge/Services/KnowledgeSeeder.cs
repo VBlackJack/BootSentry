@@ -18,6 +18,9 @@ internal class KnowledgeSeeder
     {
         SeedWindowsSystem();
         SeedWindowsSecurity();
+        SeedWindowsServices();
+        SeedScheduledTasks();
+        SeedWindowsRunEntries();
         SeedHardware();
         SeedPeripherals();
         SeedPrintersAndScanners();
@@ -3623,6 +3626,849 @@ internal class KnowledgeSeeder
             PerformanceImpact = "Modéré à élevé (~80-150 Mo RAM).",
             Recommendation = "Gardez si vous utilisez les fonctionnalités RGB ou gaming. Peut être désactivé sur les PC non-gaming.",
             Tags = "asus,rog,armoury,rgb,gaming,aura",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    private void SeedWindowsServices()
+    {
+        // Core Windows Services
+        Save(new KnowledgeEntry
+        {
+            Name = "Print Spooler",
+            Aliases = "Spooler,spoolsv",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "spoolsv.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Gère les travaux d'impression et les files d'attente.",
+            FullDescription = "Le service Spouleur d'impression gère toutes les imprimantes locales et réseau, met en file d'attente les travaux d'impression et communique avec les pilotes d'imprimante. Essentiel si vous utilisez une imprimante.",
+            DisableImpact = "Aucune impression possible. Les imprimantes ne seront pas détectées.",
+            PerformanceImpact = "Faible (~5-15 Mo RAM). Impact minimal sauf lors d'impressions actives.",
+            Recommendation = "Gardez activé si vous avez une imprimante. Peut être désactivé sur les PC sans imprimante.",
+            Tags = "impression,printer,spooler,windows,service",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Background Intelligent Transfer Service",
+            Aliases = "BITS",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Service de transfert de fichiers en arrière-plan pour Windows Update.",
+            FullDescription = "BITS transfère des fichiers en arrière-plan en utilisant la bande passante inutilisée. Il est utilisé par Windows Update, Microsoft Store et d'autres services Microsoft pour télécharger les mises à jour sans impacter votre connexion.",
+            DisableImpact = "Windows Update ne fonctionnera plus. Le Microsoft Store ne pourra pas télécharger d'applications.",
+            PerformanceImpact = "Variable selon les téléchargements. Conçu pour être non-intrusif.",
+            Recommendation = "Ne jamais désactiver. Essentiel pour les mises à jour Windows.",
+            Tags = "bits,update,windows,transfert,telechargement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Audio",
+            Aliases = "AudioSrv,AudioEndpointBuilder",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Gère le son sur Windows.",
+            FullDescription = "Windows Audio gère le son pour les programmes Windows. AudioEndpointBuilder détecte les périphériques audio et permet la commutation dynamique.",
+            DisableImpact = "Aucun son sur le système. Ni haut-parleurs, ni casque ne fonctionneront.",
+            PerformanceImpact = "Très faible (~5-10 Mo RAM).",
+            Recommendation = "Ne jamais désactiver sauf sur des serveurs sans audio.",
+            Tags = "audio,son,windows,service,haut-parleur",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Themes",
+            Aliases = "Themes Service",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Gère les thèmes visuels Windows.",
+            FullDescription = "Le service Thèmes fournit la gestion des thèmes de l'expérience utilisateur. Il permet les effets visuels, les couleurs d'accentuation et les thèmes personnalisés.",
+            DisableImpact = "L'interface revient au thème Windows classique. Perte des effets visuels et transparences.",
+            PerformanceImpact = "Faible (~10-20 Mo RAM).",
+            Recommendation = "Gardez activé pour une interface moderne. Peut être désactivé pour économiser des ressources.",
+            Tags = "themes,visuel,interface,windows,apparence",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Event Log",
+            Aliases = "EventLog",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Enregistre les événements système et application.",
+            FullDescription = "Le service Journal des événements Windows gère les événements et journaux d'événements. Il permet le diagnostic des problèmes, la surveillance de sécurité et l'audit du système.",
+            DisableImpact = "Impossible de diagnostiquer les problèmes. Journaux de sécurité non enregistrés. Certaines applications peuvent échouer.",
+            PerformanceImpact = "Faible (~10-20 Mo RAM). Écriture disque périodique.",
+            Recommendation = "Ne jamais désactiver. Essentiel pour le dépannage et la sécurité.",
+            Tags = "eventlog,journal,evenements,diagnostic,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "SysMain",
+            Aliases = "Superfetch,SysMain",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Optimise les performances en préchargeant les applications fréquentes.",
+            FullDescription = "SysMain (anciennement Superfetch) analyse vos habitudes d'utilisation et précharge les applications fréquemment utilisées en RAM pour un démarrage plus rapide.",
+            DisableImpact = "Les applications mettront plus de temps à démarrer au premier lancement.",
+            PerformanceImpact = "Modéré (~50-200 Mo RAM utilisée pour le cache). Peut causer de l'activité disque sur les HDD.",
+            Recommendation = "Gardez activé sur les PC avec SSD. Peut être désactivé sur les PC avec HDD si cela cause des ralentissements.",
+            Tags = "sysmain,superfetch,performance,cache,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Time",
+            Aliases = "W32Time",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Synchronise l'horloge système avec les serveurs de temps.",
+            FullDescription = "Le service Temps Windows maintient la synchronisation de la date et l'heure sur tous les clients et serveurs du réseau. Utilise NTP pour la synchronisation.",
+            DisableImpact = "L'heure du système peut dériver. Problèmes de certificats SSL et authentification possibles.",
+            PerformanceImpact = "Négligeable. Synchronisation périodique uniquement.",
+            Recommendation = "Gardez activé pour une heure précise. Essentiel pour les environnements d'entreprise.",
+            Tags = "time,heure,ntp,synchronisation,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DNS Client",
+            Aliases = "Dnscache",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Met en cache les requêtes DNS pour améliorer les performances réseau.",
+            FullDescription = "Le service Client DNS résout et met en cache les noms de domaine DNS. Il accélère l'accès aux sites web en évitant de refaire les requêtes DNS.",
+            DisableImpact = "Chaque requête DNS sera effectuée sans cache. Navigation web plus lente.",
+            PerformanceImpact = "Faible (~5-10 Mo RAM pour le cache).",
+            Recommendation = "Ne jamais désactiver. Essentiel pour le réseau.",
+            Tags = "dns,reseau,cache,internet,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DHCP Client",
+            Aliases = "Dhcp",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Obtient automatiquement l'adresse IP du réseau.",
+            FullDescription = "Le service Client DHCP enregistre et met à jour les adresses IP et les enregistrements DNS. Sans lui, vous devez configurer manuellement l'adresse IP.",
+            DisableImpact = "Pas de connexion réseau automatique. Configuration IP manuelle requise.",
+            PerformanceImpact = "Négligeable.",
+            Recommendation = "Ne jamais désactiver sauf si vous utilisez des IP statiques.",
+            Tags = "dhcp,reseau,ip,adresse,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Cryptographic Services",
+            Aliases = "CryptSvc",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSecurity,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Fournit les services de cryptographie Windows.",
+            FullDescription = "Les services de chiffrement fournissent la gestion des clés, la signature de code et la vérification des certificats. Utilisé par Windows Update et les applications sécurisées.",
+            DisableImpact = "Windows Update échouera. Problèmes avec les sites HTTPS et les applications signées.",
+            PerformanceImpact = "Faible (~10-20 Mo RAM).",
+            Recommendation = "Ne jamais désactiver. Essentiel pour la sécurité.",
+            Tags = "crypto,certificats,securite,windows,chiffrement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Font Cache Service",
+            Aliases = "FontCache",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Optimise les performances des polices.",
+            FullDescription = "Le service Cache de polices Windows optimise les performances des applications en mettant en cache les données de polices courantes.",
+            DisableImpact = "Les applications peuvent démarrer plus lentement. Rendu des polices moins performant.",
+            PerformanceImpact = "Faible (~10-30 Mo RAM).",
+            Recommendation = "Gardez activé pour de meilleures performances d'affichage.",
+            Tags = "fonts,polices,cache,windows,performance",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Task Scheduler",
+            Aliases = "Schedule",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Exécute les tâches planifiées.",
+            FullDescription = "Le Planificateur de tâches permet de programmer des tâches automatiques. Windows et de nombreuses applications l'utilisent pour la maintenance, les mises à jour et les sauvegardes.",
+            DisableImpact = "Aucune tâche planifiée ne s'exécutera. Maintenance Windows compromise. Beaucoup d'applications ne fonctionneront pas correctement.",
+            PerformanceImpact = "Faible (~10-20 Mo RAM).",
+            Recommendation = "Ne jamais désactiver. Composant essentiel de Windows.",
+            Tags = "scheduler,taches,planificateur,automatisation,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Management Instrumentation",
+            Aliases = "WMI,Winmgmt",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe,WmiPrvSE.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Interface de gestion système Windows.",
+            FullDescription = "WMI fournit une interface commune pour accéder aux informations de gestion du système. Utilisé par les outils de monitoring, les scripts et les applications de gestion.",
+            DisableImpact = "De nombreuses applications de gestion échoueront. Monitoring système impossible. Scripts PowerShell affectés.",
+            PerformanceImpact = "Modéré (~20-50 Mo RAM).",
+            Recommendation = "Ne jamais désactiver. Essentiel pour la gestion du système.",
+            Tags = "wmi,management,gestion,monitoring,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Remote Procedure Call",
+            Aliases = "RpcSs,RPC",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Service fondamental pour la communication entre processus.",
+            FullDescription = "RPC est le service de base qui permet la communication entre les processus Windows. Pratiquement tous les services Windows en dépendent.",
+            DisableImpact = "Windows ne fonctionnera pas. Le système sera instable ou ne démarrera pas.",
+            PerformanceImpact = "Faible (partie intégrante de Windows).",
+            Recommendation = "Ne jamais désactiver. Composant critique de Windows.",
+            Tags = "rpc,communication,processus,windows,systeme",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Installer",
+            Aliases = "msiserver",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "msiexec.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Gère l'installation et la désinstallation des programmes.",
+            FullDescription = "Windows Installer gère l'installation, la modification et la suppression des applications utilisant le format MSI. De nombreux programmes professionnels utilisent ce format.",
+            DisableImpact = "Impossible d'installer ou désinstaller les programmes MSI.",
+            PerformanceImpact = "Faible. S'exécute uniquement lors des installations.",
+            Recommendation = "Gardez activé. Peut être en démarrage manuel.",
+            Tags = "installer,msi,installation,programmes,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Update",
+            Aliases = "wuauserv,Windows Update Service",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Détecte, télécharge et installe les mises à jour Windows.",
+            FullDescription = "Le service Windows Update permet la détection, le téléchargement et l'installation des mises à jour pour Windows et les autres produits Microsoft.",
+            DisableImpact = "Aucune mise à jour de sécurité. Le système devient vulnérable aux failles de sécurité.",
+            PerformanceImpact = "Variable. Peut utiliser CPU et réseau lors des mises à jour.",
+            Recommendation = "Ne jamais désactiver. Les mises à jour de sécurité sont essentielles.",
+            Tags = "update,mises à jour,securite,windows,patches",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "User Profile Service",
+            Aliases = "ProfSvc",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Gère le chargement et déchargement des profils utilisateur.",
+            FullDescription = "Ce service est responsable du chargement et déchargement des profils utilisateur. Il gère les dossiers Documents, Bureau et les paramètres utilisateur.",
+            DisableImpact = "Impossible de se connecter à Windows. Les profils utilisateur ne se chargeront pas.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Ne jamais désactiver. Essentiel pour l'ouverture de session.",
+            Tags = "profil,utilisateur,session,windows,connexion",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Firewall",
+            Aliases = "mpssvc,Windows Defender Firewall",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSecurity,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Protège le PC contre les accès réseau non autorisés.",
+            FullDescription = "Le Pare-feu Windows Defender filtre le trafic réseau entrant et sortant selon des règles de sécurité. Protection de base contre les attaques réseau.",
+            DisableImpact = "Le PC sera vulnérable aux attaques réseau. Aucun filtrage du trafic.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Ne jamais désactiver sauf si un autre pare-feu est installé.",
+            Tags = "firewall,pare-feu,securite,reseau,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Defender",
+            Aliases = "WinDefend,Windows Defender Antivirus Service",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "MsMpEng.exe,NisSrv.exe",
+            Category = KnowledgeCategory.WindowsSecurity,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Protection antivirus intégrée à Windows.",
+            FullDescription = "Windows Defender fournit une protection en temps réel contre les virus, malwares, spywares et autres menaces. Intégré à Windows 10/11.",
+            DisableImpact = "Le PC sera vulnérable aux malwares. Protection en temps réel désactivée.",
+            PerformanceImpact = "Modéré (~100-200 Mo RAM). Peut utiliser du CPU lors des analyses.",
+            Recommendation = "Ne jamais désactiver sauf si un autre antivirus est installé.",
+            Tags = "defender,antivirus,securite,malware,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Network Location Awareness",
+            Aliases = "NlaSvc,NLA",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Détecte le type de réseau (public, privé, domaine).",
+            FullDescription = "Ce service collecte les informations sur le réseau et notifie les applications des changements. Il détermine si vous êtes sur un réseau public ou privé.",
+            DisableImpact = "Windows ne détectera pas le type de réseau. Les paramètres de pare-feu peuvent être incorrects.",
+            PerformanceImpact = "Négligeable.",
+            Recommendation = "Gardez activé pour une configuration réseau correcte.",
+            Tags = "reseau,nla,detection,firewall,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Server",
+            Aliases = "LanmanServer",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Permet le partage de fichiers et d'imprimantes.",
+            FullDescription = "Le service Serveur prend en charge le partage de fichiers, d'imprimantes et de canaux nommés sur le réseau. Essentiel pour le partage réseau.",
+            DisableImpact = "Impossible de partager des fichiers ou imprimantes. Les autres PC ne pourront pas accéder à vos partages.",
+            PerformanceImpact = "Faible sauf lors de transferts actifs.",
+            Recommendation = "Gardez activé si vous partagez des fichiers. Peut être désactivé sur les PC isolés.",
+            Tags = "serveur,partage,fichiers,reseau,smb",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Workstation",
+            Aliases = "LanmanWorkstation",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Permet la connexion aux partages réseau.",
+            FullDescription = "Le service Station de travail crée et maintient les connexions aux serveurs distants via le protocole SMB. Permet d'accéder aux partages réseau.",
+            DisableImpact = "Impossible d'accéder aux dossiers partagés sur le réseau.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez activé pour accéder aux ressources réseau.",
+            Tags = "workstation,reseau,partage,smb,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Plug and Play",
+            Aliases = "PlugPlay,PnP",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Détecte et configure automatiquement le matériel.",
+            FullDescription = "Plug and Play permet à Windows de reconnaître et configurer automatiquement les périphériques sans intervention manuelle. Essentiel pour l'USB.",
+            DisableImpact = "Les nouveaux périphériques ne seront pas détectés. L'USB pourrait ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Ne jamais désactiver. Composant essentiel de Windows.",
+            Tags = "pnp,plug and play,materiel,usb,windows",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    private void SeedScheduledTasks()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "GoogleUpdateTaskMachine",
+            Aliases = "Google Update,GoogleUpdateTaskMachineCore,GoogleUpdateTaskMachineUA",
+            Publisher = "Google LLC",
+            ExecutableNames = "GoogleUpdate.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Met à jour les produits Google (Chrome, Drive, Earth...).",
+            FullDescription = "Google Update vérifie et installe les mises à jour pour Chrome, Google Drive, Google Earth et autres produits Google. S'exécute périodiquement en arrière-plan.",
+            DisableImpact = "Les produits Google ne se mettront plus à jour automatiquement. Vulnérabilités de sécurité possibles.",
+            PerformanceImpact = "Très faible. S'exécute brièvement à intervalles.",
+            Recommendation = "Gardez activé pour les mises à jour de sécurité Chrome.",
+            Tags = "google,update,chrome,tache planifiee",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "MicrosoftEdgeUpdateTask",
+            Aliases = "Microsoft Edge Update,MicrosoftEdgeUpdateTaskMachineCore,MicrosoftEdgeUpdateTaskMachineUA",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "MicrosoftEdgeUpdate.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Met à jour Microsoft Edge.",
+            FullDescription = "Cette tâche vérifie et installe les mises à jour pour le navigateur Microsoft Edge. Importante pour la sécurité du navigateur.",
+            DisableImpact = "Edge ne se mettra plus à jour automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez activé si vous utilisez Edge.",
+            Tags = "edge,microsoft,update,navigateur,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "OneDrive Standalone Update Task",
+            Aliases = "OneDrive Per-Machine Standalone Update Task",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "OneDriveSetup.exe",
+            Category = KnowledgeCategory.CloudStorage,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Met à jour OneDrive.",
+            FullDescription = "Cette tâche maintient OneDrive à jour avec les dernières fonctionnalités et correctifs de sécurité.",
+            DisableImpact = "OneDrive ne se mettra plus à jour automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez activé si vous utilisez OneDrive.",
+            Tags = "onedrive,microsoft,cloud,update,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Office Automatic Updates",
+            Aliases = "Office Automatic Updates 2.0",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "OfficeC2RClient.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Met à jour Microsoft Office.",
+            FullDescription = "Cette tâche télécharge et installe les mises à jour pour Microsoft Office (Word, Excel, PowerPoint, Outlook...). Importante pour la sécurité et les nouvelles fonctionnalités.",
+            DisableImpact = "Office ne recevra plus de mises à jour automatiques. Vulnérabilités possibles.",
+            PerformanceImpact = "Modéré lors des mises à jour. Faible au repos.",
+            Recommendation = "Gardez activé pour la sécurité d'Office.",
+            Tags = "office,microsoft,update,word,excel,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "MpIdleTask",
+            Aliases = "Windows Defender Scheduled Scan",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "MpCmdRun.exe",
+            Category = KnowledgeCategory.WindowsSecurity,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Analyse antivirus planifiée de Windows Defender.",
+            FullDescription = "Cette tâche effectue des analyses antivirus pendant les périodes d'inactivité du système. Partie intégrante de la protection Windows Defender.",
+            DisableImpact = "Pas d'analyses automatiques. Dépendance à la protection en temps réel uniquement.",
+            PerformanceImpact = "Peut utiliser des ressources significatives pendant l'analyse. Conçu pour s'exécuter en période d'inactivité.",
+            Recommendation = "Gardez activé pour une protection complète.",
+            Tags = "defender,antivirus,scan,analyse,securite,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ScanForUpdates",
+            Aliases = "Windows Update ScanForUpdates",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "UsoClient.exe,svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Recherche les mises à jour Windows disponibles.",
+            FullDescription = "Cette tâche vérifie régulièrement si de nouvelles mises à jour Windows sont disponibles. Prépare les téléchargements et installations.",
+            DisableImpact = "Windows ne recherchera plus automatiquement les mises à jour.",
+            PerformanceImpact = "Faible. Utilise le réseau brièvement.",
+            Recommendation = "Gardez activé pour recevoir les mises à jour de sécurité.",
+            Tags = "update,windows,recherche,mises a jour,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Consolidator",
+            Aliases = "Microsoft Compatibility Appraiser",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "CompatTelRunner.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Collecte les données de télémétrie Windows.",
+            FullDescription = "Cette tâche collecte des informations sur la compatibilité du système pour les mises à jour Windows. Fait partie du programme d'amélioration de l'expérience Windows.",
+            DisableImpact = "Microsoft ne recevra plus de données de compatibilité. Aucun impact fonctionnel.",
+            PerformanceImpact = "Peut utiliser du CPU périodiquement. Parfois gourmand sur les anciens systèmes.",
+            Recommendation = "Peut être désactivé pour la confidentialité ou les performances.",
+            Tags = "telemetrie,compatibilite,microsoft,confidentialite,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Disk Cleanup",
+            Aliases = "SilentCleanup",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "cleanmgr.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Nettoie automatiquement les fichiers temporaires.",
+            FullDescription = "Cette tâche exécute le nettoyage de disque silencieux pour supprimer les fichiers temporaires, le cache et autres fichiers inutiles.",
+            DisableImpact = "Les fichiers temporaires s'accumuleront. Nettoyage manuel nécessaire.",
+            PerformanceImpact = "Faible. Libère de l'espace disque.",
+            Recommendation = "Gardez activé pour maintenir l'espace disque.",
+            Tags = "nettoyage,disque,temporaire,cache,maintenance",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "StartupAppTask",
+            Aliases = "Startup App Task",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Surveille l'impact des applications au démarrage.",
+            FullDescription = "Cette tâche analyse l'impact des applications de démarrage et fournit des recommandations dans le Gestionnaire des tâches.",
+            DisableImpact = "Pas de mesure d'impact au démarrage. Fonctionnalité informative uniquement.",
+            PerformanceImpact = "Négligeable.",
+            Recommendation = "Gardez activé pour les informations de démarrage.",
+            Tags = "demarrage,startup,performance,analyse,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "CCleaner Scheduled Task",
+            Aliases = "CCleaner,CCleanerSkipUAC",
+            Publisher = "Piriform",
+            ExecutableNames = "CCleaner64.exe,CCleaner.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Nettoyage automatique planifié par CCleaner.",
+            FullDescription = "Exécute CCleaner automatiquement pour nettoyer les fichiers temporaires, le cache des navigateurs et autres fichiers inutiles.",
+            DisableImpact = "Pas de nettoyage automatique. CCleaner devra être lancé manuellement.",
+            PerformanceImpact = "Modéré pendant le nettoyage.",
+            Recommendation = "Optionnel. Utile pour un nettoyage régulier automatique.",
+            Tags = "ccleaner,nettoyage,cache,piriform,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Adobe Acrobat Update Task",
+            Aliases = "AdobeAcrobatUpdateTask",
+            Publisher = "Adobe Inc.",
+            ExecutableNames = "armsvc.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Met à jour Adobe Acrobat et Reader.",
+            FullDescription = "Cette tâche vérifie et installe les mises à jour pour Adobe Acrobat et Reader. Important car les PDF peuvent contenir des vulnérabilités.",
+            DisableImpact = "Acrobat/Reader ne se mettra plus à jour automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez activé pour les correctifs de sécurité PDF.",
+            Tags = "adobe,acrobat,reader,pdf,update,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "NvTmRepOnLogon",
+            Aliases = "NVIDIA Telemetry,NvTmRep,NvTmMon",
+            Publisher = "NVIDIA Corporation",
+            ExecutableNames = "nvtmrep.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Télémétrie NVIDIA.",
+            FullDescription = "Collecte des données d'utilisation pour NVIDIA. Aide NVIDIA à améliorer ses pilotes et logiciels.",
+            DisableImpact = "NVIDIA ne recevra plus de données d'utilisation. Aucun impact fonctionnel.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé pour la confidentialité.",
+            Tags = "nvidia,telemetrie,gpu,confidentialite,tache",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "CreateExplorerShellUnelevatedTask",
+            Aliases = "CreateExplorerShellUnelevatedTask",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "explorer.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Lance l'Explorateur Windows au démarrage.",
+            FullDescription = "Cette tâche s'assure que l'Explorateur Windows (le bureau et la barre des tâches) démarre correctement avec les droits utilisateur normaux.",
+            DisableImpact = "Peut causer des problèmes avec le bureau et l'Explorateur.",
+            PerformanceImpact = "Aucun (s'exécute une fois au démarrage).",
+            Recommendation = "Ne jamais désactiver.",
+            Tags = "explorateur,bureau,shell,windows,tache",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    private void SeedWindowsRunEntries()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "ctfmon",
+            Aliases = "CTF Loader,TextInputHost",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "ctfmon.exe,TextInputHost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Gère la saisie de texte et les langues.",
+            FullDescription = "CTF Loader (ctfmon.exe) active le processeur de texte alternatif et la barre de langue Microsoft Office. Gère les méthodes d'entrée et la reconnaissance d'écriture manuscrite.",
+            DisableImpact = "La barre de langue et certaines fonctionnalités de saisie de texte peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible (~5-10 Mo RAM).",
+            Recommendation = "Gardez activé si vous utilisez plusieurs langues ou la saisie spéciale.",
+            Tags = "ctfmon,langue,saisie,clavier,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "VMware User Process",
+            Aliases = "vmtoolsd,VMware Tools",
+            Publisher = "VMware, Inc.",
+            ExecutableNames = "vmtoolsd.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outils d'intégration pour les machines virtuelles VMware.",
+            FullDescription = "VMware Tools améliore les performances et la gestion des machines virtuelles. Permet le copier-coller entre hôte et VM, le redimensionnement de l'écran et la synchronisation de l'heure.",
+            DisableImpact = "Perte du copier-coller hôte/VM, performances graphiques réduites dans la VM.",
+            PerformanceImpact = "Faible (~20-40 Mo RAM).",
+            Recommendation = "Gardez activé si vous êtes dans une VM VMware.",
+            Tags = "vmware,virtualisation,tools,vm,machine virtuelle",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "VirtualBox Guest Additions",
+            Aliases = "VBoxTray,VirtualBox",
+            Publisher = "Oracle Corporation",
+            ExecutableNames = "VBoxTray.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outils d'intégration pour VirtualBox.",
+            FullDescription = "Les Guest Additions VirtualBox permettent les dossiers partagés, le copier-coller, le redimensionnement de l'écran et l'intégration du pointeur souris.",
+            DisableImpact = "Perte des fonctionnalités d'intégration VirtualBox.",
+            PerformanceImpact = "Faible (~15-30 Mo RAM).",
+            Recommendation = "Gardez activé si vous êtes dans une VM VirtualBox.",
+            Tags = "virtualbox,oracle,vm,guest additions,virtualisation",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "igfxtray",
+            Aliases = "Intel Graphics Tray,igfxTray",
+            Publisher = "Intel Corporation",
+            ExecutableNames = "igfxtray.exe,igfxEM.exe,igfxHK.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Icône de la barre des tâches pour les graphiques Intel.",
+            FullDescription = "Fournit un accès rapide aux paramètres des graphiques Intel intégrés depuis la barre des tâches. Permet de changer la résolution et les paramètres d'affichage.",
+            DisableImpact = "Pas d'icône Intel dans la barre des tâches. Les paramètres restent accessibles via le Panneau de configuration Intel.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas les raccourcis Intel.",
+            Tags = "intel,graphiques,gpu,tray,affichage",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Bluetooth Swift Pair",
+            Aliases = "BluetoothUserService,bthserv",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "svchost.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Facilite l'appairage rapide des périphériques Bluetooth.",
+            FullDescription = "Swift Pair affiche des notifications lorsqu'un nouveau périphérique Bluetooth est détecté à proximité, permettant un appairage en un clic.",
+            DisableImpact = "Pas de notifications d'appairage rapide. Appairage manuel toujours possible.",
+            PerformanceImpact = "Négligeable.",
+            Recommendation = "Gardez activé si vous utilisez régulièrement le Bluetooth.",
+            Tags = "bluetooth,swift pair,appairage,peripherique,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Terminal",
+            Aliases = "WindowsTerminal,wt",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "WindowsTerminal.exe,wt.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Terminal moderne pour Windows.",
+            FullDescription = "Windows Terminal est l'application de terminal moderne de Microsoft qui combine PowerShell, Command Prompt, WSL et d'autres shells dans une interface à onglets.",
+            DisableImpact = "Le terminal ne s'ouvrira pas au démarrage (comportement normal).",
+            PerformanceImpact = "Aucun au démarrage (lance à la demande).",
+            Recommendation = "N'a généralement pas besoin de démarrer avec Windows.",
+            Tags = "terminal,powershell,cmd,wsl,developpement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Sandbox",
+            Aliases = "WindowsSandbox",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "WindowsSandbox.exe",
+            Category = KnowledgeCategory.Security,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Environnement Windows isolé jetable.",
+            FullDescription = "Windows Sandbox crée un environnement de bureau léger et temporaire pour exécuter des applications en isolation. Tout est supprimé à la fermeture.",
+            DisableImpact = "N'a pas besoin de démarrer avec Windows.",
+            PerformanceImpact = "Aucun au démarrage.",
+            Recommendation = "Ne devrait pas être dans les programmes de démarrage.",
+            Tags = "sandbox,isolation,securite,test,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "PowerShell",
+            Aliases = "pwsh,powershell.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "powershell.exe,pwsh.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Shell de ligne de commande et langage de script.",
+            FullDescription = "PowerShell est un shell de ligne de commande et un langage de script puissant. Sa présence au démarrage peut être normale (scripts) ou suspecte (malware).",
+            DisableImpact = "Les scripts PowerShell au démarrage ne s'exécuteront pas.",
+            PerformanceImpact = "Variable selon le script.",
+            Recommendation = "Vérifiez le script exécuté. Les malwares utilisent souvent PowerShell.",
+            Tags = "powershell,script,shell,commande,attention",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "cmd",
+            Aliases = "Command Prompt,cmd.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "cmd.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Invite de commandes Windows classique.",
+            FullDescription = "L'invite de commandes Windows au démarrage exécute généralement un script batch. Peut être légitime ou suspect selon le script.",
+            DisableImpact = "Les scripts batch au démarrage ne s'exécuteront pas.",
+            PerformanceImpact = "Variable selon le script.",
+            Recommendation = "Examinez la commande complète. Peut indiquer un malware.",
+            Tags = "cmd,batch,script,commande,attention",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "wscript",
+            Aliases = "Windows Script Host,wscript.exe,cscript.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "wscript.exe,cscript.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Hôte de scripts Windows pour VBScript et JScript.",
+            FullDescription = "Windows Script Host exécute des scripts VBS et JS. Souvent utilisé par les malwares pour leurs capacités de scripting.",
+            DisableImpact = "Les scripts VBS/JS au démarrage ne s'exécuteront pas.",
+            PerformanceImpact = "Variable selon le script.",
+            Recommendation = "Inspectez le script. Vecteur de malware courant.",
+            Tags = "wscript,vbscript,jscript,script,attention,malware",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "mshta",
+            Aliases = "Microsoft HTML Application Host",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "mshta.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Exécute les applications HTML.",
+            FullDescription = "MSHTA exécute les fichiers HTA (HTML Application). Très rarement légitime au démarrage. Fréquemment utilisé par les malwares.",
+            DisableImpact = "Les applications HTA au démarrage ne s'exécuteront pas.",
+            PerformanceImpact = "Variable.",
+            Recommendation = "SUSPECT : Vérifiez immédiatement. Vecteur de malware très courant.",
+            Tags = "mshta,hta,html,script,malware,suspect,danger",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "rundll32",
+            Aliases = "rundll32.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "rundll32.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Exécute des fonctions dans les DLL.",
+            FullDescription = "Rundll32 exécute des fonctions exportées depuis des fichiers DLL. Utilisé légitimement par Windows et les applications, mais aussi par les malwares.",
+            DisableImpact = "Variable selon la DLL appelée.",
+            PerformanceImpact = "Variable.",
+            Recommendation = "Examinez la DLL et la fonction appelées. Peut être légitime ou malveillant.",
+            Tags = "rundll32,dll,windows,attention",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "regsvr32",
+            Aliases = "regsvr32.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "regsvr32.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Enregistre les DLL et contrôles ActiveX.",
+            FullDescription = "Regsvr32 enregistre et désenregistre les DLL et contrôles OLE dans le registre. Peut être utilisé pour exécuter du code malveillant.",
+            DisableImpact = "L'enregistrement de DLL au démarrage ne se fera pas.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Rare au démarrage. Vérifiez la DLL concernée.",
+            Tags = "regsvr32,dll,registre,activex,attention",
             LastUpdated = DateTime.Now
         });
     }
