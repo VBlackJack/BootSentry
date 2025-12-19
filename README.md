@@ -7,8 +7,6 @@
 
 **BootSentry** is a modern Windows startup manager that allows you to safely manage programs that start automatically with Windows.
 
-![BootSentry Screenshot](docs/screenshot.png)
-
 ## Features
 
 - **Complete Startup Analysis** - Scans 14+ startup locations including Registry, Startup folders, Scheduled Tasks, Services, Drivers, and more

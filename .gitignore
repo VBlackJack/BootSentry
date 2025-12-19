@@ -87,3 +87,15 @@ PublishProfiles/
 .env
 .env.local
 appsettings.local.json
+
+# Claude Code
+.claude/
+
+# Export files
+BootSentry_Export*.json
+
+# Windows reserved names
+nul
+con
+prn
+aux
