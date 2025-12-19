@@ -37,6 +37,10 @@ public partial class MainViewModel : ObservableObject
     private readonly IMalwareScanner? _malwareScanner;
     private CancellationTokenSource? _cancellationTokenSource;
 
+    // Smart Background Scan
+    private readonly SemaphoreSlim _scanSemaphore = new(1, 1);
+    private const int MaxAutoScanCount = 10;
+
     [ObservableProperty]
     private bool _isExpertMode;
 
@@ -347,6 +351,101 @@ public partial class MainViewModel : ObservableObject
             IsLoading = false;
             CanCancel = false;
             ProgressText = string.Empty;
+
+            // Fire-and-forget: trigger smart background scan for risky entries
+            _ = TriggerSmartScanAsync();
+        }
+    }
+
+    /// <summary>
+    /// Triggers an automatic background scan of risky entries.
+    /// This method runs fire-and-forget and does not block the UI.
+    /// </summary>
+    private async Task TriggerSmartScanAsync()
+    {
+        // Skip if scanner is not available
+        if (_malwareScanner == null)
+            return;
+
+        try
+        {
+            // Select risky entries that haven't been scanned yet
+            var riskyEntries = Entries
+                .Where(e =>
+                    (e.RiskLevel == RiskLevel.Suspicious || e.RiskLevel == RiskLevel.Critical) &&
+                    e.SignatureStatus != SignatureStatus.SignedTrusted &&
+                    e.MalwareScanResult == null &&
+                    e.FileExists &&
+                    !string.IsNullOrEmpty(e.TargetPath))
+                .Take(MaxAutoScanCount)
+                .ToList();
+
+            if (riskyEntries.Count == 0)
+                return;
+
+            _logger.LogInformation("Smart scan: {Count} risky entries to scan", riskyEntries.Count);
+
+            // Run scanning in background
+            await Task.Run(async () =>
+            {
+                var malwareDetected = new List<StartupEntry>();
+
+                foreach (var entry in riskyEntries)
+                {
+                    // Use semaphore to scan one at a time
+                    await _scanSemaphore.WaitAsync();
+                    try
+                    {
+                        _logger.LogDebug("Smart scan: scanning {Name}", entry.DisplayName);
+
+                        var result = await _malwareScanner.ScanAsync(entry.TargetPath!);
+
+                        // Update entry properties (StartupEntry implements INotifyPropertyChanged)
+                        entry.MalwareScanResult = result;
+                        entry.LastMalwareScan = DateTime.Now;
+
+                        if (result == ScanResult.Malware)
+                        {
+                            entry.RiskLevel = RiskLevel.Critical;
+                            malwareDetected.Add(entry);
+                            _logger.LogWarning("Smart scan: MALWARE detected in {Path}", entry.TargetPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Smart scan: error scanning {Name}", entry.DisplayName);
+                        entry.MalwareScanResult = ScanResult.Error;
+                    }
+                    finally
+                    {
+                        _scanSemaphore.Release();
+                    }
+                }
+
+                // Update UI on dispatcher thread if malware was found
+                if (malwareDetected.Count > 0)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _entriesView.Refresh();
+                        UpdateCounts();
+
+                        // Log notification instead of blocking MessageBox
+                        var names = string.Join(", ", malwareDetected.Select(e => e.DisplayName));
+                        _logger.LogWarning("Smart scan completed: {Count} threat(s) detected: {Names}",
+                            malwareDetected.Count, names);
+
+                        StatusMessage = $"⚠ {malwareDetected.Count} menace(s) détectée(s) lors du scan automatique";
+                    });
+                }
+            });
+
+            _logger.LogInformation("Smart scan completed");
+        }
+        catch (Exception ex)
+        {
+            // Silent failure - don't disturb the user for background scan errors
+            _logger.LogError(ex, "Smart scan failed");
         }
     }
 
