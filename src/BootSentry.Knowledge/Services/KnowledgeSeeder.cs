@@ -50,6 +50,16 @@ internal class KnowledgeSeeder
         SeedNetworkTools();
         SeedDisplayUtilities();
         SeedBloatware();
+
+        // Additional entries
+        SeedGamingPlatforms();
+        SeedAIApps();
+        SeedAdditionalBrowsers();
+        SeedDevelopmentTools();
+        SeedProductivityApps();
+        SeedMediaAndCreative();
+        SeedHardwareTools();
+        SeedCommunicationApps();
     }
 
     private void SeedWindowsSystem()
@@ -4469,6 +4479,1193 @@ internal class KnowledgeSeeder
             PerformanceImpact = "Faible.",
             Recommendation = "Rare au démarrage. Vérifiez la DLL concernée.",
             Tags = "regsvr32,dll,registre,activex,attention",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds additional gaming platforms and overlays.
+    /// </summary>
+    private void SeedGamingPlatforms()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Overwolf",
+            Aliases = "OverwolfLauncher",
+            Publisher = "Overwolf Ltd.",
+            ExecutableNames = "Overwolf.exe,OverwolfLauncher.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme d'applications et overlays pour les jeux.",
+            FullDescription = "Overwolf est une plateforme qui permet d'exécuter des applications et overlays pendant les jeux. Héberge des apps comme CurseForge pour les mods.",
+            DisableImpact = "Les overlays et apps Overwolf ne seront pas disponibles en jeu.",
+            PerformanceImpact = "Modéré. Consomme des ressources pour les overlays.",
+            Recommendation = "Peut être désactivé si non utilisé. Relancez manuellement si besoin.",
+            Tags = "overwolf,gaming,overlay,mods,curseforge",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "CurseForge",
+            Aliases = "CurseForge App",
+            Publisher = "Overwolf Ltd.",
+            ExecutableNames = "CurseForge.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mods pour Minecraft, WoW et autres jeux.",
+            FullDescription = "CurseForge est un gestionnaire de mods populaire pour Minecraft, World of Warcraft, et de nombreux autres jeux. Fait partie de l'écosystème Overwolf.",
+            DisableImpact = "Les mods ne seront pas mis à jour automatiquement.",
+            PerformanceImpact = "Faible au démarrage.",
+            Recommendation = "Peut être désactivé. Lancez manuellement pour gérer les mods.",
+            Tags = "curseforge,mods,minecraft,wow,gaming",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "itch.io",
+            Aliases = "itch,itch Desktop App",
+            Publisher = "itch corp",
+            ExecutableNames = "itch.exe,itch-setup.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de distribution de jeux indépendants.",
+            FullDescription = "itch.io est une plateforme de distribution de jeux indépendants. L'application desktop permet de télécharger et gérer les jeux achetés.",
+            DisableImpact = "Pas de mise à jour automatique des jeux itch.io.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Lancez manuellement quand nécessaire.",
+            Tags = "itch,indie,games,distribution",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Humble App",
+            Aliases = "Humble Bundle",
+            Publisher = "Humble Bundle, Inc.",
+            ExecutableNames = "Humble App.exe,HumbleApp.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application Humble Bundle pour gérer les jeux.",
+            FullDescription = "L'application Humble permet de télécharger et gérer les jeux achetés sur Humble Bundle, ainsi que les jeux du Humble Choice.",
+            DisableImpact = "Pas de mise à jour automatique des jeux Humble.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas souvent Humble.",
+            Tags = "humble,bundle,games,distribution",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Twitch",
+            Aliases = "Twitch App,Twitch Desktop",
+            Publisher = "Amazon/Twitch",
+            ExecutableNames = "Twitch.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application de streaming Twitch.",
+            FullDescription = "L'application desktop Twitch permet de regarder des streams, gérer les abonnements et recevoir des notifications.",
+            DisableImpact = "Pas de notifications de streams en direct.",
+            PerformanceImpact = "Modéré si actif en arrière-plan.",
+            Recommendation = "Peut être désactivé. Utilisez le site web comme alternative.",
+            Tags = "twitch,streaming,amazon,gaming",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Guilded",
+            Aliases = "Guilded App",
+            Publisher = "Guilded, Inc. (Roblox)",
+            ExecutableNames = "Guilded.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Alternative à Discord pour les communautés gaming.",
+            FullDescription = "Guilded est une plateforme de communication pour les communautés gaming, offrant chat, forums, calendriers et streaming intégrés.",
+            DisableImpact = "Pas de notifications ni messages instantanés.",
+            PerformanceImpact = "Modéré. Similaire à Discord.",
+            Recommendation = "Peut être désactivé si utilisé occasionnellement.",
+            Tags = "guilded,chat,gaming,community,roblox",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Prism Launcher",
+            Aliases = "PrismLauncher,PolyMC,MultiMC",
+            Publisher = "Prism Launcher Contributors",
+            ExecutableNames = "prismlauncher.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lanceur Minecraft open source avec gestion d'instances.",
+            FullDescription = "Prism Launcher est un lanceur Minecraft open source permettant de gérer plusieurs instances avec différentes versions et mods.",
+            DisableImpact = "Minecraft ne sera pas lancé automatiquement.",
+            PerformanceImpact = "Aucun si pas utilisé.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "minecraft,launcher,prism,mods,gaming",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds AI assistant applications.
+    /// </summary>
+    private void SeedAIApps()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Perplexity",
+            Aliases = "Perplexity AI,Perplexity Desktop",
+            Publisher = "Perplexity AI, Inc.",
+            ExecutableNames = "Perplexity.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant de recherche IA avec sources citées.",
+            FullDescription = "Perplexity est un assistant de recherche alimenté par l'IA qui fournit des réponses avec des sources citées. L'application desktop offre un accès rapide.",
+            DisableImpact = "Pas d'accès rapide via raccourci global.",
+            PerformanceImpact = "Faible à modéré.",
+            Recommendation = "Peut être désactivé si utilisé via le navigateur.",
+            Tags = "perplexity,ia,ai,recherche,search,assistant",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Claude",
+            Aliases = "Claude Desktop,Claude AI",
+            Publisher = "Anthropic",
+            ExecutableNames = "Claude.exe,claude.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application desktop de l'assistant IA Claude.",
+            FullDescription = "Claude est un assistant IA développé par Anthropic. L'application desktop offre un accès direct sans navigateur.",
+            DisableImpact = "Claude ne sera pas accessible via raccourci global.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Lancez manuellement si besoin.",
+            Tags = "claude,anthropic,ia,ai,assistant,llm",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ChatGPT",
+            Aliases = "ChatGPT Desktop,OpenAI",
+            Publisher = "OpenAI",
+            ExecutableNames = "ChatGPT.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application desktop ChatGPT d'OpenAI.",
+            FullDescription = "ChatGPT est l'assistant IA conversationnel d'OpenAI. L'application desktop permet un accès rapide avec raccourcis globaux.",
+            DisableImpact = "Pas de raccourci global pour accéder à ChatGPT.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Utilisez le site web comme alternative.",
+            Tags = "chatgpt,openai,ia,ai,assistant,gpt,llm",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Pieces",
+            Aliases = "Pieces for Developers,Pieces OS",
+            Publisher = "Mesh Intelligent Technologies, Inc.",
+            ExecutableNames = "Pieces.exe,Pieces OS.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant IA pour développeurs avec gestion de snippets.",
+            FullDescription = "Pieces est un outil IA pour développeurs qui aide à sauvegarder, enrichir et réutiliser des snippets de code avec contexte.",
+            DisableImpact = "Les fonctionnalités d'IA et snippets ne seront pas disponibles.",
+            PerformanceImpact = "Modéré. Exécute un modèle IA local.",
+            Recommendation = "Désactivez si non utilisé régulièrement.",
+            Tags = "pieces,developpeur,code,snippets,ia,ai",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Codeium",
+            Aliases = "Codeium AI,Windsurf",
+            Publisher = "Exafunction, Inc.",
+            ExecutableNames = "Codeium.exe,Windsurf.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant de code IA gratuit.",
+            FullDescription = "Codeium est un outil d'autocomplétion de code alimenté par l'IA, gratuit pour les développeurs individuels.",
+            DisableImpact = "L'autocomplétion IA dans les IDE ne fonctionnera pas.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé si non utilisé.",
+            Tags = "codeium,windsurf,code,ia,ai,autocompletion",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds additional browsers.
+    /// </summary>
+    private void SeedAdditionalBrowsers()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Vivaldi",
+            Aliases = "Vivaldi Browser",
+            Publisher = "Vivaldi Technologies AS",
+            ExecutableNames = "vivaldi.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur personnalisable basé sur Chromium.",
+            FullDescription = "Vivaldi est un navigateur hautement personnalisable basé sur Chromium, créé par les anciens fondateurs d'Opera. Offre de nombreuses fonctionnalités intégrées.",
+            DisableImpact = "Vivaldi ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré si lancé au démarrage.",
+            Recommendation = "Peut être désactivé si non utilisé comme navigateur principal.",
+            Tags = "vivaldi,browser,chromium,navigateur",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Arc",
+            Aliases = "Arc Browser",
+            Publisher = "The Browser Company",
+            ExecutableNames = "Arc.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur moderne avec interface innovante.",
+            FullDescription = "Arc est un navigateur repensé avec une interface utilisateur innovante, des espaces de travail et des fonctionnalités IA intégrées.",
+            DisableImpact = "Arc ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Peut être désactivé. Lancez manuellement quand nécessaire.",
+            Tags = "arc,browser,navigateur,moderne",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Waterfox",
+            Aliases = "Waterfox Browser",
+            Publisher = "WaterfoxLimited",
+            ExecutableNames = "waterfox.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur Firefox axé sur la vie privée.",
+            FullDescription = "Waterfox est un navigateur basé sur Firefox avec un focus sur la vie privée et la suppression de la télémétrie.",
+            DisableImpact = "Waterfox ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Peut être désactivé.",
+            Tags = "waterfox,browser,firefox,privacy,navigateur",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Tor Browser",
+            Aliases = "Tor,TorBrowser",
+            Publisher = "The Tor Project",
+            ExecutableNames = "firefox.exe,tor.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur pour navigation anonyme via le réseau Tor.",
+            FullDescription = "Tor Browser est un navigateur basé sur Firefox qui route le trafic via le réseau Tor pour l'anonymat. Ne devrait généralement pas démarrer automatiquement.",
+            DisableImpact = "N'affecte pas la navigation normale.",
+            PerformanceImpact = "Aucun si désactivé.",
+            Recommendation = "Ne devrait pas être au démarrage. Vérifiez si c'est intentionnel.",
+            Tags = "tor,browser,privacy,anonyme,navigateur",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Zen Browser",
+            Aliases = "Zen",
+            Publisher = "Zen Browser",
+            ExecutableNames = "zen.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur Firefox avec interface verticale.",
+            FullDescription = "Zen est un navigateur basé sur Firefox avec une interface à onglets verticaux et un design moderne et minimaliste.",
+            DisableImpact = "Zen ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Peut être désactivé.",
+            Tags = "zen,browser,firefox,navigateur,onglets",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds development tools.
+    /// </summary>
+    private void SeedDevelopmentTools()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Cursor",
+            Aliases = "Cursor AI,Cursor IDE",
+            Publisher = "Anysphere, Inc.",
+            ExecutableNames = "Cursor.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur de code avec IA intégrée basé sur VS Code.",
+            FullDescription = "Cursor est un éditeur de code basé sur VS Code avec des fonctionnalités d'IA avancées pour l'autocomplétion et la génération de code.",
+            DisableImpact = "Cursor ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible au démarrage.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "cursor,ide,code,ia,ai,vscode,developpement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "JetBrains Toolbox",
+            Aliases = "Toolbox App",
+            Publisher = "JetBrains s.r.o.",
+            ExecutableNames = "jetbrains-toolbox.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire des IDE JetBrains.",
+            FullDescription = "JetBrains Toolbox gère l'installation et les mises à jour de tous les IDE JetBrains (IntelliJ, PyCharm, WebStorm, etc.).",
+            DisableImpact = "Pas de mises à jour automatiques des IDE JetBrains.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Les mises à jour se feront manuellement.",
+            Tags = "jetbrains,toolbox,ide,intellij,pycharm,developpement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Sublime Text",
+            Aliases = "SublimeText",
+            Publisher = "Sublime HQ Pty Ltd",
+            ExecutableNames = "sublime_text.exe,subl.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur de texte rapide et léger.",
+            FullDescription = "Sublime Text est un éditeur de texte sophistiqué pour le code et le texte, connu pour sa rapidité et son interface élégante.",
+            DisableImpact = "Sublime Text ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "sublime,text,editor,code,developpement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Notepad++",
+            Aliases = "NotepadPlusPlus,npp",
+            Publisher = "Don Ho",
+            ExecutableNames = "notepad++.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur de texte open source pour Windows.",
+            FullDescription = "Notepad++ est un éditeur de texte et de code source gratuit et open source. Léger et rapide avec support de nombreux langages.",
+            DisableImpact = "Notepad++ ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "notepad++,editor,text,code,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "GitHub Desktop",
+            Aliases = "GitHubDesktop",
+            Publisher = "GitHub, Inc.",
+            ExecutableNames = "GitHubDesktop.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client Git graphique de GitHub.",
+            FullDescription = "GitHub Desktop est une application graphique pour gérer les dépôts Git et GitHub sans ligne de commande.",
+            DisableImpact = "GitHub Desktop ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows. Lancez manuellement.",
+            Tags = "github,git,desktop,versioncontrol",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "GitKraken",
+            Aliases = "GitKraken Client",
+            Publisher = "Axosoft, LLC",
+            ExecutableNames = "gitkraken.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client Git graphique multiplateforme.",
+            FullDescription = "GitKraken est un client Git graphique puissant avec visualisation des branches, intégrations et fonctionnalités de collaboration.",
+            DisableImpact = "GitKraken ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "gitkraken,git,client,versioncontrol",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Sourcetree",
+            Aliases = "Atlassian Sourcetree",
+            Publisher = "Atlassian",
+            ExecutableNames = "SourceTree.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client Git et Mercurial gratuit d'Atlassian.",
+            FullDescription = "Sourcetree est un client Git et Mercurial gratuit avec interface graphique pour visualiser et gérer les dépôts.",
+            DisableImpact = "Sourcetree ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "sourcetree,git,atlassian,mercurial",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Postman",
+            Aliases = "Postman App",
+            Publisher = "Postman, Inc.",
+            ExecutableNames = "Postman.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de développement et test d'API.",
+            FullDescription = "Postman est une plateforme collaborative pour le développement d'API permettant de créer, tester et documenter les APIs.",
+            DisableImpact = "Postman ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "postman,api,developpement,test,rest",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Insomnia",
+            Aliases = "Insomnia REST Client",
+            Publisher = "Kong Inc.",
+            ExecutableNames = "Insomnia.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client API REST/GraphQL open source.",
+            FullDescription = "Insomnia est un client API open source pour REST, GraphQL et gRPC avec une interface moderne.",
+            DisableImpact = "Insomnia ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "insomnia,api,rest,graphql,developpement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "WSL",
+            Aliases = "Windows Subsystem for Linux,wsl.exe",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "wsl.exe,wslhost.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Sous-système Windows pour Linux.",
+            FullDescription = "WSL permet d'exécuter un environnement Linux directement sur Windows sans machine virtuelle traditionnelle.",
+            DisableImpact = "Les distributions Linux WSL ne démarreront pas automatiquement.",
+            PerformanceImpact = "Variable selon l'utilisation.",
+            Recommendation = "Généralement n'a pas besoin de démarrer automatiquement.",
+            Tags = "wsl,linux,windows,developpement,microsoft",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds productivity applications.
+    /// </summary>
+    private void SeedProductivityApps()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Grammarly",
+            Aliases = "Grammarly Desktop,Grammarly for Windows",
+            Publisher = "Grammarly, Inc.",
+            ExecutableNames = "Grammarly.Desktop.exe,Grammarly.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant d'écriture et correcteur grammatical IA.",
+            FullDescription = "Grammarly est un assistant d'écriture qui vérifie la grammaire, l'orthographe et le style dans toutes les applications.",
+            DisableImpact = "Pas de corrections Grammarly en temps réel.",
+            PerformanceImpact = "Faible à modéré.",
+            Recommendation = "Peut être désactivé si utilisé principalement via extension navigateur.",
+            Tags = "grammarly,writing,grammar,orthographe,ia",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Todoist",
+            Aliases = "Todoist Desktop",
+            Publisher = "Doist Inc.",
+            ExecutableNames = "Todoist.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application de gestion de tâches et productivité.",
+            FullDescription = "Todoist est un gestionnaire de tâches multiplateforme avec projets, étiquettes, filtres et rappels.",
+            DisableImpact = "Pas de rappels ni accès rapide au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Utilisez l'app web ou mobile.",
+            Tags = "todoist,tasks,productivity,todo,gtd",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ClickUp",
+            Aliases = "ClickUp Desktop",
+            Publisher = "ClickUp",
+            ExecutableNames = "ClickUp.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de productivité et gestion de projet.",
+            FullDescription = "ClickUp est une plateforme tout-en-un pour la gestion de projets, tâches, documents, objectifs et temps.",
+            DisableImpact = "Pas de notifications desktop ClickUp.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Peut être désactivé. L'app web est fonctionnellement équivalente.",
+            Tags = "clickup,productivity,project,management",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Linear",
+            Aliases = "Linear App",
+            Publisher = "Linear Orbit, Inc.",
+            ExecutableNames = "Linear.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil de suivi des issues pour équipes produit.",
+            FullDescription = "Linear est un outil de suivi des issues moderne et rapide, populaire auprès des équipes de développement produit.",
+            DisableImpact = "Pas de notifications Linear au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Lancez manuellement ou utilisez le web.",
+            Tags = "linear,issues,tracking,product,agile",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Figma",
+            Aliases = "Figma Desktop",
+            Publisher = "Figma, Inc.",
+            ExecutableNames = "Figma.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil de design collaboratif.",
+            FullDescription = "Figma est un outil de design d'interface utilisateur collaboratif basé sur le cloud avec édition en temps réel.",
+            DisableImpact = "Figma ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows. L'app web est identique.",
+            Tags = "figma,design,ui,ux,collaborative",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Loom",
+            Aliases = "Loom Desktop",
+            Publisher = "Loom, Inc.",
+            ExecutableNames = "Loom.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil d'enregistrement vidéo et partage d'écran.",
+            FullDescription = "Loom permet d'enregistrer rapidement des vidéos de son écran avec webcam pour partager des messages asynchrones.",
+            DisableImpact = "Pas d'accès rapide pour l'enregistrement Loom.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Peut être désactivé si utilisé occasionnellement.",
+            Tags = "loom,video,screen,recording,async",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Raycast",
+            Aliases = "Raycast for Windows",
+            Publisher = "Raycast Technologies Inc.",
+            ExecutableNames = "Raycast.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lanceur de productivité extensible.",
+            FullDescription = "Raycast est un lanceur de productivité extensible qui remplace Spotlight/PowerToys Run avec des extensions communautaires.",
+            DisableImpact = "Raycast ne sera pas disponible via raccourci.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Doit rester actif si utilisé comme lanceur principal.",
+            Tags = "raycast,launcher,productivity,spotlight",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Flow Launcher",
+            Aliases = "FlowLauncher",
+            Publisher = "Flow Launcher Team",
+            ExecutableNames = "Flow.Launcher.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lanceur de productivité open source pour Windows.",
+            FullDescription = "Flow Launcher est un lanceur d'applications rapide et extensible pour Windows, alternative open source à Alfred/Raycast.",
+            DisableImpact = "Flow Launcher ne sera pas disponible via raccourci.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Doit rester actif si utilisé comme lanceur principal.",
+            Tags = "flow,launcher,productivity,search,windows",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds media players and creative applications.
+    /// </summary>
+    private void SeedMediaAndCreative()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Plex",
+            Aliases = "Plex Media Player,Plex HTPC",
+            Publisher = "Plex, Inc.",
+            ExecutableNames = "Plex.exe,Plex HTPC.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client media center Plex.",
+            FullDescription = "Plex est un client pour le système de media center Plex, permettant de streamer films, séries et musique depuis un serveur Plex.",
+            DisableImpact = "Plex ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Peut être désactivé sur les postes non-HTPC.",
+            Tags = "plex,media,streaming,htpc,films",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Plex Media Server",
+            Aliases = "PlexMediaServer",
+            Publisher = "Plex, Inc.",
+            ExecutableNames = "Plex Media Server.exe,PlexMediaServer.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Serveur média Plex.",
+            FullDescription = "Plex Media Server organise et streame votre bibliothèque multimédia vers tous les appareils. Doit tourner pour que Plex fonctionne.",
+            DisableImpact = "Votre bibliothèque Plex ne sera pas accessible.",
+            PerformanceImpact = "Modéré à élevé lors du transcodage.",
+            Recommendation = "Gardez actif si vous utilisez Plex comme serveur.",
+            Tags = "plex,server,media,streaming,transcoding",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "foobar2000",
+            Aliases = "foobar",
+            Publisher = "Peter Pawlowski",
+            ExecutableNames = "foobar2000.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lecteur audio léger et personnalisable.",
+            FullDescription = "foobar2000 est un lecteur audio gratuit pour Windows, réputé pour sa légèreté, sa qualité sonore et sa personnalisation.",
+            DisableImpact = "foobar2000 ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "foobar2000,audio,music,player,flac",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AIMP",
+            Aliases = "AIMP Player",
+            Publisher = "AIMP DevTeam",
+            ExecutableNames = "AIMP.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lecteur audio russe gratuit.",
+            FullDescription = "AIMP est un lecteur audio gratuit avec une interface élégante, support de nombreux formats et fonctionnalités avancées.",
+            DisableImpact = "AIMP ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "aimp,audio,music,player",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "MusicBee",
+            Aliases = "Music Bee",
+            Publisher = "Steven Mayall",
+            ExecutableNames = "MusicBee.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire et lecteur de musique.",
+            FullDescription = "MusicBee est un gestionnaire de musique puissant avec bibliothèque, podcasts, radio et synchronisation d'appareils.",
+            DisableImpact = "MusicBee ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "musicbee,audio,music,library,player",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "PotPlayer",
+            Aliases = "Daum PotPlayer",
+            Publisher = "Kakao Corp.",
+            ExecutableNames = "PotPlayer.exe,PotPlayerMini64.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lecteur multimédia puissant et léger.",
+            FullDescription = "PotPlayer est un lecteur multimédia coréen gratuit supportant de nombreux formats et codecs avec une interface personnalisable.",
+            DisableImpact = "PotPlayer ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "potplayer,video,audio,player,codec",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Kodi",
+            Aliases = "XBMC",
+            Publisher = "XBMC Foundation",
+            ExecutableNames = "Kodi.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Centre multimédia open source.",
+            FullDescription = "Kodi est un centre multimédia open source pour organiser et lire films, séries, musique, photos et plus.",
+            DisableImpact = "Kodi ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Utile au démarrage uniquement sur les HTPC dédiés.",
+            Tags = "kodi,xbmc,media,htpc,center",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Kindle",
+            Aliases = "Kindle for PC,Amazon Kindle",
+            Publisher = "Amazon",
+            ExecutableNames = "Kindle.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application de lecture Kindle d'Amazon.",
+            FullDescription = "Kindle for PC permet de lire les ebooks achetés sur Amazon et synchronise la progression avec les autres appareils.",
+            DisableImpact = "Kindle ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "kindle,amazon,ebook,reading",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "calibre",
+            Aliases = "calibre ebook",
+            Publisher = "Kovid Goyal",
+            ExecutableNames = "calibre.exe,calibre-parallel.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire et convertisseur d'ebooks.",
+            FullDescription = "calibre est un gestionnaire d'ebooks gratuit et open source pour organiser, convertir et transférer des ebooks.",
+            DisableImpact = "calibre ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "calibre,ebook,library,converter",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DaVinci Resolve",
+            Aliases = "DaVinci Resolve Studio,Blackmagic Design",
+            Publisher = "Blackmagic Design",
+            ExecutableNames = "Resolve.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Suite de montage vidéo professionnelle.",
+            FullDescription = "DaVinci Resolve est une suite professionnelle de montage vidéo, étalonnage, effets visuels et post-production audio.",
+            DisableImpact = "DaVinci Resolve ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "davinci,resolve,video,editing,color",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "HandBrake",
+            Aliases = "HandBrake Video Transcoder",
+            Publisher = "HandBrake Team",
+            ExecutableNames = "HandBrake.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Convertisseur vidéo open source.",
+            FullDescription = "HandBrake est un transcodeur vidéo open source multiplateforme pour convertir des vidéos en formats modernes.",
+            DisableImpact = "HandBrake ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Aucun au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "handbrake,video,transcoding,converter",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "GIMP",
+            Aliases = "GNU Image Manipulation Program",
+            Publisher = "GIMP Team",
+            ExecutableNames = "gimp.exe,gimp-2.10.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur d'images open source.",
+            FullDescription = "GIMP est un éditeur d'images libre et gratuit, alternative open source à Photoshop.",
+            DisableImpact = "GIMP ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Aucun au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "gimp,image,editor,photo,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Inkscape",
+            Aliases = "Inkscape Vector Graphics",
+            Publisher = "Inkscape Project",
+            ExecutableNames = "inkscape.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur de graphiques vectoriels open source.",
+            FullDescription = "Inkscape est un éditeur de graphiques vectoriels libre, alternative open source à Illustrator.",
+            DisableImpact = "Inkscape ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Aucun au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "inkscape,vector,svg,graphics,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Krita",
+            Aliases = "Krita Painting",
+            Publisher = "Krita Foundation",
+            ExecutableNames = "krita.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application de peinture numérique open source.",
+            FullDescription = "Krita est une application de peinture numérique gratuite et open source pour illustrateurs, artistes concept et peintres.",
+            DisableImpact = "Krita ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Aucun au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "krita,painting,digital,art,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Blender",
+            Aliases = "Blender 3D",
+            Publisher = "Blender Foundation",
+            ExecutableNames = "blender.exe,blender-launcher.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Suite de création 3D open source.",
+            FullDescription = "Blender est une suite de création 3D open source pour modélisation, animation, rendu, compositing et montage vidéo.",
+            DisableImpact = "Blender ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Aucun au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "blender,3d,modeling,animation,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Unity Hub",
+            Aliases = "Unity Editor",
+            Publisher = "Unity Technologies",
+            ExecutableNames = "Unity Hub.exe,Unity.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire et lanceur Unity Engine.",
+            FullDescription = "Unity Hub gère les installations de l'éditeur Unity, les projets et les licences pour le développement de jeux et applications.",
+            DisableImpact = "Unity Hub ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "unity,game,development,3d,engine",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds hardware monitoring and overclocking tools.
+    /// </summary>
+    private void SeedHardwareTools()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "MSI Afterburner",
+            Aliases = "Afterburner",
+            Publisher = "MSI / Guru3D",
+            ExecutableNames = "MSIAfterburner.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Utilitaire d'overclocking et monitoring GPU.",
+            FullDescription = "MSI Afterburner est un utilitaire d'overclocking GPU populaire avec monitoring en temps réel, profils et statistiques en jeu.",
+            DisableImpact = "Pas d'overclocking GPU ni de monitoring au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez l'overclocking ou le monitoring.",
+            Tags = "msi,afterburner,gpu,overclocking,monitoring",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "NZXT CAM",
+            Aliases = "CAM",
+            Publisher = "NZXT, Inc.",
+            ExecutableNames = "NZXT CAM.exe,CAM.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Logiciel de monitoring et contrôle NZXT.",
+            FullDescription = "NZXT CAM surveille les performances du PC, contrôle l'éclairage RGB et les ventilateurs des produits NZXT.",
+            DisableImpact = "Pas de contrôle RGB/ventilateurs NZXT, pas de monitoring.",
+            PerformanceImpact = "Faible à modéré.",
+            Recommendation = "Gardez actif si vous avez du matériel NZXT ou voulez le monitoring.",
+            Tags = "nzxt,cam,monitoring,rgb,cooling",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Voicemod",
+            Aliases = "Voicemod Desktop",
+            Publisher = "Voicemod S.L.",
+            ExecutableNames = "Voicemod.exe,VoicemodDesktop.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Modificateur de voix en temps réel.",
+            FullDescription = "Voicemod est un modificateur de voix en temps réel pour Discord, Twitch et autres applications de communication.",
+            DisableImpact = "Les effets de voix ne seront pas disponibles.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Peut être désactivé si non utilisé régulièrement.",
+            Tags = "voicemod,voice,changer,streaming,discord",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Krisp",
+            Aliases = "Krisp AI",
+            Publisher = "Krisp Technologies, Inc.",
+            ExecutableNames = "krisp.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Suppression de bruit IA pour les appels.",
+            FullDescription = "Krisp utilise l'IA pour supprimer le bruit de fond et les échos lors des appels vidéo et audio.",
+            DisableImpact = "Pas de suppression de bruit automatique.",
+            PerformanceImpact = "Modéré (traitement IA).",
+            Recommendation = "Utile si vous faites beaucoup d'appels. Sinon désactivable.",
+            Tags = "krisp,noise,cancellation,ai,calls",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "EarTrumpet",
+            Aliases = "EarTrumpet Volume Control",
+            Publisher = "File-New-Project",
+            ExecutableNames = "EarTrumpet.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Contrôle de volume par application pour Windows.",
+            FullDescription = "EarTrumpet remplace l'icône de volume Windows avec un contrôle avancé du volume par application.",
+            DisableImpact = "Pas de contrôle de volume par app via EarTrumpet.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous l'utilisez pour le contrôle du volume.",
+            Tags = "eartrumpet,volume,audio,control,windows",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Streamlabs",
+            Aliases = "Streamlabs OBS,Streamlabs Desktop",
+            Publisher = "Streamlabs",
+            ExecutableNames = "Streamlabs OBS.exe,Streamlabs Desktop.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Logiciel de streaming tout-en-un.",
+            FullDescription = "Streamlabs est une version enrichie d'OBS avec alertes, widgets et outils de streaming intégrés.",
+            DisableImpact = "Streamlabs ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "streamlabs,obs,streaming,twitch,youtube",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "XSplit",
+            Aliases = "XSplit Broadcaster,XSplit VCam",
+            Publisher = "SplitmediaLabs",
+            ExecutableNames = "XSplit.Core.exe,XSplitBroadcaster.exe",
+            Category = KnowledgeCategory.Media,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Logiciel de streaming et diffusion.",
+            FullDescription = "XSplit est une suite de diffusion en direct incluant le streaming, la caméra virtuelle et l'enregistrement.",
+            DisableImpact = "XSplit ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "xsplit,streaming,broadcast,camera",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "GPU-Z",
+            Aliases = "TechPowerUp GPU-Z",
+            Publisher = "TechPowerUp",
+            ExecutableNames = "GPU-Z.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Utilitaire d'information GPU.",
+            FullDescription = "GPU-Z affiche les informations détaillées sur la carte graphique, les capteurs et les fréquences.",
+            DisableImpact = "GPU-Z ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "gpu-z,gpu,monitoring,info,techpowerup",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "CPU-Z",
+            Aliases = "CPUID CPU-Z",
+            Publisher = "CPUID",
+            ExecutableNames = "cpuz.exe,cpuz_x64.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Utilitaire d'information CPU et système.",
+            FullDescription = "CPU-Z affiche les informations détaillées sur le processeur, la carte mère, la mémoire et le cache.",
+            DisableImpact = "CPU-Z ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "cpu-z,cpu,monitoring,info,cpuid",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AIDA64",
+            Aliases = "AIDA64 Extreme,AIDA64 Engineer",
+            Publisher = "FinalWire Ltd.",
+            ExecutableNames = "aida64.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil de diagnostic et benchmark système.",
+            FullDescription = "AIDA64 est un outil complet de diagnostic système, benchmarking et monitoring avec des informations détaillées sur tout le matériel.",
+            DisableImpact = "Pas de monitoring AIDA64 au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé si le monitoring n'est pas nécessaire.",
+            Tags = "aida64,benchmark,diagnostic,monitoring",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds communication applications.
+    /// </summary>
+    private void SeedCommunicationApps()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "Element",
+            Aliases = "Element Desktop,Riot,Matrix",
+            Publisher = "Element",
+            ExecutableNames = "Element.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client Matrix décentralisé et sécurisé.",
+            FullDescription = "Element est un client de messagerie basé sur le protocole Matrix, offrant une communication décentralisée et chiffrée.",
+            DisableImpact = "Pas de notifications Element au démarrage.",
+            PerformanceImpact = "Faible à modéré.",
+            Recommendation = "Peut être désactivé si non utilisé régulièrement.",
+            Tags = "element,matrix,chat,encrypted,decentralized",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Mumble",
+            Aliases = "Mumble Client",
+            Publisher = "Mumble Contributors",
+            ExecutableNames = "mumble.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Chat vocal open source basse latence.",
+            FullDescription = "Mumble est une application de chat vocal open source à faible latence, populaire pour les jeux et les équipes.",
+            DisableImpact = "Mumble ne se connectera pas automatiquement.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé. Lancez manuellement avant les sessions.",
+            Tags = "mumble,voice,chat,gaming,opensource",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "TeamSpeak",
+            Aliases = "TeamSpeak 3,TeamSpeak 5,TS3",
+            Publisher = "TeamSpeak Systems GmbH",
+            ExecutableNames = "ts3client_win64.exe,TeamSpeak.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application de communication vocale pour les équipes.",
+            FullDescription = "TeamSpeak est une application VoIP pour la communication d'équipe, populaire dans le gaming et le milieu professionnel.",
+            DisableImpact = "TeamSpeak ne se connectera pas automatiquement.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé si non utilisé quotidiennement.",
+            Tags = "teamspeak,voice,chat,gaming,voip",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Webex",
+            Aliases = "Cisco Webex,Webex Meetings",
+            Publisher = "Cisco Systems, Inc.",
+            ExecutableNames = "CiscoWebexStart.exe,webex.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de réunions vidéo Cisco.",
+            FullDescription = "Webex est une plateforme de visioconférence et collaboration d'entreprise de Cisco.",
+            DisableImpact = "Pas de connexion automatique aux réunions.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Peut être désactivé si utilisé occasionnellement.",
+            Tags = "webex,cisco,meetings,video,conferencing",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "BlueJeans",
+            Aliases = "BlueJeans Meetings",
+            Publisher = "Verizon",
+            ExecutableNames = "BlueJeans.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de réunions vidéo.",
+            FullDescription = "BlueJeans est une plateforme de visioconférence d'entreprise appartenant à Verizon.",
+            DisableImpact = "BlueJeans ne démarrera pas automatiquement.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Peut être désactivé. Lancez manuellement pour les réunions.",
+            Tags = "bluejeans,verizon,meetings,video",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "GoTo Meeting",
+            Aliases = "GoToMeeting,LogMeIn",
+            Publisher = "GoTo Technologies",
+            ExecutableNames = "g2mstart.exe,GoToMeeting.exe",
+            Category = KnowledgeCategory.Communication,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Plateforme de réunions en ligne.",
+            FullDescription = "GoTo Meeting est un service de visioconférence et webinaires pour les entreprises.",
+            DisableImpact = "GoTo Meeting ne démarrera pas automatiquement.",
+            PerformanceImpact = "Faible au repos.",
+            Recommendation = "Peut être désactivé. Lancez via lien de réunion.",
+            Tags = "gotomeeting,meetings,webinar,conferencing",
             LastUpdated = DateTime.Now
         });
     }
