@@ -487,11 +487,6 @@
                 <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
             </Style>
 
-            <!-- Separator Style -->
-            <Style TargetType="Separator">
-                <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
-            </Style>
-
             <!-- ScrollBar Style -->
             <Style TargetType="ScrollBar">
                 <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
