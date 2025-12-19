@@ -7,13 +7,19 @@
 
 **BootSentry** is a modern Windows startup manager that allows you to safely manage programs that start automatically with Windows.
 
+![BootSentry Screenshot](docs/screenshot.png)
+
 ## Features
 
 - **Complete Startup Analysis** - Scans 14+ startup locations including Registry, Startup folders, Scheduled Tasks, Services, Drivers, and more
+- **Knowledge Base** - 363+ software entries with descriptions, safety levels, and recommendations
+- **AMSI Malware Scanning** - Integrated antivirus scanning using Windows AMSI (Antimalware Scan Interface)
+- **Risk Assessment** - Automatic risk level evaluation based on signature, location, publisher, and behavior patterns
 - **Safe Operations** - Automatic backup before any modification with one-click rollback
 - **Digital Signature Verification** - Authenticode signature verification using Windows native APIs
-- **Risk Assessment** - Automatic risk level evaluation based on multiple factors
+- **Dark Theme** - Full dark mode support with system theme detection
 - **Expert Mode** - Toggle between standard and expert views
+- **Export** - JSON/CSV export with optional knowledge base matching and anonymization
 - **Multi-language** - French and English support
 - **Accessible** - Full keyboard navigation, screen reader support (WCAG 2.1)
 - **High DPI** - Per-Monitor V2 DPI awareness
@@ -49,7 +55,7 @@ BootSentry analyzes the following startup locations:
 
 No installation required. Data is stored in:
 - Settings: `%LocalAppData%\BootSentry\settings.json`
-- Logs and Backups: `%ProgramData%\BootSentry\`
+- Logs, Backups, Knowledge DB: `%ProgramData%\BootSentry\`
 
 ### Build from Source
 
@@ -80,6 +86,19 @@ dotnet publish src/BootSentry.UI/BootSentry.UI.csproj -c Release -r win-x64 --se
 - Access to advanced actions (Delete, Services, Drivers)
 - For advanced users only
 
+### Knowledge Base
+When selecting an entry, BootSentry displays:
+- **Safety Level** - Critical, Important, Safe, Recommended to Disable, Should Remove
+- **Description** - What the software does
+- **Disable Impact** - What happens if you disable it
+- **Performance Impact** - RAM/CPU usage
+- **Recommendation** - Suggested action
+
+### Malware Scanning
+- Right-click an entry and select "Scan with antivirus"
+- Uses Windows AMSI to scan files with your installed antivirus
+- Results: Clean, Malware Detected, Blocked, Error
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -101,29 +120,34 @@ dotnet publish src/BootSentry.UI/BootSentry.UI.csproj -c Release -r win-x64 --se
 ```
 BootSentry/
 ├── src/
-│   ├── BootSentry.Core/        # Models, enums, interfaces
+│   ├── BootSentry.Core/        # Models, enums, services (RiskAnalyzer, Export)
 │   ├── BootSentry.Providers/   # 14 startup source providers
 │   ├── BootSentry.Actions/     # Action strategies (enable/disable/delete)
 │   ├── BootSentry.Backup/      # Transaction manager and backup storage
-│   ├── BootSentry.Security/    # Signature verification and hash calculation
+│   ├── BootSentry.Security/    # Signature verification, hash, AMSI scanner
+│   ├── BootSentry.Knowledge/   # SQLite knowledge base (363+ entries)
 │   └── BootSentry.UI/          # WPF application (MVVM)
 └── tests/
     ├── BootSentry.Core.Tests/
     ├── BootSentry.Providers.Tests/
-    └── BootSentry.Actions.Tests/
+    ├── BootSentry.Actions.Tests/
+    ├── BootSentry.Backup.Tests/
+    └── BootSentry.Security.Tests/
 ```
 
 ## Requirements
 
-- Windows 10/11 (x64)
+- Windows 10 1809+ / Windows 11 (x64)
 - .NET 8.0 Runtime (included in single-file build)
 
 ## Security
 
 - **No code execution** - BootSentry never executes target binaries
 - **Signature verification** - Uses Windows WinVerifyTrust API
+- **AMSI integration** - Leverages your existing antivirus for malware scanning
 - **Automatic backups** - All changes are backed up before execution
 - **UAC integration** - Elevation requested only when necessary
+- **Path traversal protection** - Validated backup transaction IDs
 
 ## Contributing
 
@@ -134,6 +158,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+### Adding Knowledge Base Entries
+
+To add new software entries to the knowledge base, edit `src/BootSentry.Knowledge/Services/KnowledgeSeeder.cs`.
 
 ## License
 
@@ -147,4 +175,5 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 - Built with [.NET 8](https://dotnet.microsoft.com/) and [WPF](https://docs.microsoft.com/dotnet/desktop/wpf/)
 - MVVM toolkit by [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet)
+- Knowledge base powered by [SQLite](https://www.sqlite.org/) via [Microsoft.Data.Sqlite](https://docs.microsoft.com/dotnet/standard/data/sqlite/)
 - Icons and UI design inspired by modern Windows applications
