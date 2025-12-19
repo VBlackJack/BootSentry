@@ -5964,6 +5964,193 @@ internal class KnowledgeSeeder
             Tags = "logitech,lamparray,rgb,lighting",
             LastUpdated = DateTime.Now
         });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "PLAUD",
+            Aliases = "electron.app.PLAUD,PLAUD Note",
+            Publisher = "PLAUD",
+            ExecutableNames = "PLAUD.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application pour l'enregistreur vocal PLAUD.",
+            FullDescription = "PLAUD est l'application compagnon pour les enregistreurs vocaux PLAUD. Permet de transcrire et gérer les enregistrements audio.",
+            DisableImpact = "L'application PLAUD ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas régulièrement l'enregistreur.",
+            Tags = "plaud,recorder,voice,transcription,audio",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AMD External Events Utility",
+            Aliases = "atiesrxx,AMD External Events",
+            Publisher = "AMD",
+            ExecutableNames = "atiesrxx.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Important,
+            ShortDescription = "Service AMD pour les événements externes.",
+            FullDescription = "Ce service AMD gère les événements externes comme les changements d'affichage, les hotkeys et la communication avec les pilotes graphiques.",
+            DisableImpact = "Certaines fonctionnalités AMD (hotkeys, détection d'affichage) peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous avez une carte graphique AMD.",
+            Tags = "amd,radeon,events,graphics,driver",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ASUS Update Check",
+            Aliases = "AsusUpdateCheck",
+            Publisher = "ASUSTeK Computer Inc.",
+            ExecutableNames = "AsusUpdateCheck.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de vérification des mises à jour ASUS.",
+            FullDescription = "Ce service vérifie les mises à jour disponibles pour les logiciels et pilotes ASUS sur votre système.",
+            DisableImpact = "Pas de notifications de mises à jour ASUS.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé. Vérifiez manuellement via MyASUS.",
+            Tags = "asus,update,check,drivers",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ASUS GameSDK Service",
+            Aliases = "GameSDK Service,ASUS GameSDK",
+            Publisher = "ASUS Inc.",
+            ExecutableNames = "GameSDK.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service ASUS pour l'optimisation gaming.",
+            FullDescription = "ASUS GameSDK optimise les performances système pour les jeux sur les appareils ASUS. Fait partie de l'écosystème Armoury Crate.",
+            DisableImpact = "Les optimisations gaming automatiques ASUS ne s'appliqueront pas.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez Armoury Crate pour le gaming.",
+            Tags = "asus,gaming,sdk,armoury,crate,optimization",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "PDF-XChange Pro",
+            Aliases = "PDFProFiltSrvPP,PDF-XChange",
+            Publisher = "Tracker Software Products",
+            ExecutableNames = "PDFProFiltSrvPP.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service pour PDF-XChange Editor/Pro.",
+            FullDescription = "Service de filtrage pour PDF-XChange Editor Pro, permettant l'intégration système et les fonctionnalités avancées d'édition PDF.",
+            DisableImpact = "Certaines fonctionnalités d'intégration PDF-XChange peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous utilisez PDF-XChange régulièrement.",
+            Tags = "pdf,xchange,editor,tracker,document",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Intel System Usage Report",
+            Aliases = "SystemUsageReportSvc_QUEENCREEK,IntelSURQC,SurSvc",
+            Publisher = "Intel Corporation",
+            ExecutableNames = "SurSvc.exe,IntelSoftwareAssetManagerService.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de télémétrie Intel.",
+            FullDescription = "Service Intel qui collecte des données d'utilisation système pour l'amélioration des produits. Peut être désactivé sans impact.",
+            DisableImpact = "Pas de collecte de données d'utilisation Intel.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé pour la vie privée.",
+            Tags = "intel,telemetry,usage,report,privacy",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Intel Energy Server",
+            Aliases = "Energy Server Service queencreek,esrv_svc",
+            Publisher = "Intel Corporation",
+            ExecutableNames = "esrv_svc.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de gestion d'énergie Intel.",
+            FullDescription = "Service Intel pour la gestion de l'énergie et l'optimisation des performances sur les systèmes Intel.",
+            DisableImpact = "Les optimisations d'énergie Intel peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé sur les PC de bureau.",
+            Tags = "intel,energy,power,management",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Google Updater",
+            Aliases = "GoogleUpdaterTaskSystem,Google Update",
+            Publisher = "Google LLC",
+            ExecutableNames = "updater.exe,GoogleUpdate.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de mise à jour des applications Google.",
+            FullDescription = "Google Updater maintient à jour les applications Google installées (Chrome, Drive, Earth, etc.).",
+            DisableImpact = "Les applications Google ne se mettront pas à jour automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif pour les mises à jour de sécurité automatiques.",
+            Tags = "google,update,chrome,drive,updater",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Twain Scanner Service",
+            Aliases = "S18A,TwDsUiLaunch",
+            Publisher = "Microsoft Windows Hardware Compatibility Publisher",
+            ExecutableNames = "TwDsUiLaunch.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service TWAIN pour scanners.",
+            FullDescription = "Service qui gère l'interface TWAIN pour les scanners et appareils d'imagerie.",
+            DisableImpact = "Les scanners TWAIN peuvent ne pas fonctionner correctement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous utilisez un scanner.",
+            Tags = "twain,scanner,imaging,driver",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Radeon Software Service",
+            Aliases = "StartCN,cncmd",
+            Publisher = "AMD",
+            ExecutableNames = "cncmd.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service Radeon Software d'AMD.",
+            FullDescription = "Service de commande pour Radeon Software, gérant les fonctionnalités avancées des cartes graphiques AMD.",
+            DisableImpact = "Certaines fonctionnalités Radeon Software peuvent ne pas fonctionner.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez Radeon Software.",
+            Tags = "amd,radeon,software,graphics",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AMD ReLive DVR",
+            Aliases = "StartDVR,RSServCmd,ReLive",
+            Publisher = "AMD",
+            ExecutableNames = "RSServCmd.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service d'enregistrement AMD ReLive.",
+            FullDescription = "AMD ReLive permet d'enregistrer et de streamer vos sessions de jeu avec les cartes graphiques AMD.",
+            DisableImpact = "L'enregistrement et le streaming ReLive ne seront pas disponibles.",
+            PerformanceImpact = "Faible au repos, modéré lors de l'enregistrement.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas ReLive.",
+            Tags = "amd,relive,recording,streaming,gaming",
+            LastUpdated = DateTime.Now
+        });
     }
 
     private void Save(KnowledgeEntry entry)
