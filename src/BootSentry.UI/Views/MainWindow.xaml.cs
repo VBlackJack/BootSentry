@@ -46,6 +46,10 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Apply title bar theme
+        var themeService = App.Services.GetRequiredService<ThemeService>();
+        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+
         // Show onboarding if needed
         var settingsService = App.Services.GetRequiredService<SettingsService>();
         if (settingsService.Settings.ShowOnboarding)

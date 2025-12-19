@@ -1,4 +1,6 @@
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Win32;
 
@@ -9,6 +11,13 @@ namespace BootSentry.UI.Services;
 /// </summary>
 public class ThemeService
 {
+    // DWM API for dark title bar (Windows 10 1809+)
+    [DllImport("dwmapi.dll", PreserveSig = true)]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
     private ThemeMode _currentTheme = ThemeMode.System;
 
     public event EventHandler? ThemeChanged;
@@ -144,6 +153,49 @@ public class ThemeService
             resources["OverlayBackground"] = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0));
             // Muted text
             resources["MutedForeground"] = new SolidColorBrush(Color.FromRgb(107, 114, 128));
+        }
+
+        // Apply dark title bar to all windows
+        ApplyTitleBarTheme(isDark);
+    }
+
+    /// <summary>
+    /// Applies dark or light title bar to all application windows.
+    /// </summary>
+    private static void ApplyTitleBarTheme(bool isDark)
+    {
+        foreach (Window window in Application.Current.Windows)
+        {
+            ApplyTitleBarToWindow(window, isDark);
+        }
+    }
+
+    /// <summary>
+    /// Applies dark or light title bar to a specific window.
+    /// </summary>
+    public static void ApplyTitleBarToWindow(Window window, bool isDark)
+    {
+        if (window == null) return;
+
+        try
+        {
+            var hwnd = new WindowInteropHelper(window).Handle;
+            if (hwnd == IntPtr.Zero) return;
+
+            int useImmersiveDarkMode = isDark ? 1 : 0;
+
+            // Try Windows 10 20H1+ attribute first
+            if (DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                ref useImmersiveDarkMode, sizeof(int)) != 0)
+            {
+                // Fall back to pre-20H1 attribute
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
+                    ref useImmersiveDarkMode, sizeof(int));
+            }
+        }
+        catch
+        {
+            // Ignore errors on older Windows versions
         }
     }
 

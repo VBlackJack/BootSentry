@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using BootSentry.Core.Services;
+using BootSentry.UI.Services;
 
 namespace BootSentry.UI.Views;
 
@@ -15,6 +17,13 @@ public partial class AboutDialog : Window
         InitializeComponent();
         LoadInfo();
         KeyDown += AboutDialog_KeyDown;
+        Loaded += AboutDialog_Loaded;
+    }
+
+    private void AboutDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        var themeService = App.Services.GetRequiredService<ThemeService>();
+        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
     }
 
     private void AboutDialog_KeyDown(object sender, KeyEventArgs e)

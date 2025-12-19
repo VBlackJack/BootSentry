@@ -21,6 +21,13 @@ public partial class OnboardingDialog : Window
         InitializeComponent();
         UpdateUI();
         KeyDown += OnboardingDialog_KeyDown;
+        Loaded += OnboardingDialog_Loaded;
+    }
+
+    private void OnboardingDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        var themeService = App.Services.GetRequiredService<ThemeService>();
+        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
     }
 
     private void OnboardingDialog_KeyDown(object sender, KeyEventArgs e)

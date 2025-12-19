@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using BootSentry.UI.Services;
 using BootSentry.UI.ViewModels;
 
 namespace BootSentry.UI.Views;
@@ -17,6 +18,10 @@ public partial class HistoryView : Window
 
         Loaded += async (s, e) =>
         {
+            // Apply title bar theme
+            var themeService = App.Services.GetRequiredService<ThemeService>();
+            ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+
             if (DataContext is HistoryViewModel vm)
             {
                 await vm.LoadTransactionsCommand.ExecuteAsync(null);

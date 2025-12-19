@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using BootSentry.UI.Services;
 using BootSentry.UI.ViewModels;
 
 namespace BootSentry.UI.Views;
@@ -17,6 +18,13 @@ public partial class SettingsView : Window
     {
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<SettingsViewModel>();
+        Loaded += SettingsView_Loaded;
+    }
+
+    private void SettingsView_Loaded(object sender, RoutedEventArgs e)
+    {
+        var themeService = App.Services.GetRequiredService<ThemeService>();
+        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
