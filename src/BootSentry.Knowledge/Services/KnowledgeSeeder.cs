@@ -60,6 +60,7 @@ internal class KnowledgeSeeder
         SeedMediaAndCreative();
         SeedHardwareTools();
         SeedCommunicationApps();
+        SeedMiscApps();
     }
 
     private void SeedWindowsSystem()
@@ -861,9 +862,9 @@ internal class KnowledgeSeeder
         Save(new KnowledgeEntry
         {
             Name = "EA App",
-            Aliases = "EA Desktop,Origin,Electronic Arts",
-            Publisher = "Electronic Arts Inc.",
-            ExecutableNames = "EADesktop.exe,EABackgroundService.exe,Origin.exe",
+            Aliases = "EA Desktop,Origin,Electronic Arts,EADM",
+            Publisher = "Electronic Arts, Inc.",
+            ExecutableNames = "EADesktop.exe,EABackgroundService.exe,Origin.exe,EALauncher.exe",
             Category = KnowledgeCategory.Gaming,
             SafetyLevel = SafetyLevel.Safe,
             ShortDescription = "Lanceur de jeux Electronic Arts.",
@@ -1088,8 +1089,8 @@ internal class KnowledgeSeeder
         Save(new KnowledgeEntry
         {
             Name = "Signal",
-            Aliases = "Signal Desktop,signal-desktop",
-            Publisher = "Signal Technology Foundation",
+            Aliases = "Signal Desktop,signal-desktop,org.whispersystems.signal-desktop",
+            Publisher = "Signal Messenger, LLC",
             ExecutableNames = "Signal.exe",
             Category = KnowledgeCategory.Communication,
             SafetyLevel = SafetyLevel.Safe,
@@ -1160,7 +1161,7 @@ internal class KnowledgeSeeder
         {
             Name = "pCloud",
             Aliases = "pCloud Drive,pCloud Sync",
-            Publisher = "pCloud AG",
+            Publisher = "pCloud International AG",
             ExecutableNames = "pCloud.exe,pCloudSync.exe",
             Category = KnowledgeCategory.CloudStorage,
             SafetyLevel = SafetyLevel.Safe,
@@ -1461,7 +1462,7 @@ internal class KnowledgeSeeder
         {
             Name = "Razer Synapse",
             Aliases = "Synapse3,Razer Synapse 3,RazerSynapse",
-            Publisher = "Razer Inc.",
+            Publisher = "Razer USA Ltd.",
             ExecutableNames = "Razer Synapse 3.exe,RazerCentralService.exe,Razer Synapse Service.exe",
             Category = KnowledgeCategory.Hardware,
             SafetyLevel = SafetyLevel.Safe,
@@ -1495,7 +1496,7 @@ internal class KnowledgeSeeder
         {
             Name = "AMD Noise Suppression",
             Aliases = "AMDNoiseSuppression,AMD ANR",
-            Publisher = "Advanced Micro Devices, Inc.",
+            Publisher = "Advanced Micro Devices Inc.",
             ExecutableNames = "AMDNoiseSuppression.exe",
             Category = KnowledgeCategory.Hardware,
             SafetyLevel = SafetyLevel.Safe,
@@ -1824,7 +1825,7 @@ internal class KnowledgeSeeder
         {
             Name = "Textify",
             Aliases = "Textify Tool",
-            Publisher = "RaMMicHaeL",
+            Publisher = "Michael Maltsev",
             ExecutableNames = "Textify.exe",
             Category = KnowledgeCategory.Utility,
             SafetyLevel = SafetyLevel.Safe,
@@ -4492,7 +4493,7 @@ internal class KnowledgeSeeder
         {
             Name = "Overwolf",
             Aliases = "OverwolfLauncher",
-            Publisher = "Overwolf Ltd.",
+            Publisher = "Overwolf Ltd",
             ExecutableNames = "Overwolf.exe,OverwolfLauncher.exe",
             Category = KnowledgeCategory.Gaming,
             SafetyLevel = SafetyLevel.Safe,
@@ -4616,8 +4617,8 @@ internal class KnowledgeSeeder
         Save(new KnowledgeEntry
         {
             Name = "Perplexity",
-            Aliases = "Perplexity AI,Perplexity Desktop",
-            Publisher = "Perplexity AI, Inc.",
+            Aliases = "Perplexity AI,Perplexity Desktop,com.todesktop.25020447d4kq915",
+            Publisher = "PERPLEXITY AI, INC.",
             ExecutableNames = "Perplexity.exe",
             Category = KnowledgeCategory.Productivity,
             SafetyLevel = SafetyLevel.Safe,
@@ -4634,7 +4635,7 @@ internal class KnowledgeSeeder
         {
             Name = "Claude",
             Aliases = "Claude Desktop,Claude AI",
-            Publisher = "Anthropic",
+            Publisher = "Anthropic, PBC",
             ExecutableNames = "Claude.exe,claude.exe",
             Category = KnowledgeCategory.Productivity,
             SafetyLevel = SafetyLevel.Safe,
@@ -5666,6 +5667,301 @@ internal class KnowledgeSeeder
             PerformanceImpact = "Faible au repos.",
             Recommendation = "Peut être désactivé. Lancez via lien de réunion.",
             Tags = "gotomeeting,meetings,webinar,conferencing",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    /// <summary>
+    /// Seeds miscellaneous applications and services.
+    /// </summary>
+    private void SeedMiscApps()
+    {
+        Save(new KnowledgeEntry
+        {
+            Name = "LM Studio",
+            Aliases = "electron.app.LM Studio,LMStudio",
+            Publisher = "LM Studio",
+            ExecutableNames = "LM Studio.exe",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Application pour exécuter des LLMs localement.",
+            FullDescription = "LM Studio permet de télécharger et exécuter des modèles de langage (LLMs) localement sur votre machine. Supporte de nombreux modèles open source.",
+            DisableImpact = "LM Studio ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Élevé lors de l'utilisation (GPU/CPU intensif).",
+            Recommendation = "N'a pas besoin de démarrer avec Windows.",
+            Tags = "lmstudio,llm,ai,local,models",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Sandboxie Plus",
+            Aliases = "SandboxiePlus,SandboxiePlus_AutoRun,SandMan",
+            Publisher = "Tonalio GmbH",
+            ExecutableNames = "SandMan.exe,SbieSvc.exe",
+            Category = KnowledgeCategory.Security,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bac à sable pour exécuter des programmes isolés.",
+            FullDescription = "Sandboxie Plus permet d'exécuter des programmes dans un environnement isolé pour protéger votre système. Idéal pour tester des logiciels suspects.",
+            DisableImpact = "Les programmes ne seront pas automatiquement sandboxés.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez régulièrement le sandboxing.",
+            Tags = "sandboxie,sandbox,security,isolation",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Synology Image Assistant",
+            Aliases = "Synology Assistant",
+            Publisher = "Synology Inc.",
+            ExecutableNames = "Synology Image Assistant.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil de gestion des NAS Synology.",
+            FullDescription = "Synology Image Assistant aide à gérer et configurer les NAS Synology depuis votre PC.",
+            DisableImpact = "L'assistant Synology ne sera pas disponible immédiatement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé si utilisé occasionnellement.",
+            Tags = "synology,nas,storage,assistant",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "YoloMouse",
+            Aliases = "Yolo Mouse,YoloLauncher",
+            Publisher = "Dragonrise Games",
+            ExecutableNames = "YoloLauncher.exe,YoloMouse.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Remplace le curseur dans les jeux par un curseur personnalisé.",
+            FullDescription = "YoloMouse permet de remplacer le curseur par défaut dans les jeux par un curseur plus visible et personnalisé. Utile pour les jeux avec curseurs difficiles à voir.",
+            DisableImpact = "Les curseurs personnalisés ne seront pas appliqués automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé. Lancez manuellement avant de jouer.",
+            Tags = "yolomouse,cursor,gaming,visibility",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "RoboForm",
+            Aliases = "RoboForm Password Manager",
+            Publisher = "Siber Systems",
+            ExecutableNames = "RoboTaskBarIcon.exe,rf-updater.exe",
+            Category = KnowledgeCategory.Security,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe.",
+            FullDescription = "RoboForm est un gestionnaire de mots de passe qui stocke et remplit automatiquement vos identifiants de connexion.",
+            DisableImpact = "Le remplissage automatique des mots de passe ne sera pas disponible.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous l'utilisez comme gestionnaire de mots de passe principal.",
+            Tags = "roboform,password,manager,security",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Waves MaxxAudio",
+            Aliases = "WavesSvc,Waves Audio,WavesSvc64",
+            Publisher = "Waves Inc",
+            ExecutableNames = "WavesSvc64.exe,WavesSvc.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service d'amélioration audio Waves.",
+            FullDescription = "Waves MaxxAudio améliore la qualité audio sur les PC Dell et autres marques. Fournit des effets audio et égalisation.",
+            DisableImpact = "Les améliorations audio Waves ne seront pas appliquées.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez les effets audio Waves.",
+            Tags = "waves,maxxaudio,audio,dell,enhancement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Brother Software Update",
+            Aliases = "BrotherSoftwareUpdateNotification",
+            Publisher = "Brother Industries, Ltd.",
+            ExecutableNames = "SoftwareUpdateNotificationService.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de mise à jour pour imprimantes Brother.",
+            FullDescription = "Ce service vérifie et notifie les mises à jour disponibles pour les pilotes et logiciels d'imprimantes Brother.",
+            DisableImpact = "Pas de notifications de mises à jour Brother.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé. Vérifiez manuellement les mises à jour.",
+            Tags = "brother,printer,update,notification",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Opera Browser Assistant",
+            Aliases = "Opera Assistant,browser_assistant",
+            Publisher = "Opera Norway AS",
+            ExecutableNames = "browser_assistant.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant Opera pour les mises à jour et promotions.",
+            FullDescription = "Opera Browser Assistant gère les mises à jour automatiques d'Opera et affiche des notifications promotionnelles.",
+            DisableImpact = "Pas de mises à jour automatiques d'Opera ni de notifications.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé. Les mises à jour se feront via le navigateur.",
+            Tags = "opera,browser,assistant,update",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Opera Stable",
+            Aliases = "Opera Browser",
+            Publisher = "Opera Norway AS",
+            ExecutableNames = "opera.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Navigateur web Opera.",
+            FullDescription = "Opera est un navigateur web avec VPN intégré, bloqueur de publicités et sidebar de messagerie.",
+            DisableImpact = "Opera ne s'ouvrira pas au démarrage.",
+            PerformanceImpact = "Modéré si lancé au démarrage.",
+            Recommendation = "Peut être désactivé si vous lancez Opera manuellement.",
+            Tags = "opera,browser,navigateur,vpn",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Brave Update",
+            Aliases = "BraveSoftwareUpdateTaskMachineCore,Brave Service",
+            Publisher = "BraveSoftware Inc.",
+            ExecutableNames = "BraveUpdate.exe",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service de mise à jour du navigateur Brave.",
+            FullDescription = "Ce service gère les mises à jour automatiques du navigateur Brave.",
+            DisableImpact = "Brave ne se mettra pas à jour automatiquement.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif pour les mises à jour de sécurité automatiques.",
+            Tags = "brave,browser,update,service",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "VMware Services",
+            Aliases = "vmware-tray,VMware Authorization Service,VMware DHCP Service,VMware NAT Service,VMware USB Arbitration Service",
+            Publisher = "VMware, Inc.",
+            ExecutableNames = "vmware-tray.exe,vmware-authd.exe,vmnetdhcp.exe,vmnat.exe,vmware-usbarbitrator64.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Services VMware pour la virtualisation.",
+            FullDescription = "Services nécessaires au fonctionnement de VMware Workstation pour les machines virtuelles, réseau et périphériques USB.",
+            DisableImpact = "Les machines virtuelles VMware ne fonctionneront pas correctement.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Gardez actif si vous utilisez VMware Workstation.",
+            Tags = "vmware,virtualization,vm,services",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Corsair Services",
+            Aliases = "Corsair CpuIdService,Corsair LLA Service,Corsair Service",
+            Publisher = "Corsair Memory, Inc.",
+            ExecutableNames = "CorsairCpuIdService.exe,CueLLAccessService.exe,Corsair.Service.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Services pour les périphériques Corsair.",
+            FullDescription = "Services nécessaires au fonctionnement de Corsair iCUE pour contrôler l'éclairage RGB et les fonctionnalités des périphériques Corsair.",
+            DisableImpact = "L'éclairage RGB Corsair et les fonctionnalités iCUE ne fonctionneront pas.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous avez des périphériques Corsair.",
+            Tags = "corsair,icue,rgb,services,peripherals",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Razer Services",
+            Aliases = "Razer Chroma SDK Server,Razer Chroma SDK Service,Razer Game Manager,Razer Central Service",
+            Publisher = "Razer Inc.",
+            ExecutableNames = "RzSDKServer.exe,RzSDKService.exe,GameManagerService.exe,RazerCentralService.exe,RzChromaStreamServer.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Services pour l'écosystème Razer.",
+            FullDescription = "Services nécessaires au fonctionnement de Razer Synapse et Chroma RGB pour les périphériques Razer.",
+            DisableImpact = "L'éclairage Chroma et les fonctionnalités Synapse ne fonctionneront pas.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Gardez actif si vous avez des périphériques Razer.",
+            Tags = "razer,chroma,synapse,services,rgb",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Oculus VR Runtime",
+            Aliases = "Oculus VR Runtime Service,OVRServiceLauncher",
+            Publisher = "Facebook Technologies, LLC",
+            ExecutableNames = "OVRServiceLauncher.exe,OVRServer_x64.exe",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service runtime pour casques Oculus/Meta Quest.",
+            FullDescription = "Service nécessaire pour utiliser les casques VR Oculus Rift et Meta Quest avec Link sur PC.",
+            DisableImpact = "Les casques Oculus/Meta Quest ne fonctionneront pas avec le PC.",
+            PerformanceImpact = "Modéré.",
+            Recommendation = "Désactivez si vous n'utilisez pas de casque VR Oculus.",
+            Tags = "oculus,meta,quest,vr,runtime",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "WD Drive Manager",
+            Aliases = "Western Digital Drive Manager,WDDriveService",
+            Publisher = "Western Digital Technologies, Inc.",
+            ExecutableNames = "WDDriveService.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service pour les disques Western Digital.",
+            FullDescription = "Service de gestion pour les disques externes Western Digital. Peut inclure des fonctionnalités de sauvegarde et sécurité.",
+            DisableImpact = "Certaines fonctionnalités WD peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas les fonctionnalités WD avancées.",
+            Tags = "western,digital,wd,storage,drive",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DTS Audio",
+            Aliases = "DTS APO3 Service,DTSAPO3Service",
+            Publisher = "DTS, Inc.",
+            ExecutableNames = "DTSAPO3Service.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service d'amélioration audio DTS.",
+            FullDescription = "DTS Audio Processing Object améliore la qualité audio avec des effets surround et égalisation sur les PC compatibles.",
+            DisableImpact = "Les effets audio DTS ne seront pas appliqués.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous utilisez les améliorations audio DTS.",
+            Tags = "dts,audio,surround,enhancement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Logitech LampArray Service",
+            Aliases = "Logitech Lamp Array",
+            Publisher = "Logitech, Inc.",
+            ExecutableNames = "logi_lamparray_service.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service d'éclairage Logitech.",
+            FullDescription = "Service pour contrôler l'éclairage RGB dynamique sur les périphériques Logitech compatibles LampArray.",
+            DisableImpact = "L'éclairage dynamique Logitech ne fonctionnera pas.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous utilisez l'éclairage RGB Logitech.",
+            Tags = "logitech,lamparray,rgb,lighting",
             LastUpdated = DateTime.Now
         });
     }
