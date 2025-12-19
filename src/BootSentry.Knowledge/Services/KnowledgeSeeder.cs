@@ -6151,6 +6151,228 @@ internal class KnowledgeSeeder
             Tags = "amd,relive,recording,streaming,gaming",
             LastUpdated = DateTime.Now
         });
+
+        // Shell Extensions and Context Menu Handlers
+        Save(new KnowledgeEntry
+        {
+            Name = "Synology Assistant",
+            Aliases = "Synology USB Client,UsbClientService",
+            Publisher = "Synology Inc.",
+            ExecutableNames = "UsbClientService.exe,Synology Assistant.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service Synology pour la connexion USB directe au NAS.",
+            FullDescription = "Synology Assistant permet de découvrir et gérer les NAS Synology sur le réseau local. Le service USB permet la connexion directe d'un NAS via USB.",
+            DisableImpact = "La connexion USB directe au NAS ne fonctionnera pas.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Peut être désactivé si vous n'utilisez pas la connexion USB de votre NAS.",
+            Tags = "synology,nas,storage,usb,network",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "LockHunter",
+            Aliases = "LHShellExt,LockHunterShellExtension",
+            Publisher = "Crystal Rich Ltd",
+            ExecutableNames = "LockHunter.exe,LHShellExt64.dll",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outil pour débloquer et supprimer les fichiers verrouillés.",
+            FullDescription = "LockHunter permet de voir quels processus verrouillent un fichier et de le débloquer. L'extension shell ajoute une option au menu contextuel.",
+            DisableImpact = "L'option 'What is locking this file?' ne sera pas disponible dans le menu contextuel.",
+            PerformanceImpact = "Négligeable (extension shell uniquement).",
+            Recommendation = "Peut rester actif, n'impacte pas les performances.",
+            Tags = "lockhunter,unlock,file,locked,delete",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Tracker Software PDF-XChange",
+            Aliases = "PDF-XChange Editor,PDF Tools,PDFXToolsShellMenu,XCShellMenu",
+            Publisher = "Tracker Software Products (Canada) Ltd.",
+            ExecutableNames = "PDFXEdit.exe,PDFXTools.exe,PDFXToolsShellMenu.x64.dll,XCShellMenu.x64.dll",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Éditeur PDF professionnel avec outils avancés.",
+            FullDescription = "PDF-XChange Editor est un éditeur PDF complet permettant l'annotation, la modification et la création de PDF. Les extensions shell ajoutent des options au menu contextuel.",
+            DisableImpact = "Les options PDF dans le menu contextuel ne seront pas disponibles.",
+            PerformanceImpact = "Négligeable (extension shell uniquement).",
+            Recommendation = "Peut rester actif pour un accès rapide aux outils PDF.",
+            Tags = "pdf,editor,tracker,annotation,document",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Internet Download Manager",
+            Aliases = "IDM,IDMIEHlprObj,IDMIECC",
+            Publisher = "Tonec Inc.",
+            ExecutableNames = "IDMan.exe,IDMIECC64.dll,IEMonitor.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de téléchargements avec accélération.",
+            FullDescription = "Internet Download Manager (IDM) accélère les téléchargements en utilisant plusieurs connexions simultanées. S'intègre aux navigateurs pour capturer les téléchargements.",
+            DisableImpact = "L'intégration IDM dans les navigateurs ne fonctionnera pas automatiquement.",
+            PerformanceImpact = "Faible (~20-40 Mo RAM).",
+            Recommendation = "Gardez actif si vous utilisez IDM régulièrement.",
+            Tags = "idm,download,manager,accelerator,internet",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Adobe CoreSync",
+            Aliases = "AccExt,CoreSync_x64,Adobe Creative Cloud Files",
+            Publisher = "Adobe Inc.",
+            ExecutableNames = "CoreSync.exe,CoreSync_x64.dll",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Synchronisation des fichiers Adobe Creative Cloud.",
+            FullDescription = "CoreSync gère la synchronisation des fichiers Creative Cloud entre votre ordinateur et le cloud Adobe. L'extension shell ajoute des icônes d'état de synchronisation.",
+            DisableImpact = "Les fichiers Creative Cloud ne se synchroniseront pas automatiquement.",
+            PerformanceImpact = "Faible au repos, modéré lors de la synchronisation.",
+            Recommendation = "Gardez actif si vous utilisez les fichiers Creative Cloud.",
+            Tags = "adobe,creative,cloud,sync,files",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "WinRAR",
+            Aliases = "WinRAR32,RAR,WinRAR Shell Extension",
+            Publisher = "Alexander Roshal",
+            ExecutableNames = "WinRAR.exe,Rar.exe,UnRAR.exe",
+            Category = KnowledgeCategory.Utility,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Utilitaire de compression et décompression d'archives.",
+            FullDescription = "WinRAR est un des compresseurs d'archives les plus populaires, supportant RAR, ZIP, 7Z et de nombreux autres formats. L'extension shell permet d'extraire directement depuis l'explorateur.",
+            DisableImpact = "Les options WinRAR dans le menu contextuel ne seront pas disponibles.",
+            PerformanceImpact = "Négligeable (extension shell uniquement).",
+            Recommendation = "Peut rester actif pour un accès rapide à la compression.",
+            Tags = "winrar,compression,archive,zip,rar",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "LDPlayer",
+            Aliases = "ldplayer,LdVBox,ldplayerbox,ldplayer9box",
+            Publisher = "Shanghai Chang Zhi Network Technology",
+            ExecutableNames = "dnplayer.exe,LdVBoxDrv.sys,Ld9BoxSup.sys",
+            Category = KnowledgeCategory.Gaming,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Émulateur Android pour PC.",
+            FullDescription = "LDPlayer est un émulateur Android optimisé pour les jeux. Permet de jouer aux jeux Android sur PC avec de meilleures performances et contrôles.",
+            DisableImpact = "L'émulateur devra être lancé manuellement.",
+            PerformanceImpact = "Élevé quand actif (~1-2 Go RAM).",
+            Recommendation = "Les services peuvent être désactivés. Lancez LDPlayer manuellement.",
+            Tags = "ldplayer,android,emulator,gaming,mobile",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Kofax Power PDF",
+            Aliases = "PDF Create,Nuance PDF,SDirectShellExt",
+            Publisher = "Kofax,Zeon Corporation,Nuance",
+            ExecutableNames = "PDFCreate!.exe,SDirectShellExt.dll",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Suite de création et édition PDF professionnelle.",
+            FullDescription = "Kofax Power PDF (anciennement Nuance) permet de créer, éditer et convertir des documents PDF. L'extension shell ajoute des options de conversion au menu contextuel.",
+            DisableImpact = "Les options de conversion PDF dans le menu contextuel ne seront pas disponibles.",
+            PerformanceImpact = "Négligeable (extension shell uniquement).",
+            Recommendation = "Peut rester actif pour un accès rapide à la conversion PDF.",
+            Tags = "kofax,nuance,pdf,create,convert",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Autodesk Shell Extension",
+            Aliases = "AcContextMenuHandler,AcShellExtension",
+            Publisher = "Autodesk, Inc.",
+            ExecutableNames = "AcShellExtension.dll",
+            Category = KnowledgeCategory.Productivity,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Extension shell pour fichiers AutoCAD.",
+            FullDescription = "Extension Autodesk qui ajoute des options au menu contextuel pour les fichiers DWG et autres formats AutoCAD.",
+            DisableImpact = "Les options Autodesk dans le menu contextuel ne seront pas disponibles.",
+            PerformanceImpact = "Négligeable.",
+            Recommendation = "Peut rester actif si vous travaillez avec des fichiers AutoCAD.",
+            Tags = "autodesk,autocad,dwg,shell,extension",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Google Drive File Stream",
+            Aliases = "DriveFS,googledrivefs,DriveFS ContextMenu",
+            Publisher = "Google LLC",
+            ExecutableNames = "GoogleDriveFS.exe,drivefsext.dll,googledrivefs*.sys",
+            Category = KnowledgeCategory.CloudStorage,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Client de synchronisation Google Drive pour bureau.",
+            FullDescription = "Google Drive pour bureau synchronise vos fichiers Google Drive avec votre ordinateur. Permet d'accéder aux fichiers en streaming sans les télécharger tous.",
+            DisableImpact = "Google Drive ne sera pas accessible comme lecteur virtuel.",
+            PerformanceImpact = "Faible au repos, modéré lors de la synchronisation.",
+            Recommendation = "Gardez actif si vous utilisez Google Drive régulièrement.",
+            Tags = "google,drive,cloud,sync,storage",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "RUXIM",
+            Aliases = "PLUGScheduler,Windows Update Health Tools",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "PLUGScheduler.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Critical,
+            ShortDescription = "Composant Windows Update pour la maintenance système.",
+            FullDescription = "RUXIM (Remediation Update eXecutor IMproved) est un composant Microsoft qui aide à maintenir Windows à jour et en bon état. Fait partie des outils de santé Windows Update.",
+            DisableImpact = "Certaines mises à jour Windows et corrections automatiques peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Ne pas désactiver. Composant système important.",
+            Tags = "microsoft,windows,update,health,remediation",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Windows Clipboard Service",
+            Aliases = "ClipESU,Clipboard Enhanced Service",
+            Publisher = "Microsoft Corporation",
+            ExecutableNames = "clipesu.exe",
+            Category = KnowledgeCategory.WindowsSystem,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Service amélioré du presse-papiers Windows.",
+            FullDescription = "Service lié aux fonctionnalités avancées du presse-papiers Windows comme l'historique du presse-papiers et la synchronisation entre appareils.",
+            DisableImpact = "L'historique du presse-papiers et la synchronisation peuvent ne pas fonctionner.",
+            PerformanceImpact = "Très faible.",
+            Recommendation = "Gardez actif si vous utilisez l'historique du presse-papiers (Win+V).",
+            Tags = "clipboard,windows,history,sync,paste",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ASUS ROG Peripherals",
+            Aliases = "P508PowerAgent,ROG STRIX CARRY,ASUS Mouse",
+            Publisher = "ASUSTeK Computer Inc.",
+            ExecutableNames = "P508PowerAgent.exe,ArmouryDevice*.exe",
+            Category = KnowledgeCategory.Hardware,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Agent de gestion des périphériques gaming ROG.",
+            FullDescription = "Service ASUS pour la gestion des périphériques gaming ROG (souris, claviers). Gère les profils, l'éclairage RGB et la batterie.",
+            DisableImpact = "Les profils et l'éclairage RGB des périphériques ROG ne seront pas gérés automatiquement.",
+            PerformanceImpact = "Faible.",
+            Recommendation = "Gardez actif si vous utilisez des périphériques ROG avec des profils personnalisés.",
+            Tags = "asus,rog,mouse,keyboard,gaming,rgb",
+            LastUpdated = DateTime.Now
+        });
     }
 
     private void Save(KnowledgeEntry entry)
