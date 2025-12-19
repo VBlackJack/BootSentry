@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BootSentry.Core.Interfaces;
 using BootSentry.UI.Resources;
@@ -28,10 +27,15 @@ public partial class HistoryViewModel : ObservableObject
     [ObservableProperty]
     private string? _statusMessage;
 
-    public HistoryViewModel()
+    // Design-time constructor
+    public HistoryViewModel() : this(null!, null!) { }
+
+    public HistoryViewModel(
+        ILogger<HistoryViewModel> logger,
+        ITransactionManager transactionManager)
     {
-        _logger = App.Services.GetRequiredService<ILogger<HistoryViewModel>>();
-        _transactionManager = App.Services.GetRequiredService<ITransactionManager>();
+        _logger = logger;
+        _transactionManager = transactionManager;
     }
 
     /// <summary>

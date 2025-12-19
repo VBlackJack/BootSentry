@@ -9,20 +9,25 @@ namespace BootSentry.Core.Services;
 /// </summary>
 public class UpdateChecker : IDisposable
 {
-    private readonly HttpClient _httpClient;
+    // Shared HttpClient to avoid socket exhaustion
+    private static readonly HttpClient SharedHttpClient;
     private readonly string _repoOwner;
     private readonly string _repoName;
-    private bool _disposed;
+
+    static UpdateChecker()
+    {
+        SharedHttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
+        SharedHttpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"BootSentry/{CurrentVersion} UpdateCheck");
+        SharedHttpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+    }
 
     public UpdateChecker(string repoOwner = "VBlackJack", string repoName = "BootSentry")
     {
         _repoOwner = repoOwner;
         _repoName = repoName;
-
-        _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"BootSentry/{CurrentVersion} UpdateCheck");
-        _httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
-        _httpClient.Timeout = TimeSpan.FromSeconds(10);
     }
 
     /// <summary>
@@ -46,7 +51,7 @@ public class UpdateChecker : IDisposable
         try
         {
             var url = $"https://api.github.com/repos/{_repoOwner}/{_repoName}/releases/latest";
-            var release = await _httpClient.GetFromJsonAsync<GitHubRelease>(url, cancellationToken);
+            var release = await SharedHttpClient.GetFromJsonAsync<GitHubRelease>(url, cancellationToken);
 
             if (release == null || string.IsNullOrEmpty(release.TagName))
                 return null;
@@ -103,11 +108,9 @@ public class UpdateChecker : IDisposable
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _httpClient.Dispose();
-            _disposed = true;
-        }
+        // SharedHttpClient is static and should not be disposed
+        // Keep Dispose for interface compatibility
+        GC.SuppressFinalize(this);
     }
 }
 

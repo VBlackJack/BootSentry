@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using BootSentry.Actions;
 using BootSentry.Backup;
+using BootSentry.Core.Services;
 using BootSentry.Knowledge.Services;
 using BootSentry.Providers;
 using BootSentry.Security;
@@ -116,6 +117,10 @@ public partial class App : Application
         // UI Services
         services.AddSingleton<SettingsService>();
         services.AddSingleton<ThemeService>();
+
+        // Core services
+        services.AddSingleton<ExportService>();
+        services.AddSingleton<RiskAnalyzer>();
 
         // Knowledge base
         services.AddSingleton<KnowledgeService>(sp =>

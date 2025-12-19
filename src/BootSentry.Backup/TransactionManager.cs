@@ -317,8 +317,9 @@ public sealed class TransactionManager : ITransactionManager
             var identity = WindowsIdentity.GetCurrent();
             return identity.User?.Value;
         }
-        catch
+        catch (Exception)
         {
+            // Can fail in certain impersonation or restricted contexts
             return null;
         }
     }

@@ -123,6 +123,8 @@ public partial class MainViewModel : ObservableObject
         ActionExecutor actionExecutor,
         ITransactionManager transactionManager,
         KnowledgeService knowledgeService,
+        ExportService exportService,
+        RiskAnalyzer riskAnalyzer,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -131,8 +133,8 @@ public partial class MainViewModel : ObservableObject
         _transactionManager = transactionManager;
         _knowledgeService = knowledgeService;
         _malwareScanner = malwareScanner;
-        _exportService = new ExportService();
-        _riskAnalyzer = new RiskAnalyzer();
+        _exportService = exportService;
+        _riskAnalyzer = riskAnalyzer;
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;

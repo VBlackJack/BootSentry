@@ -54,9 +54,36 @@ public sealed class BackupStorage
     /// <summary>
     /// Gets the directory path for a specific transaction.
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown if transactionId contains invalid characters.</exception>
     public string GetTransactionPath(string transactionId)
     {
+        ValidateTransactionId(transactionId);
         return Path.Combine(_basePath, transactionId);
+    }
+
+    /// <summary>
+    /// Validates a transaction ID to prevent path traversal attacks.
+    /// </summary>
+    private static void ValidateTransactionId(string transactionId)
+    {
+        if (string.IsNullOrWhiteSpace(transactionId))
+            throw new ArgumentException("Transaction ID cannot be null or empty.", nameof(transactionId));
+
+        // Check for path traversal patterns
+        if (transactionId.Contains("..") ||
+            transactionId.Contains('/') ||
+            transactionId.Contains('\\') ||
+            transactionId.Contains(':'))
+        {
+            throw new ArgumentException("Transaction ID contains invalid characters.", nameof(transactionId));
+        }
+
+        // Validate against invalid filename characters
+        var invalidChars = Path.GetInvalidFileNameChars();
+        if (transactionId.IndexOfAny(invalidChars) >= 0)
+        {
+            throw new ArgumentException("Transaction ID contains invalid characters.", nameof(transactionId));
+        }
     }
 
     /// <summary>

@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
@@ -16,6 +15,9 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ILogger<SettingsViewModel> _logger;
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
+
+    // Design-time constructor
+    public SettingsViewModel() : this(null!, null!, null!) { }
 
     [ObservableProperty]
     private string _selectedLanguage = "fr";
@@ -54,11 +56,14 @@ public partial class SettingsViewModel : ObservableObject
         new ThemeItem(ThemeMode.Dark, Strings.Get("SettingsThemeDark"))
     ];
 
-    public SettingsViewModel()
+    public SettingsViewModel(
+        ILogger<SettingsViewModel> logger,
+        SettingsService settingsService,
+        ThemeService themeService)
     {
-        _logger = App.Services.GetRequiredService<ILogger<SettingsViewModel>>();
-        _settingsService = App.Services.GetRequiredService<SettingsService>();
-        _themeService = App.Services.GetRequiredService<ThemeService>();
+        _logger = logger;
+        _settingsService = settingsService;
+        _themeService = themeService;
 
         LoadSettings();
     }

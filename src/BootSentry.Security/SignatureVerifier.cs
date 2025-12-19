@@ -27,8 +27,10 @@ public sealed class SignatureVerifier : ISignatureVerifier
             var result = VerifyWithWinTrust(filePath);
             return result != NativeMethods.TRUST_E_NOSIGNATURE;
         }
-        catch
+        catch (Exception)
         {
+            // WinVerifyTrust can fail for various reasons (access denied, file locked, etc.)
+            // Return false as we cannot verify the signature
             return false;
         }
     }
@@ -159,8 +161,9 @@ public sealed class SignatureVerifier : ISignatureVerifier
                 ChainIsValid = ValidateCertificateChain(cert)
             };
         }
-        catch
+        catch (Exception)
         {
+            // Certificate extraction can fail for various reasons
             return new SignatureInfo
             {
                 Status = SignatureStatus.Unknown,
@@ -175,13 +178,15 @@ public sealed class SignatureVerifier : ISignatureVerifier
         chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
         chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+        chain.ChainPolicy.UrlRetrievalTimeout = TimeSpan.FromSeconds(10); // Prevent blocking on slow OCSP/CRL servers
 
         try
         {
             return chain.Build(cert);
         }
-        catch
+        catch (Exception)
         {
+            // Chain building can fail due to network issues, revocation check failures, etc.
             return false;
         }
     }
