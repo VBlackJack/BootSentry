@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
-        Title="Historique - BootSentry"
+        Title="{res:Localize HistoryWindowTitle}"
         Height="500" Width="800"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackground}"
@@ -21,11 +22,10 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="Historique des actions"
+            <TextBlock Text="{res:Localize HistoryTitle}"
                        FontSize="20" FontWeight="Bold"
                        Foreground="{DynamicResource WindowForeground}"/>
-            <TextBlock Text="Consultez et restaurez les modifications précédentes"
-                       AutomationProperties.LiveSetting="Polite"
+            <TextBlock Text="{res:Localize HistorySubtitle}"
                        Foreground="{DynamicResource DisabledForeground}"
                        Margin="0,4,0,0"/>
         </StackPanel>
@@ -48,12 +48,12 @@
                   RowBackground="{DynamicResource PanelBackground}"
                   AlternatingRowBackground="{DynamicResource RowAlternate}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Date" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
-                <DataGridTextColumn Header="Action" Binding="{Binding ActionType}" Width="80"/>
-                <DataGridTextColumn Header="Entrée" Binding="{Binding EntryDisplayName}" Width="*"/>
-                <DataGridTextColumn Header="Type" Binding="{Binding EntryType}" Width="100"/>
-                <DataGridTextColumn Header="Utilisateur" Binding="{Binding User}" Width="100"/>
-                <DataGridTextColumn Header="Statut" Binding="{Binding StatusText}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize History_Date}" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
+                <DataGridTextColumn Header="{res:Localize History_Action}" Binding="{Binding ActionType}" Width="80"/>
+                <DataGridTextColumn Header="{res:Localize History_Entry}" Binding="{Binding EntryDisplayName}" Width="*"/>
+                <DataGridTextColumn Header="{res:Localize History_Type}" Binding="{Binding EntryType}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize History_User}" Binding="{Binding User}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize History_Status}" Binding="{Binding StatusText}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
 
@@ -77,7 +77,8 @@
                                Text="{Binding SelectedTransaction.EntryDisplayName}"/>
                     <TextBlock Foreground="{DynamicResource DisabledForeground}"
                                Margin="0,4,0,0">
-                        <Run Text="Source: "/>
+                        <Run Text="{res:Localize DetailSource}"/>
+                        <Run Text=" "/>
                         <Run Text="{Binding SelectedTransaction.SourcePath, Mode=OneWay}"/>
                     </TextBlock>
                 </StackPanel>
@@ -86,7 +87,7 @@
                         Style="{StaticResource ToolbarButton}"
                         Command="{Binding RollbackSelectedCommand}"
                         IsEnabled="{Binding SelectedTransaction.CanRestore}"
-                        Content="Restaurer"/>
+                        Content="{res:Localize ActionRestore}"/>
             </Grid>
         </Border>
 
@@ -103,21 +104,21 @@
                        Foreground="{DynamicResource DisabledForeground}"/>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Purger les anciens"
+                <Button Content="{res:Localize HistoryPurgeOld}"
                         Command="{Binding PurgeOldTransactionsCommand}"
                         Padding="12,8"
                         Margin="4,0"
                         Background="{DynamicResource ControlBackground}"
                         Foreground="{DynamicResource ControlForeground}"
                         BorderBrush="{DynamicResource BorderBrush}"/>
-                <Button Content="Actualiser"
+                <Button Content="{res:Localize MenuRefresh}"
                         Command="{Binding LoadTransactionsCommand}"
                         Padding="12,8"
                         Margin="4,0"
                         Background="{DynamicResource ControlBackground}"
                         Foreground="{DynamicResource ControlForeground}"
                         BorderBrush="{DynamicResource BorderBrush}"/>
-                <Button Content="Fermer"
+                <Button Content="{res:Localize Close}"
                         Click="CloseButton_Click"
                         Padding="12,8"
                         Margin="4,0,0,0"
@@ -133,7 +134,7 @@
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
-                <TextBlock Text="Chargement..."
+                <TextBlock Text="{res:Localize Loading}"
                            Foreground="{DynamicResource AccentForeground}"
                            HorizontalAlignment="Center"
                            Margin="0,8,0,0"/>

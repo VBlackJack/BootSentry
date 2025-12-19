@@ -50,20 +50,17 @@ public sealed class WinlogonProvider : IStartupProvider
     {
         var entries = new List<StartupEntry>();
 
-        await Task.Run(() =>
-        {
-            // Scan HKLM Winlogon
-            ScanWinlogonKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
+        // Scan HKLM Winlogon
+        await ScanWinlogonKeyAsync(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
 
-            // Scan HKCU Winlogon (less common but possible)
-            ScanWinlogonKey(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
-        }, cancellationToken);
+        // Scan HKCU Winlogon (less common but possible)
+        await ScanWinlogonKeyAsync(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
 
         _logger.LogInformation("Found {Count} Winlogon entries", entries.Count);
         return entries;
     }
 
-    private void ScanWinlogonKey(RegistryKey root, string path, List<StartupEntry> entries, CancellationToken cancellationToken)
+    private async Task ScanWinlogonKeyAsync(RegistryKey root, string path, List<StartupEntry> entries, CancellationToken cancellationToken)
     {
         try
         {
@@ -85,8 +82,12 @@ public sealed class WinlogonProvider : IStartupProvider
                     if (string.IsNullOrWhiteSpace(value))
                         continue;
 
-                    var entry = CreateEntry(fullPath, valueName, value, scope, isCritical);
+                    var entry = await CreateEntryAsync(fullPath, valueName, value, scope, isCritical, cancellationToken);
                     entries.Add(entry);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -94,13 +95,17 @@ public sealed class WinlogonProvider : IStartupProvider
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Error scanning Winlogon key");
         }
     }
 
-    private StartupEntry CreateEntry(string keyPath, string valueName, string value, EntryScope scope, bool isCritical)
+    private async Task<StartupEntry> CreateEntryAsync(string keyPath, string valueName, string value, EntryScope scope, bool isCritical, CancellationToken cancellationToken)
     {
         var id = StartupEntry.GenerateId(EntryType.Winlogon, scope, keyPath, valueName);
 
@@ -156,13 +161,13 @@ public sealed class WinlogonProvider : IStartupProvider
         // Get file metadata if target exists
         if (fileExists && targetPath != null)
         {
-            EnrichWithFileMetadata(entry, targetPath);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
         }
 
         return entry;
     }
 
-    private void EnrichWithFileMetadata(StartupEntry entry, string filePath)
+    private async Task EnrichWithFileMetadataAsync(StartupEntry entry, string filePath, CancellationToken cancellationToken)
     {
         try
         {
@@ -175,13 +180,38 @@ public sealed class WinlogonProvider : IStartupProvider
             entry.ProductName = versionInfo.ProductName;
             entry.CompanyName = versionInfo.CompanyName;
             entry.FileDescription = versionInfo.FileDescription;
+            
+            // Default publisher from file info
             entry.Publisher = versionInfo.CompanyName;
 
-            // If Microsoft signed, update risk level
-            if (versionInfo.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
+            // Use Signature Verifier if available
+            if (_signatureVerifier != null)
             {
-                if (entry.RiskLevel != RiskLevel.Safe)
-                    entry.RiskLevel = RiskLevel.Safe;
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                entry.SignatureStatus = sigInfo.Status;
+                
+                // If signed, use the signer name as publisher (more trustworthy)
+                if (sigInfo.Status != SignatureStatus.Unsigned && !string.IsNullOrEmpty(sigInfo.SignerName))
+                {
+                    entry.Publisher = sigInfo.SignerName;
+                }
+
+                // If Microsoft signed and trusted, mark as Safe
+                if (sigInfo.Status == SignatureStatus.SignedTrusted && 
+                    entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    if (entry.RiskLevel != RiskLevel.Safe)
+                        entry.RiskLevel = RiskLevel.Safe;
+                }
+            }
+            else
+            {
+                 // Fallback to simple check if verifier missing (legacy behavior)
+                 if (versionInfo.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
+                 {
+                     if (entry.RiskLevel != RiskLevel.Safe)
+                         entry.RiskLevel = RiskLevel.Safe;
+                 }
             }
         }
         catch (Exception)

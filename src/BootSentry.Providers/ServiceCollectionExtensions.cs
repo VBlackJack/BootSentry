@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IStartupProvider, IFEOProvider>();
         services.AddSingleton<IStartupProvider, DriverProvider>();
         services.AddSingleton<IStartupProvider, RegistryPoliciesProvider>();
+        services.AddSingleton<IStartupProvider, BrowserExtensionProvider>();
 
         // Expert mode providers
         services.AddSingleton<IStartupProvider, ShellExtensionProvider>();

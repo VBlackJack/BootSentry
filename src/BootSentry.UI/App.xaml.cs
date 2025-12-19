@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using BootSentry.Actions;
 using BootSentry.Backup;
+using BootSentry.Core.Interfaces;
 using BootSentry.Core.Services;
 using BootSentry.Knowledge.Services;
 using BootSentry.Providers;
@@ -71,6 +72,10 @@ public partial class App : Application
         // Initialize localization
         BootSentry.UI.Resources.Strings.CurrentLanguage = settingsService.Settings.Language;
 
+        // Initialize tray icon service
+        var trayService = Services.GetRequiredService<TrayIconService>();
+        trayService.Initialize();
+
         Log.Information("BootSentry starting up");
 
         base.OnStartup(e);
@@ -79,6 +84,17 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("BootSentry shutting down");
+
+        // Dispose services
+        var trayService = Services.GetService<TrayIconService>();
+        trayService?.Dispose();
+
+        var watchdog = Services.GetService<StartupWatchdog>();
+        watchdog?.Dispose();
+
+        var themeService = Services.GetService<ThemeService>();
+        themeService?.Dispose();
+
         Log.CloseAndFlush();
 
         _mutex?.ReleaseMutex();
@@ -119,7 +135,9 @@ public partial class App : Application
         services.AddSingleton<ThemeService>();
 
         // Core services
-        services.AddSingleton<RiskAnalyzer>();
+        services.AddSingleton<IRiskService, RiskAnalyzer>();
+        services.AddSingleton<StartupWatchdog>();
+        services.AddSingleton<TrayIconService>();
 
         // Knowledge base
         services.AddSingleton<KnowledgeService>(sp =>

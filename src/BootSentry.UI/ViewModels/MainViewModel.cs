@@ -18,21 +18,24 @@ using BootSentry.Knowledge.Models;
 using BootSentry.Knowledge.Services;
 using BootSentry.Security;
 using BootSentry.Security.Services;
+using BootSentry.UI.Models;
+using BootSentry.UI.Resources;
 
 namespace BootSentry.UI.ViewModels;
 
 /// <summary>
 /// Main view model for the application.
 /// </summary>
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
+    private bool _disposed;
     private readonly ILogger<MainViewModel> _logger;
     private readonly IEnumerable<IStartupProvider> _providers;
     private readonly ActionExecutor _actionExecutor;
     private readonly ITransactionManager _transactionManager;
     private readonly ICollectionView _entriesView;
     private readonly ExportService _exportService;
-    private readonly RiskAnalyzer _riskAnalyzer;
+    private readonly IRiskService _riskAnalyzer;
     private readonly KnowledgeService _knowledgeService;
     private readonly IMalwareScanner? _malwareScanner;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -86,7 +89,7 @@ public partial class MainViewModel : ObservableObject
     private string _adminStatusText = string.Empty;
 
     [ObservableProperty]
-    private KnowledgeEntry? _knowledgeInfo;
+    private LocalizedKnowledgeEntry? _knowledgeInfo;
 
     public ObservableCollection<StartupEntry> Entries { get; } = [];
 
@@ -124,7 +127,7 @@ public partial class MainViewModel : ObservableObject
         ITransactionManager transactionManager,
         KnowledgeService knowledgeService,
         ExportService exportService,
-        RiskAnalyzer riskAnalyzer,
+        IRiskService riskAnalyzer,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -152,10 +155,20 @@ public partial class MainViewModel : ObservableObject
         // Look up knowledge info for the selected entry
         if (value != null)
         {
-            KnowledgeInfo = _knowledgeService.FindEntry(
+            var entry = _knowledgeService.FindEntry(
                 value.DisplayName,
                 value.TargetPath,
                 value.Publisher);
+
+            // Debug: Show in status bar
+            if (entry != null)
+            {
+                var lang = Resources.Strings.CurrentLanguage;
+                var hasEn = !string.IsNullOrEmpty(entry.ShortDescriptionEn);
+                StatusMessage = $"[DEBUG] Lang={lang}, HasEn={hasEn}";
+            }
+
+            KnowledgeInfo = entry != null ? new LocalizedKnowledgeEntry(entry) : null;
         }
         else
         {
@@ -198,6 +211,19 @@ public partial class MainViewModel : ObservableObject
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
+    }
+
+    public bool CanResetFilters => !string.IsNullOrEmpty(SearchText) || SelectedStatusFilter != "Tous";
+
+    [RelayCommand]
+    private void ResetFilters()
+    {
+        SearchText = string.Empty;
+        SelectedStatusFilter = "Tous";
+        _entriesView.Refresh();
+        OnPropertyChanged(nameof(VisibleEntriesCount));
+        OnPropertyChanged(nameof(HasNoVisibleEntries));
+        OnPropertyChanged(nameof(CanResetFilters));
     }
 
     private bool FilterEntries(object obj)
@@ -290,37 +316,20 @@ public partial class MainViewModel : ObservableObject
             _logger.LogInformation("Starting scan with {Count} providers", _providers.Count());
 
             Entries.Clear();
-            var totalEntries = 0;
-            var providerList = _providers.ToList();
-            var providerIndex = 0;
+            var providerList = _providers.Where(p => p.IsAvailable()).ToList();
 
-            foreach (var provider in providerList)
+            StatusMessage = Strings.Get("ScanningProviders");
+
+            // Parallel scan of all providers
+            var scanTasks = providerList.Select(async provider =>
             {
-                token.ThrowIfCancellationRequested();
-                providerIndex++;
-                ProgressText = $"{providerIndex}/{providerList.Count}";
-
-                if (!provider.IsAvailable())
-                {
-                    _logger.LogWarning("Provider {Provider} is not available", provider.DisplayName);
-                    continue;
-                }
-
                 try
                 {
-                    StatusMessage = $"Analyse: {provider.DisplayName}...";
-                    var providerEntries = await provider.ScanAsync(token);
-
-                    foreach (var entry in providerEntries)
-                    {
-                        // Apply risk analysis
-                        _riskAnalyzer.UpdateRiskLevel(entry);
-                        Entries.Add(entry);
-                        totalEntries++;
-                    }
-
+                    _logger.LogDebug("Starting scan for provider {Provider}", provider.DisplayName);
+                    var entries = await provider.ScanAsync(token);
                     _logger.LogInformation("Provider {Provider} found {Count} entries",
-                        provider.DisplayName, providerEntries.Count);
+                        provider.DisplayName, entries.Count);
+                    return (Provider: provider, Entries: entries, Error: (Exception?)null);
                 }
                 catch (OperationCanceledException)
                 {
@@ -329,6 +338,25 @@ public partial class MainViewModel : ObservableObject
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error scanning with provider {Provider}", provider.DisplayName);
+                    return (Provider: provider, Entries: new List<StartupEntry>(), Error: ex);
+                }
+            }).ToList();
+
+            var results = await Task.WhenAll(scanTasks);
+
+            token.ThrowIfCancellationRequested();
+
+            // Process results on UI thread
+            var totalEntries = 0;
+            foreach (var result in results)
+            {
+                if (result.Error != null) continue;
+
+                foreach (var entry in result.Entries)
+                {
+                    _riskAnalyzer.UpdateRiskLevel(entry);
+                    Entries.Add(entry);
+                    totalEntries++;
                 }
             }
 
@@ -1100,7 +1128,21 @@ public partial class MainViewModel : ObservableObject
                     break;
 
                 case ScanResult.NotScanned:
-                    StatusMessage = "Fichier non scanné (trop volumineux ou inaccessible)";
+                    StatusMessage = "Fichier non scanné (inaccessible ou verrouillé)";
+                    break;
+
+                case ScanResult.TooLarge:
+                    StatusMessage = "Fichier trop volumineux pour le scan (max 250 Mo)";
+                    break;
+
+                case ScanResult.NoAntivirusProvider:
+                    StatusMessage = "Aucun antivirus disponible";
+                    MessageBox.Show(
+                        "Aucun antivirus compatible n'est disponible pour le scan.\n\n" +
+                        "Veuillez activer Windows Defender ou installer un antivirus compatible AMSI.",
+                        "Antivirus non disponible",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                     break;
 
                 case ScanResult.Error:
@@ -1120,6 +1162,158 @@ public partial class MainViewModel : ObservableObject
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+
+    [ObservableProperty]
+    private bool _isScanning;
+
+    [ObservableProperty]
+    private int _scanProgress;
+
+    [ObservableProperty]
+    private int _scanTotal;
+
+    [ObservableProperty]
+    private string _scanProgressText = string.Empty;
+
+    private CancellationTokenSource? _scanCts;
+
+    [RelayCommand]
+    private async Task ScanAllAsync()
+    {
+        if (_malwareScanner == null)
+        {
+            MessageBox.Show(
+                "Le scanner antivirus n'est pas disponible.",
+                "Erreur",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        // Get all scannable entries (visible, with existing files)
+        var entriesToScan = Entries
+            .Where(e => e.FileExists && !string.IsNullOrEmpty(e.TargetPath))
+            .ToList();
+
+        if (entriesToScan.Count == 0)
+        {
+            MessageBox.Show(
+                "Aucun fichier à scanner.",
+                "Scan global",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"Lancer le scan antivirus sur {entriesToScan.Count} fichiers ?\n\nCette opération peut prendre plusieurs minutes.",
+            "Scan global",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        IsScanning = true;
+        ScanProgress = 0;
+        ScanTotal = entriesToScan.Count;
+        _scanCts = new CancellationTokenSource();
+
+        int scanned = 0;
+        int clean = 0;
+        int threats = 0;
+        int errors = 0;
+
+        _logger.LogInformation("Starting global scan of {Count} files", entriesToScan.Count);
+
+        try
+        {
+            foreach (var entry in entriesToScan)
+            {
+                if (_scanCts.Token.IsCancellationRequested)
+                    break;
+
+                ScanProgress = scanned + 1;
+                ScanProgressText = $"Scan {ScanProgress}/{ScanTotal}: {Path.GetFileName(entry.TargetPath)}";
+                StatusMessage = ScanProgressText;
+
+                try
+                {
+                    var scanResult = await _malwareScanner.ScanAsync(entry.TargetPath!, _scanCts.Token);
+                    entry.MalwareScanResult = scanResult;
+                    entry.LastMalwareScan = DateTime.Now;
+
+                    switch (scanResult)
+                    {
+                        case ScanResult.Clean:
+                            clean++;
+                            break;
+                        case ScanResult.Malware:
+                            threats++;
+                            entry.RiskLevel = RiskLevel.Critical;
+                            break;
+                        case ScanResult.Error:
+                        case ScanResult.NoAntivirusProvider:
+                            errors++;
+                            break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error scanning {Path}", entry.TargetPath);
+                    errors++;
+                }
+
+                scanned++;
+            }
+
+            _entriesView.Refresh();
+            UpdateCounts();
+            OnPropertyChanged(nameof(SelectedEntry));
+
+            var message = _scanCts.Token.IsCancellationRequested
+                ? $"Scan interrompu.\n\n"
+                : $"Scan terminé.\n\n";
+
+            message += $"Fichiers scannés: {scanned}\n";
+            message += $"Fichiers sains: {clean}\n";
+            if (threats > 0)
+                message += $"MENACES DÉTECTÉES: {threats}\n";
+            if (errors > 0)
+                message += $"Erreurs/Non scannés: {errors}";
+
+            StatusMessage = threats > 0
+                ? $"Scan terminé: {threats} menace(s) détectée(s)!"
+                : $"Scan terminé: {clean} fichiers sains";
+
+            MessageBox.Show(
+                message,
+                threats > 0 ? "Menaces détectées!" : "Scan terminé",
+                MessageBoxButton.OK,
+                threats > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+
+            _logger.LogInformation("Global scan completed: {Scanned} scanned, {Clean} clean, {Threats} threats, {Errors} errors",
+                scanned, clean, threats, errors);
+        }
+        finally
+        {
+            IsScanning = false;
+            ScanProgressText = string.Empty;
+            _scanCts?.Dispose();
+            _scanCts = null;
+        }
+    }
+
+    [RelayCommand]
+    private void CancelScan()
+    {
+        _scanCts?.Cancel();
+        StatusMessage = "Annulation du scan...";
     }
 
     [RelayCommand]
@@ -1290,14 +1484,13 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ShowDocumentation()
     {
-        try
-        {
-            Process.Start(new ProcessStartInfo("https://github.com/your-username/BootSentry") { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error opening documentation");
-        }
+        Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry#documentation") { UseShellExecute = true });
+    }
+
+    [RelayCommand]
+    private void GoToGitHub()
+    {
+        Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry") { UseShellExecute = true });
     }
 
     [RelayCommand]
@@ -1396,5 +1589,35 @@ public partial class MainViewModel : ObservableObject
     private void Exit()
     {
         Application.Current.Shutdown();
+    }
+
+    /// <summary>
+    /// Releases resources used by the view model.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+
+            _scanCts?.Cancel();
+            _scanCts?.Dispose();
+            _scanCts = null;
+
+            _scanSemaphore.Dispose();
+        }
+
+        _disposed = true;
     }
 }

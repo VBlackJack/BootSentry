@@ -41,10 +41,15 @@ public class KnowledgeService : IDisposable
                 Category INTEGER NOT NULL,
                 SafetyLevel INTEGER NOT NULL,
                 ShortDescription TEXT NOT NULL,
+                ShortDescriptionEn TEXT,
                 FullDescription TEXT,
+                FullDescriptionEn TEXT,
                 DisableImpact TEXT,
+                DisableImpactEn TEXT,
                 PerformanceImpact TEXT,
+                PerformanceImpactEn TEXT,
                 Recommendation TEXT,
+                RecommendationEn TEXT,
                 InfoUrl TEXT,
                 Tags TEXT,
                 LastUpdated TEXT NOT NULL
@@ -55,6 +60,32 @@ public class KnowledgeService : IDisposable
             CREATE INDEX IF NOT EXISTS idx_executables ON KnowledgeEntries(ExecutableNames);
         ";
         cmd.ExecuteNonQuery();
+
+        // Migrate existing databases to add English columns
+        MigrateDatabase();
+    }
+
+    private void MigrateDatabase()
+    {
+        // Check if English columns exist, add them if not
+        var columns = new[] { "ShortDescriptionEn", "FullDescriptionEn", "DisableImpactEn", "PerformanceImpactEn", "RecommendationEn" };
+
+        foreach (var column in columns)
+        {
+            try
+            {
+                using var checkCmd = _connection.CreateCommand();
+                checkCmd.CommandText = $"SELECT {column} FROM KnowledgeEntries LIMIT 1";
+                checkCmd.ExecuteNonQuery();
+            }
+            catch
+            {
+                // Column doesn't exist, add it
+                using var addCmd = _connection.CreateCommand();
+                addCmd.CommandText = $"ALTER TABLE KnowledgeEntries ADD COLUMN {column} TEXT";
+                addCmd.ExecuteNonQuery();
+            }
+        }
     }
 
     /// <summary>
@@ -250,11 +281,13 @@ public class KnowledgeService : IDisposable
             cmd.CommandText = @"
                 INSERT INTO KnowledgeEntries
                 (Name, Aliases, Publisher, ExecutableNames, Category, SafetyLevel,
-                 ShortDescription, FullDescription, DisableImpact, PerformanceImpact,
-                 Recommendation, InfoUrl, Tags, LastUpdated)
+                 ShortDescription, ShortDescriptionEn, FullDescription, FullDescriptionEn,
+                 DisableImpact, DisableImpactEn, PerformanceImpact, PerformanceImpactEn,
+                 Recommendation, RecommendationEn, InfoUrl, Tags, LastUpdated)
                 VALUES
                 (@name, @aliases, @publisher, @exes, @cat, @safety,
-                 @short, @full, @impact, @perf, @rec, @url, @tags, @updated)";
+                 @short, @shortEn, @full, @fullEn, @impact, @impactEn,
+                 @perf, @perfEn, @rec, @recEn, @url, @tags, @updated)";
         }
         else
         {
@@ -262,10 +295,12 @@ public class KnowledgeService : IDisposable
                 UPDATE KnowledgeEntries SET
                     Name = @name, Aliases = @aliases, Publisher = @publisher,
                     ExecutableNames = @exes, Category = @cat, SafetyLevel = @safety,
-                    ShortDescription = @short, FullDescription = @full,
-                    DisableImpact = @impact, PerformanceImpact = @perf,
-                    Recommendation = @rec, InfoUrl = @url, Tags = @tags,
-                    LastUpdated = @updated
+                    ShortDescription = @short, ShortDescriptionEn = @shortEn,
+                    FullDescription = @full, FullDescriptionEn = @fullEn,
+                    DisableImpact = @impact, DisableImpactEn = @impactEn,
+                    PerformanceImpact = @perf, PerformanceImpactEn = @perfEn,
+                    Recommendation = @rec, RecommendationEn = @recEn,
+                    InfoUrl = @url, Tags = @tags, LastUpdated = @updated
                 WHERE Id = @id";
             cmd.Parameters.AddWithValue("@id", entry.Id);
         }
@@ -277,10 +312,15 @@ public class KnowledgeService : IDisposable
         cmd.Parameters.AddWithValue("@cat", (int)entry.Category);
         cmd.Parameters.AddWithValue("@safety", (int)entry.SafetyLevel);
         cmd.Parameters.AddWithValue("@short", entry.ShortDescription);
+        cmd.Parameters.AddWithValue("@shortEn", entry.ShortDescriptionEn ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@full", entry.FullDescription ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@fullEn", entry.FullDescriptionEn ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@impact", entry.DisableImpact ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@impactEn", entry.DisableImpactEn ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@perf", entry.PerformanceImpact ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@perfEn", entry.PerformanceImpactEn ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@rec", entry.Recommendation ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@recEn", entry.RecommendationEn ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@url", entry.InfoUrl ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@tags", entry.Tags ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@updated", entry.LastUpdated.ToString("O"));
@@ -289,14 +329,49 @@ public class KnowledgeService : IDisposable
     }
 
     /// <summary>
-    /// Seed the database with initial entries if empty.
+    /// Seed the database with initial entries if empty or needs update.
     /// </summary>
     public void SeedIfEmpty()
     {
-        if (GetCount() > 0) return;
+        var count = GetCount();
 
-        var seeder = new KnowledgeSeeder(this);
-        seeder.Seed();
+        if (count == 0)
+        {
+            // Empty database, seed everything
+            var seeder = new KnowledgeSeeder(this);
+            seeder.Seed();
+            return;
+        }
+
+        // Check if database needs English translations update
+        if (NeedsEnglishTranslationsUpdate())
+        {
+            // Delete all entries and reseed with new translations
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "DELETE FROM KnowledgeEntries";
+            cmd.ExecuteNonQuery();
+
+            var seeder = new KnowledgeSeeder(this);
+            seeder.Seed();
+        }
+    }
+
+    private bool NeedsEnglishTranslationsUpdate()
+    {
+        try
+        {
+            using var cmd = _connection.CreateCommand();
+            // Check if there are any entries WITHOUT English description
+            cmd.CommandText = "SELECT COUNT(*) FROM KnowledgeEntries WHERE ShortDescriptionEn IS NULL OR ShortDescriptionEn = ''";
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            // If there are entries missing translations, we need to update
+            return count > 0;
+        }
+        catch
+        {
+            // Column doesn't exist yet
+            return true;
+        }
     }
 
     private KnowledgeEntry? ReadEntry(SqliteCommand cmd)
@@ -311,24 +386,44 @@ public class KnowledgeService : IDisposable
 
     private static KnowledgeEntry MapEntry(SqliteDataReader reader)
     {
-        return new KnowledgeEntry
+        var entry = new KnowledgeEntry
         {
-            Id = reader.GetInt32(0),
-            Name = reader.GetString(1),
-            Aliases = reader.IsDBNull(2) ? null : reader.GetString(2),
-            Publisher = reader.IsDBNull(3) ? null : reader.GetString(3),
-            ExecutableNames = reader.IsDBNull(4) ? null : reader.GetString(4),
-            Category = (KnowledgeCategory)reader.GetInt32(5),
-            SafetyLevel = (SafetyLevel)reader.GetInt32(6),
-            ShortDescription = reader.GetString(7),
-            FullDescription = reader.IsDBNull(8) ? null : reader.GetString(8),
-            DisableImpact = reader.IsDBNull(9) ? null : reader.GetString(9),
-            PerformanceImpact = reader.IsDBNull(10) ? null : reader.GetString(10),
-            Recommendation = reader.IsDBNull(11) ? null : reader.GetString(11),
-            InfoUrl = reader.IsDBNull(12) ? null : reader.GetString(12),
-            Tags = reader.IsDBNull(13) ? null : reader.GetString(13),
-            LastUpdated = DateTime.Parse(reader.GetString(14))
+            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+            Name = reader.GetString(reader.GetOrdinal("Name")),
+            Aliases = GetNullableString(reader, "Aliases"),
+            Publisher = GetNullableString(reader, "Publisher"),
+            ExecutableNames = GetNullableString(reader, "ExecutableNames"),
+            Category = (KnowledgeCategory)reader.GetInt32(reader.GetOrdinal("Category")),
+            SafetyLevel = (SafetyLevel)reader.GetInt32(reader.GetOrdinal("SafetyLevel")),
+            ShortDescription = reader.GetString(reader.GetOrdinal("ShortDescription")),
+            ShortDescriptionEn = GetNullableString(reader, "ShortDescriptionEn"),
+            FullDescription = GetNullableString(reader, "FullDescription"),
+            FullDescriptionEn = GetNullableString(reader, "FullDescriptionEn"),
+            DisableImpact = GetNullableString(reader, "DisableImpact"),
+            DisableImpactEn = GetNullableString(reader, "DisableImpactEn"),
+            PerformanceImpact = GetNullableString(reader, "PerformanceImpact"),
+            PerformanceImpactEn = GetNullableString(reader, "PerformanceImpactEn"),
+            Recommendation = GetNullableString(reader, "Recommendation"),
+            RecommendationEn = GetNullableString(reader, "RecommendationEn"),
+            InfoUrl = GetNullableString(reader, "InfoUrl"),
+            Tags = GetNullableString(reader, "Tags"),
+            LastUpdated = DateTime.Parse(reader.GetString(reader.GetOrdinal("LastUpdated")))
         };
+        return entry;
+    }
+
+    private static string? GetNullableString(SqliteDataReader reader, string columnName)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+        }
+        catch
+        {
+            // Column doesn't exist in old databases
+            return null;
+        }
     }
 
     public void Dispose()

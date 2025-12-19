@@ -231,6 +231,7 @@ public class StartupEntry : INotifyPropertyChanged
         EntryType.BHO => EntryCategory.Extensions,
         EntryType.PrintMonitor => EntryCategory.Extensions,
         EntryType.WinsockLSP => EntryCategory.Extensions,
+        EntryType.BrowserExtension => EntryCategory.Extensions,
         _ => EntryCategory.System
     };
 

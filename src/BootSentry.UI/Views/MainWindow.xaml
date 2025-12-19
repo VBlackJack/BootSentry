@@ -1,15 +1,19 @@
-<Window x:Class="BootSentry.UI.Views.MainWindow"
+<ui:FluentWindow x:Class="BootSentry.UI.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
-        Title="BootSentry - Gestionnaire de démarrage Windows"
-        Height="750" Width="1200"
+        Title="{res:Localize AppTitleFull}"
+        Height="1000" Width="1400"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource WindowBackground}"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="Transparent"
         Foreground="{DynamicResource WindowForeground}">
 
     <Window.InputBindings>
@@ -32,82 +36,67 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Title Bar -->
+        <ui:TitleBar Grid.Row="0"
+                     Title="{res:Localize AppTitleFull}"
+                     ShowMaximize="True"
+                     ShowMinimize="True"
+                     CanMaximize="True"/>
+
         <!-- Menu Bar -->
-        <Menu Grid.Row="0" Background="{DynamicResource PanelBackground}"
-              AutomationProperties.Name="Menu principal">
-            <MenuItem Header="_Fichier" AutomationProperties.Name="Menu Fichier">
-                <MenuItem Header="_Exporter en JSON..." Command="{Binding ExportJsonCommand}" InputGestureText="Ctrl+S"
-                          AutomationProperties.Name="Exporter en JSON"/>
-                <MenuItem Header="Exporter en _CSV..." Command="{Binding ExportCsvCommand}"
-                          AutomationProperties.Name="Exporter en CSV"/>
-                <MenuItem Header="Exporter _diagnostics (ZIP)..." Command="{Binding ExportDiagnosticsCommand}"
-                          AutomationProperties.Name="Exporter diagnostics"/>
+        <Menu Grid.Row="1" Background="{DynamicResource PanelBackground}"
+              AutomationProperties.Name="{res:Localize MenuMain}">
+            <MenuItem Header="{res:Localize MenuFile}">
+                <MenuItem Header="{res:Localize MenuExportJson}" Command="{Binding ExportJsonCommand}" InputGestureText="Ctrl+S"/>
+                <MenuItem Header="{res:Localize MenuExportCsv}" Command="{Binding ExportCsvCommand}"/>
+                <MenuItem Header="{res:Localize MenuExportDiagnostics}" Command="{Binding ExportDiagnosticsCommand}"/>
                 <Separator/>
-                <MenuItem Header="_Paramètres..." Command="{Binding OpenSettingsCommand}"
-                          AutomationProperties.Name="Paramètres"/>
+                <MenuItem Header="{res:Localize MenuSettings}" Command="{Binding OpenSettingsCommand}"/>
                 <Separator/>
-                <MenuItem Header="_Quitter" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"
-                          AutomationProperties.Name="Quitter l'application"/>
+                <MenuItem Header="{res:Localize MenuExit}" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"/>
             </MenuItem>
-            <MenuItem Header="_Affichage" AutomationProperties.Name="Menu Affichage">
-                <MenuItem Header="_Actualiser" Command="{Binding RefreshCommand}" InputGestureText="F5"
-                          AutomationProperties.Name="Actualiser la liste"/>
+            <MenuItem Header="{res:Localize MenuView}">
+                <MenuItem Header="{res:Localize MenuRefresh}" Command="{Binding RefreshCommand}" InputGestureText="F5"/>
                 <Separator/>
-                <MenuItem Header="Mode _Expert" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"
-                          AutomationProperties.Name="Basculer mode expert"/>
+                <MenuItem Header="{res:Localize MenuExpertMode}" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"/>
                 <Separator/>
-                <MenuItem Header="_Historique" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"
-                          AutomationProperties.Name="Afficher l'historique"/>
+                <MenuItem Header="{res:Localize MenuHistory}" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"/>
             </MenuItem>
-            <MenuItem Header="_Actions" AutomationProperties.Name="Menu Actions">
-                <MenuItem Header="_Activer" Command="{Binding EnableSelectedCommand}"
-                          AutomationProperties.Name="Activer l'entrée"/>
-                <MenuItem Header="_Désactiver" Command="{Binding DisableSelectedCommand}" InputGestureText="Suppr"
-                          AutomationProperties.Name="Désactiver l'entrée"/>
-                <MenuItem Header="_Supprimer" Command="{Binding DeleteSelectedCommand}" InputGestureText="Ctrl+Suppr"
-                          AutomationProperties.Name="Supprimer l'entrée"/>
+            <MenuItem Header="{res:Localize MenuActions}">
+                <MenuItem Header="{res:Localize ActionEnable}" Command="{Binding EnableSelectedCommand}"/>
+                <MenuItem Header="{res:Localize ActionDisable}" Command="{Binding DisableSelectedCommand}" InputGestureText="Suppr"/>
+                <MenuItem Header="{res:Localize ActionDelete}" Command="{Binding DeleteSelectedCommand}" InputGestureText="Ctrl+Suppr"/>
                 <Separator/>
-                <MenuItem Header="A_nnuler" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"
-                          AutomationProperties.Name="Annuler la dernière action"/>
-                <MenuItem Header="_Restaurer" Command="{Binding RestoreCommand}" InputGestureText="Ctrl+Maj+Z"
-                          AutomationProperties.Name="Restaurer depuis l'historique"/>
+                <MenuItem Header="{res:Localize ActionUndo}" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="{res:Localize ActionRestore}" Command="{Binding RestoreCommand}" InputGestureText="Ctrl+Maj+Z"/>
                 <Separator/>
-                <MenuItem Header="_Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"
-                          AutomationProperties.Name="Ouvrir l'emplacement du fichier"/>
-                <MenuItem Header="_Copier le chemin" Command="{Binding CopyPathCommand}"
-                          AutomationProperties.Name="Copier le chemin"/>
-                <MenuItem Header="Calculer le _hash" Command="{Binding CalculateHashCommand}"
-                          AutomationProperties.Name="Calculer le hash SHA-256"/>
-                <MenuItem Header="_Scanner avec l'antivirus" Command="{Binding ScanSelectedCommand}"
-                          AutomationProperties.Name="Scanner le fichier avec l'antivirus"/>
-                <MenuItem Header="Rechercher sur le _Web" Command="{Binding WebSearchCommand}"
-                          AutomationProperties.Name="Rechercher sur le web"/>
+                <MenuItem Header="{res:Localize ActionOpenLocation}" Command="{Binding OpenFileLocationCommand}"/>
+                <MenuItem Header="{res:Localize ActionCopyPath}" Command="{Binding CopyPathCommand}"/>
+                <MenuItem Header="{res:Localize ActionCalculateHash}" Command="{Binding CalculateHashCommand}"/>
+                <MenuItem Header="{res:Localize ActionScanAntivirus}" Command="{Binding ScanSelectedCommand}"/>
+                <MenuItem Header="{res:Localize ActionScanAll}" Command="{Binding ScanAllCommand}"/>
+                <MenuItem Header="{res:Localize ActionWebSearch}" Command="{Binding WebSearchCommand}"/>
                 <Separator/>
-                <MenuItem Header="Ouvrir dans _Regedit" Command="{Binding OpenInRegeditCommand}"
-                          AutomationProperties.Name="Ouvrir dans l'éditeur de registre"/>
-                <MenuItem Header="Ouvrir _Services.msc" Command="{Binding OpenInServicesCommand}"
-                          AutomationProperties.Name="Ouvrir la console Services"/>
-                <MenuItem Header="Ouvrir _Planificateur de tâches" Command="{Binding OpenInTaskSchedulerCommand}"
-                          AutomationProperties.Name="Ouvrir le planificateur de tâches"/>
+                <MenuItem Header="{res:Localize ActionOpenRegedit}" Command="{Binding OpenInRegeditCommand}"/>
+                <MenuItem Header="{res:Localize ActionOpenServices}" Command="{Binding OpenInServicesCommand}"/>
+                <MenuItem Header="{res:Localize ActionOpenTaskScheduler}" Command="{Binding OpenInTaskSchedulerCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Aide" AutomationProperties.Name="Menu Aide">
-                <MenuItem Header="_Documentation" Command="{Binding ShowDocumentationCommand}" InputGestureText="F1"
-                          AutomationProperties.Name="Ouvrir la documentation"/>
+            <MenuItem Header="{res:Localize MenuHelp}">
+                <MenuItem Header="{res:Localize MenuDocumentation}" Command="{Binding ShowDocumentationCommand}" InputGestureText="F1"/>
                 <Separator/>
-                <MenuItem Header="Vérifier les _mises à jour" Command="{Binding CheckUpdatesCommand}"
-                          AutomationProperties.Name="Vérifier les mises à jour"/>
+                <MenuItem Header="{res:Localize MenuCheckUpdates}" Command="{Binding CheckUpdatesCommand}"/>
                 <Separator/>
-                <MenuItem Header="À _propos de BootSentry" Command="{Binding ShowAboutCommand}"
-                          AutomationProperties.Name="À propos de BootSentry"/>
+                <MenuItem Header="{res:Localize MenuAbout}" Command="{Binding ShowAboutCommand}"/>
             </MenuItem>
         </Menu>
 
         <!-- Header -->
-        <Border Grid.Row="1" Background="{DynamicResource AccentBrush}" Padding="16,12">
+        <Border Grid.Row="2" Background="{DynamicResource AccentBrush}" Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -119,8 +108,8 @@
                     <Image Source="/Resources/app.png" Width="32" Height="32" Margin="0,0,12,0"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <StackPanel>
-                        <TextBlock Text="BootSentry" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}"/>
-                        <TextBlock Text="Gestionnaire de démarrage Windows" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}"/>
+                        <TextBlock Text="{res:Localize AppTitle}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}"/>
+                        <TextBlock Text="{res:Localize AppSubtitle}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -130,21 +119,21 @@
                         <StackPanel>
                             <TextBlock Text="{Binding TotalEntriesCount}" FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource AccentForeground}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Total" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize TotalEntries}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1A10B981" CornerRadius="4" Padding="16,8" Margin="4,0">
                         <StackPanel>
                             <TextBlock Text="{Binding EnabledCount}" FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Actives" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize EnabledEntries}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1AEF4444" CornerRadius="4" Padding="16,8" Margin="4,0">
                         <StackPanel>
                             <TextBlock Text="{Binding DisabledCount}" FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource ErrorBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Désactivées" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize DisabledEntries}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1AF59E0B" CornerRadius="4" Padding="16,8" Margin="4,0"
@@ -152,23 +141,23 @@
                         <StackPanel>
                             <TextBlock Text="{Binding SuspiciousCount}" FontSize="24" FontWeight="Bold"
                                        Foreground="{DynamicResource WarningBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Suspectes" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize SuspiciousEntries}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <ToggleButton IsChecked="{Binding IsExpertMode}"
-                                  ToolTip="Mode Expert (Ctrl+E)"
+                                  ToolTip="{res:Localize MenuExpertMode}"
                                   Padding="12,6" Margin="8,0"
                                   Background="Transparent" Foreground="{DynamicResource AccentForeground}"
                                   BorderBrush="{DynamicResource AccentForeground}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" Margin="0,0,6,0"/>
-                            <TextBlock Text="Expert"/>
+                            <TextBlock Text="{res:Localize Expert}"/>
                         </StackPanel>
                     </ToggleButton>
-                    <Button ToolTip="Paramètres" Padding="10,6"
+                    <Button ToolTip="{res:Localize MenuSettings}" Padding="10,6"
                             Background="Transparent" Foreground="{DynamicResource AccentForeground}"
                             BorderThickness="0" Cursor="Hand"
                             Command="{Binding OpenSettingsCommand}">
@@ -179,7 +168,7 @@
         </Border>
 
         <!-- Toolbar -->
-        <Border Grid.Row="2" Background="{DynamicResource PanelBackground}"
+        <Border Grid.Row="3" Background="{DynamicResource PanelBackground}"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="12,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -190,55 +179,43 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource AccentBrush}" ToolTip="Actualiser (F5)"
-                            AutomationProperties.Name="Actualiser la liste"
-                            AutomationProperties.HelpText="Relance l'analyse de toutes les entrées de démarrage">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource AccentBrush}" ToolTip="{res:Localize MenuRefresh}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="Actualiser" VerticalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize MenuRefresh}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding EnableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}"
-                            AutomationProperties.Name="Activer l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Réactive l'entrée de démarrage sélectionnée">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="Activer" VerticalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize ActionEnable}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding DisableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource WarningBrush}"
-                            AutomationProperties.Name="Désactiver l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Désactive l'entrée de démarrage sélectionnée">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource WarningBrush}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE769;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="Désactiver" VerticalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize ActionDisable}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding DeleteSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource ErrorBrush}"
-                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
-                            AutomationProperties.Name="Supprimer l'entrée sélectionnée"
-                            AutomationProperties.HelpText="Supprime définitivement l'entrée (un backup sera créé)">
+                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="Supprimer" VerticalAlignment="Center"/>
+                            <TextBlock Text="{res:Localize ActionDelete}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Separator Margin="8,4"/>
                     <Button Command="{Binding OpenFileLocationCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
-                            ToolTip="Ouvrir l'emplacement"
-                            AutomationProperties.Name="Ouvrir l'emplacement du fichier"
-                            AutomationProperties.HelpText="Ouvre l'explorateur Windows à l'emplacement du fichier">
+                            ToolTip="{res:Localize ActionOpenLocation}">
                         <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets"/>
                     </Button>
                     <Button Command="{Binding CopyPathCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
-                            ToolTip="Copier le chemin"
-                            AutomationProperties.Name="Copier le chemin"
-                            AutomationProperties.HelpText="Copie le chemin du fichier dans le presse-papiers">
+                            ToolTip="{res:Localize ActionCopyPath}">
                         <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets"/>
                     </Button>
                 </StackPanel>
@@ -251,39 +228,36 @@
                                     Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}}"
                                     IsHitTestVisible="False">
                             <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource DisabledForeground}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Rechercher... (Ctrl+F)" Foreground="{DynamicResource DisabledForeground}"/>
+                            <TextBlock Text="{res:Localize SearchPlaceholder}" Foreground="{DynamicResource DisabledForeground}"/>
                         </StackPanel>
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent" BorderThickness="0"
-                                 Padding="10,8" VerticalContentAlignment="Center"
-                                 AutomationProperties.Name="Rechercher des entrées"
-                                 AutomationProperties.HelpText="Filtrez les entrées par nom, éditeur ou chemin"/>
+                                 Padding="10,8" VerticalContentAlignment="Center"/>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ComboBox ItemsSource="{Binding StatusFilters}"
                               SelectedItem="{Binding SelectedStatusFilter}"
-                              Width="120" Margin="0,0,8,0"
-                              AutomationProperties.Name="Filtrer par statut"
-                              AutomationProperties.HelpText="Sélectionnez un statut pour filtrer la liste"/>
-                    <TextBlock Margin="8,0" VerticalAlignment="Center">
-                        <Run Text="{Binding VisibleEntriesCount, Mode=OneWay}" FontWeight="SemiBold"/>
-                        <Run Text=" / "/>
-                        <Run Text="{Binding TotalEntriesCount, Mode=OneWay}"/>
-                        <Run Text=" entrées"/>
-                    </TextBlock>
+                              Width="120" Margin="0,0,8,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="8,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding VisibleEntriesCount}" FontWeight="SemiBold"/>
+                        <TextBlock Text=" / "/>
+                        <TextBlock Text="{Binding TotalEntriesCount}"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{res:Localize Entries}"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="350" MinWidth="300"/>
+                <ColumnDefinition Width="500" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
             <!-- Entry List with Category Tabs -->
@@ -332,7 +306,7 @@
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Démarrage" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{res:Localize TabStartup}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding StartupCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
@@ -342,7 +316,7 @@
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Tâches" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{res:Localize TabTasks}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding TasksCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
@@ -352,7 +326,7 @@
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE912;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Services" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{res:Localize TabServices}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding ServicesCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
@@ -362,7 +336,7 @@
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE770;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Système" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{res:Localize TabSystem}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding SystemCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
@@ -372,7 +346,7 @@
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE74C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Extensions" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{res:Localize TabExtensions}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding ExtensionsCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
@@ -387,10 +361,16 @@
                                     Visibility="{Binding HasNoVisibleEntries, Converter={StaticResource BoolToVisibility}}"
                                     Margin="0,40">
                             <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                            <TextBlock Text="Aucun résultat trouvé" FontSize="16" FontWeight="SemiBold"
+                            <TextBlock Text="{res:Localize NoResultsFound}" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,8"/>
-                            <TextBlock Text="Modifiez vos critères de recherche ou de filtrage"
+                            <TextBlock Text="{res:Localize NoResultsHint}"
                                        Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center"/>
+                            <Button Content="{res:Localize ResetFilters}"
+                                    Command="{Binding ResetFiltersCommand}"
+                                    Visibility="{Binding CanResetFilters, Converter={StaticResource BoolToVisibility}}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="0,16,0,0"
+                                    HorizontalAlignment="Center"/>
                         </StackPanel>
                         <DataGrid x:Name="EntriesGrid"
                           ItemsSource="{Binding FilteredEntries}"
@@ -414,24 +394,24 @@
                           AutomationProperties.HelpText="Utilisez les flèches pour naviguer, Entrée pour sélectionner">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Activer" Command="{Binding EnableSelectedCommand}"/>
-                            <MenuItem Header="Désactiver" Command="{Binding DisableSelectedCommand}"/>
-                            <MenuItem Header="Supprimer" Command="{Binding DeleteSelectedCommand}"/>
+                            <MenuItem Header="{res:Localize ActionEnable}" Command="{Binding EnableSelectedCommand}"/>
+                            <MenuItem Header="{res:Localize ActionDisable}" Command="{Binding DisableSelectedCommand}"/>
+                            <MenuItem Header="{res:Localize ActionDelete}" Command="{Binding DeleteSelectedCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Activer la sélection" Command="{Binding EnableBatchCommand}"
+                            <MenuItem Header="{res:Localize ActionEnableSelection}" Command="{Binding EnableBatchCommand}"
                                       Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
-                            <MenuItem Header="Désactiver la sélection" Command="{Binding DisableBatchCommand}"
+                            <MenuItem Header="{res:Localize ActionDisableSelection}" Command="{Binding DisableBatchCommand}"
                                       Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
                             <Separator Visibility="{Binding HasMultipleSelection, Converter={StaticResource BoolToVisibility}}"/>
-                            <MenuItem Header="Ouvrir l'emplacement" Command="{Binding OpenFileLocationCommand}"/>
-                            <MenuItem Header="Copier le chemin" Command="{Binding CopyPathCommand}"/>
-                            <MenuItem Header="Calculer le hash" Command="{Binding CalculateHashCommand}"/>
-                            <MenuItem Header="Scanner avec l'antivirus" Command="{Binding ScanSelectedCommand}"/>
-                            <MenuItem Header="Rechercher sur le Web" Command="{Binding WebSearchCommand}"/>
+                            <MenuItem Header="{res:Localize ActionOpenLocation}" Command="{Binding OpenFileLocationCommand}"/>
+                            <MenuItem Header="{res:Localize ActionCopyPath}" Command="{Binding CopyPathCommand}"/>
+                            <MenuItem Header="{res:Localize ActionCalculateHash}" Command="{Binding CalculateHashCommand}"/>
+                            <MenuItem Header="{res:Localize ActionScanAntivirus}" Command="{Binding ScanSelectedCommand}"/>
+                            <MenuItem Header="{res:Localize ActionWebSearch}" Command="{Binding WebSearchCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Ouvrir dans Regedit" Command="{Binding OpenInRegeditCommand}"/>
-                            <MenuItem Header="Ouvrir Services.msc" Command="{Binding OpenInServicesCommand}"/>
-                            <MenuItem Header="Ouvrir Planificateur de tâches" Command="{Binding OpenInTaskSchedulerCommand}"/>
+                            <MenuItem Header="{res:Localize ActionOpenRegedit}" Command="{Binding OpenInRegeditCommand}"/>
+                            <MenuItem Header="{res:Localize ActionOpenServices}" Command="{Binding OpenInServicesCommand}"/>
+                            <MenuItem Header="{res:Localize ActionOpenTaskScheduler}" Command="{Binding OpenInTaskSchedulerCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     <DataGrid.RowStyle>
@@ -448,11 +428,11 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Nom" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
-                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
-                        <DataGridTextColumn Header="Portée" Binding="{Binding Scope}" Width="80"/>
-                        <DataGridTextColumn Header="Éditeur" Binding="{Binding Publisher}" Width="150"/>
-                        <DataGridTemplateColumn Header="Signature" Width="90"
+                        <DataGridTextColumn Header="{res:Localize ColumnName}" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnType}" Binding="{Binding Type}" Width="110"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnScope}" Binding="{Binding Scope}" Width="80"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnPublisher}" Binding="{Binding Publisher}" Width="150" MinWidth="100"/>
+                        <DataGridTemplateColumn Header="{res:Localize ColumnSignature}" Width="90" MinWidth="80"
                                             SortMemberPath="SignatureStatus" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -463,7 +443,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Statut" Width="80"
+                        <DataGridTemplateColumn Header="{res:Localize ColumnStatus}" Width="80" MinWidth="70"
                                             SortMemberPath="Status" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -474,7 +454,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Risque" Width="70"
+                        <DataGridTemplateColumn Header="{res:Localize ColumnRisk}" Width="70"
                                             SortMemberPath="RiskLevel" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -500,13 +480,13 @@
                     CornerRadius="4" Margin="0,8,8,8">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="Détails" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                        <TextBlock Text="{res:Localize DetailTitle}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
 
                         <!-- No Selection -->
                         <StackPanel Visibility="{Binding SelectedEntry, Converter={StaticResource NullToVisibility}}"
                                     HorizontalAlignment="Center" Margin="0,40">
                             <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                            <TextBlock Text="Sélectionnez une entrée pour voir ses détails"
+                            <TextBlock Text="{res:Localize SelectEntryHint}"
                                        Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
                         </StackPanel>
 
@@ -547,30 +527,30 @@
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Grid.Row="0" Text="Type:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="0" Text="{res:Localize DetailType}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.Type}" Margin="0,4" TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="1" Text="Portée:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="1" Text="{res:Localize DetailScope}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.Scope}" Margin="0,4"/>
 
-                                <TextBlock Grid.Row="2" Text="Source:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="2" Text="{res:Localize DetailSource}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.SourcePath}"
                                            Margin="0,4" TextWrapping="Wrap" FontSize="11"/>
 
-                                <TextBlock Grid.Row="3" Text="Cible:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="3" Text="{res:Localize DetailTarget}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEntry.TargetPath}"
                                            Margin="0,4" TextWrapping="Wrap" FontSize="11"/>
 
-                                <TextBlock Grid.Row="4" Text="Éditeur:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="4" Text="{res:Localize DetailPublisher}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedEntry.Publisher}" Margin="0,4" TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="5" Text="Signature:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="5" Text="{res:Localize DetailSignature}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEntry.SignatureStatus}" Margin="0,4"/>
 
-                                <TextBlock Grid.Row="6" Text="Statut:" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="6" Text="{res:Localize DetailStatus}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEntry.Status}" Margin="0,4"/>
 
-                                <TextBlock Grid.Row="7" Text="Scan AV:" FontWeight="SemiBold" Margin="0,4"
+                                <TextBlock Grid.Row="7" Text="{res:Localize DetailScanAV}" FontWeight="SemiBold" Margin="0,4"
                                            Visibility="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource NotNullToVisibility}}"/>
                                 <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Margin="0,4"
                                             Visibility="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource NotNullToVisibility}}">
@@ -591,8 +571,14 @@
                                                     <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NotScanned">
                                                         <Setter Property="Background" Value="#6B7280"/>
                                                     </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="TooLarge">
+                                                        <Setter Property="Background" Value="#6B7280"/>
+                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Error">
                                                         <Setter Property="Background" Value="#6B7280"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NoAntivirusProvider">
+                                                        <Setter Property="Background" Value="#F59E0B"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -614,8 +600,14 @@
                                                         <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NotScanned">
                                                             <Setter Property="Text" Value="Non scanné"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="TooLarge">
+                                                            <Setter Property="Text" Value="Fichier trop volumineux"/>
+                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Error">
                                                             <Setter Property="Text" Value="Erreur"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NoAntivirusProvider">
+                                                            <Setter Property="Text" Value="Aucun antivirus"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -630,7 +622,7 @@
                             <Separator Margin="0,12"/>
 
                             <!-- Command Line -->
-                            <TextBlock Text="Ligne de commande:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <TextBlock Text="{res:Localize DetailCommandLine}" FontWeight="SemiBold" Margin="0,0,0,4"/>
                             <Border Background="{DynamicResource RowAlternate}" CornerRadius="4" Padding="8">
                                 <TextBox Text="{Binding SelectedEntry.CommandLineRaw, Mode=OneWay}"
                                          IsReadOnly="True" TextWrapping="Wrap" FontSize="11"
@@ -641,7 +633,7 @@
                             <!-- Notes -->
                             <StackPanel Visibility="{Binding SelectedEntry.Notes, Converter={StaticResource NotNullToVisibility}}"
                                         Margin="0,12,0,0">
-                                <TextBlock Text="Notes:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBlock Text="{res:Localize DetailNotes}" FontWeight="SemiBold" Margin="0,0,0,4"/>
                                 <Border Background="{DynamicResource NoteBackgroundBrush}" CornerRadius="4" Padding="8">
                                     <TextBlock Text="{Binding SelectedEntry.Notes}" TextWrapping="Wrap"
                                                Foreground="{DynamicResource NoteForegroundBrush}"/>
@@ -654,7 +646,7 @@
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                     <TextBlock Text="&#xE82D;" FontFamily="Segoe MDL2 Assets" FontSize="16"
                                                Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Informations" FontSize="14" FontWeight="SemiBold"
+                                    <TextBlock Text="{res:Localize KnowledgeInfo}" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource AccentBrush}"/>
                                 </StackPanel>
 
@@ -664,7 +656,7 @@
                                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                                     <StackPanel>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <TextBlock Text="Niveau de sécurité:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{res:Localize KnowledgeSafetyLevel}" FontWeight="SemiBold" Margin="0,0,8,0"/>
                                             <Border CornerRadius="3" Padding="8,2" HorizontalAlignment="Left">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
@@ -724,14 +716,14 @@
                                            Margin="0,0,0,8"/>
 
                                 <!-- Full Description (Expander) -->
-                                <Expander Header="Description détaillée" IsExpanded="False" Margin="0,0,0,8"
+                                <Expander Header="{res:Localize KnowledgeFullDesc}" IsExpanded="False" Margin="0,0,0,8"
                                           Visibility="{Binding KnowledgeInfo.FullDescription, Converter={StaticResource NotNullToVisibility}}">
                                     <TextBlock Text="{Binding KnowledgeInfo.FullDescription}" TextWrapping="Wrap"
                                                Margin="0,8,0,0" Foreground="{DynamicResource WindowForeground}"/>
                                 </Expander>
 
                                 <!-- Impact if disabled -->
-                                <Expander Header="Impact si désactivé" IsExpanded="False" Margin="0,0,0,8"
+                                <Expander Header="{res:Localize KnowledgeDisableImpact}" IsExpanded="False" Margin="0,0,0,8"
                                           Visibility="{Binding KnowledgeInfo.DisableImpact, Converter={StaticResource NotNullToVisibility}}">
                                     <Border Background="{DynamicResource NoteBackgroundBrush}" CornerRadius="4" Padding="8" Margin="0,8,0,0">
                                         <TextBlock Text="{Binding KnowledgeInfo.DisableImpact}" TextWrapping="Wrap"
@@ -740,7 +732,7 @@
                                 </Expander>
 
                                 <!-- Performance Impact -->
-                                <Expander Header="Impact sur les performances" IsExpanded="False" Margin="0,0,0,8"
+                                <Expander Header="{res:Localize KnowledgePerfImpact}" IsExpanded="False" Margin="0,0,0,8"
                                           Visibility="{Binding KnowledgeInfo.PerformanceImpact, Converter={StaticResource NotNullToVisibility}}">
                                     <TextBlock Text="{Binding KnowledgeInfo.PerformanceImpact}" TextWrapping="Wrap"
                                                Margin="0,8,0,0" Foreground="{DynamicResource WindowForeground}"/>
@@ -751,7 +743,7 @@
                                         Opacity="0.9"
                                         Visibility="{Binding KnowledgeInfo.Recommendation, Converter={StaticResource NotNullToVisibility}}">
                                     <StackPanel>
-                                        <TextBlock Text="Recommandation" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{res:Localize KnowledgeRecommendation}" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,4"/>
                                         <TextBlock Text="{Binding KnowledgeInfo.Recommendation}" TextWrapping="Wrap" Foreground="White"/>
                                     </StackPanel>
                                 </Border>
@@ -763,15 +755,15 @@
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="24"
                                                HorizontalAlignment="Center" Opacity="0.5" Margin="0,0,0,8"/>
-                                    <TextBlock Text="Aucune information disponible" TextWrapping="Wrap"
+                                    <TextBlock Text="{res:Localize NoKnowledgeInfo}" TextWrapping="Wrap"
                                                HorizontalAlignment="Center" Foreground="{DynamicResource DisabledForeground}"/>
-                                    <TextBlock Text="dans la base de connaissances" TextWrapping="Wrap" FontSize="11"
+                                    <TextBlock Text="{res:Localize NoKnowledgeInfoSub}" TextWrapping="Wrap" FontSize="11"
                                                HorizontalAlignment="Center" Foreground="{DynamicResource DisabledForeground}"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- File Info -->
-                            <Expander Header="Informations fichier" Margin="0,12,0,0" IsExpanded="False">
+                            <Expander Header="{res:Localize DetailFileInfo}" Margin="0,12,0,0" IsExpanded="False">
                                 <StackPanel Margin="0,8,0,0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -785,16 +777,16 @@
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
 
-                                        <TextBlock Grid.Row="0" Text="Version:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="0" Text="{res:Localize DetailFileVersion}" Margin="0,2"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.FileVersion}" Margin="0,2"/>
 
-                                        <TextBlock Grid.Row="1" Text="Produit:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="1" Text="{res:Localize DetailProductName}" Margin="0,2"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.ProductName}" Margin="0,2"/>
 
-                                        <TextBlock Grid.Row="2" Text="Taille:" Margin="0,2"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.FileSize, StringFormat={}{0:N0} octets}" Margin="0,2"/>
+                                        <TextBlock Grid.Row="2" Text="{res:Localize DetailFileSize}" Margin="0,2"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.FileSize, StringFormat={}{0:N0} bytes}" Margin="0,2"/>
 
-                                        <TextBlock Grid.Row="3" Text="Modifié:" Margin="0,2"/>
+                                        <TextBlock Grid.Row="3" Text="{res:Localize DetailLastModified}" Margin="0,2"/>
                                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEntry.LastModified, StringFormat=g}" Margin="0,2"/>
                                     </Grid>
                                 </StackPanel>
@@ -805,45 +797,40 @@
                             <!-- Action Buttons -->
                             <WrapPanel HorizontalAlignment="Center">
                                 <Button Command="{Binding OpenFileLocationCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
-                                        AutomationProperties.Name="Ouvrir l'emplacement du fichier">
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Ouvrir" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{res:Localize BtnOpen}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding CopyPathCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
-                                        AutomationProperties.Name="Copier le chemin">
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Copier" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{res:Localize BtnCopy}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding WebSearchCommand}"
-                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4"
-                                        AutomationProperties.Name="Rechercher sur le web">
+                                        Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Web" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{res:Localize BtnWeb}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding CalculateHashCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="{DynamicResource InfoBrush}" Margin="4"
-                                        ToolTip="Calculer le hash SHA-256 du fichier"
-                                        AutomationProperties.Name="Calculer le hash SHA-256">
+                                        ToolTip="{res:Localize ActionCalculateHash}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Hash" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{res:Localize BtnHash}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding ScanSelectedCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}" Margin="4"
-                                        ToolTip="Scanner le fichier avec l'antivirus (AMSI)"
-                                        AutomationProperties.Name="Scanner avec l'antivirus">
+                                        ToolTip="{res:Localize ActionScanAntivirus}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Scan AV" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{res:Localize BtnScanAV}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </WrapPanel>
@@ -854,7 +841,7 @@
         </Grid>
 
         <!-- Status Bar -->
-        <Border Grid.Row="4" Background="{DynamicResource PanelBackground}"
+        <Border Grid.Row="5" Background="{DynamicResource PanelBackground}"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -865,8 +852,17 @@
 
                 <!-- Admin status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}, ConverterParameter=Green|Orange}"
-                            CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                    <Border CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAdmin}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <TextBlock Text="{Binding AdminStatusText}" FontSize="11" Foreground="White"/>
                     </Border>
                 </StackPanel>
@@ -880,13 +876,13 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="&#xE712;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" Foreground="{DynamicResource DisabledForeground}"/>
-                    <TextBlock Text="Chargement..." Foreground="{DynamicResource DisabledForeground}"/>
+                    <TextBlock Text="{res:Localize Loading}" Foreground="{DynamicResource DisabledForeground}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Loading Overlay -->
-        <Border Grid.RowSpan="5" Background="{DynamicResource OverlayBackground}"
+        <Border Grid.RowSpan="6" Background="{DynamicResource OverlayBackground}"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
@@ -902,10 +898,36 @@
                         Cursor="Hand">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="Annuler" VerticalAlignment="Center"/>
+                        <TextBlock Text="{res:Localize Cancel}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Scanning Overlay -->
+        <Border Grid.RowSpan="6" Background="{DynamicResource OverlayBackground}"
+                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="350">
+                <TextBlock Text="&#xE8FE;" FontFamily="Segoe MDL2 Assets" FontSize="48"
+                           HorizontalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,16"/>
+                <TextBlock Text="{res:Localize ScanInProgress}" FontSize="18" FontWeight="SemiBold"
+                           Foreground="{DynamicResource WindowForeground}"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <ProgressBar Value="{Binding ScanProgress}" Maximum="{Binding ScanTotal}"
+                             Width="300" Height="8" Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding ScanProgressText}" Foreground="{DynamicResource DisabledForeground}"
+                           HorizontalAlignment="Center" FontSize="12" Margin="0,0,0,16"
+                           TextTrimming="CharacterEllipsis" MaxWidth="300"/>
+                <Button Command="{Binding CancelScanCommand}"
+                        Padding="16,8"
+                        Background="{DynamicResource ErrorBrush}" Foreground="{DynamicResource AccentForeground}" BorderThickness="0"
+                        Cursor="Hand">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{res:Localize CancelScan}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
         </Border>
     </Grid>
-</Window>
+</ui:FluentWindow>

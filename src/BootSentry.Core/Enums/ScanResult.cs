@@ -17,6 +17,12 @@ public enum ScanResult
     /// <summary>An error occurred during scanning.</summary>
     Error,
 
-    /// <summary>File was not scanned (too large, inaccessible, etc.).</summary>
-    NotScanned
+    /// <summary>File was not scanned (inaccessible, locked, etc.).</summary>
+    NotScanned,
+
+    /// <summary>File is too large to scan.</summary>
+    TooLarge,
+
+    /// <summary>No antivirus provider available (Windows Defender disabled, no compatible AV).</summary>
+    NoAntivirusProvider
 }

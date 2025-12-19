@@ -1,0 +1,19 @@
+// Global usings to resolve WPF vs WinForms type conflicts
+global using Application = System.Windows.Application;
+global using Binding = System.Windows.Data.Binding;
+global using Brush = System.Windows.Media.Brush;
+global using Color = System.Windows.Media.Color;
+global using Clipboard = System.Windows.Clipboard;
+global using DataGrid = System.Windows.Controls.DataGrid;
+global using DragDropEffects = System.Windows.DragDropEffects;
+global using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+global using MessageBox = System.Windows.MessageBox;
+global using MessageBoxButton = System.Windows.MessageBoxButton;
+global using MessageBoxImage = System.Windows.MessageBoxImage;
+global using MessageBoxResult = System.Windows.MessageBoxResult;
+global using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+global using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+global using SystemColors = System.Windows.SystemColors;
+global using TabControl = System.Windows.Controls.TabControl;
+global using Window = System.Windows.Window;
+global using WindowState = System.Windows.WindowState;

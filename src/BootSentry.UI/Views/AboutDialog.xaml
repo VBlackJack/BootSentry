@@ -1,7 +1,8 @@
 <Window x:Class="BootSentry.UI.Views.AboutDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="À propos de BootSentry"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
+        Title="{res:Localize AboutTitle}"
         Height="400" Width="450"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
@@ -40,18 +41,17 @@
             <!-- Content -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Gestionnaire de démarrage Windows"
+                    <TextBlock Text="{res:Localize AppSubtitle}"
                                FontSize="14"
                                Foreground="{DynamicResource WindowForeground}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,16"/>
 
-                    <TextBlock TextWrapping="Wrap"
+                    <TextBlock Text="{res:Localize AboutDescription}"
+                               TextWrapping="Wrap"
                                TextAlignment="Center"
                                Foreground="{DynamicResource WindowForeground}"
-                               Margin="0,0,0,16">
-                        BootSentry vous permet de gérer facilement les programmes qui démarrent automatiquement avec Windows, en toute sécurité grâce au système de backup intégré.
-                    </TextBlock>
+                               Margin="0,0,0,16"/>
 
                     <Separator Margin="0,8"/>
 
@@ -68,10 +68,10 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Auteur:" FontWeight="SemiBold" Margin="0,2"/>
+                        <TextBlock Grid.Row="0" Text="{res:Localize AboutAuthor}" FontWeight="SemiBold" Margin="0,2"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="Julien Bombled" Margin="8,2"/>
 
-                        <TextBlock Grid.Row="1" Text="Licence:" FontWeight="SemiBold" Margin="0,2"/>
+                        <TextBlock Grid.Row="1" Text="{res:Localize AboutLicense}" FontWeight="SemiBold" Margin="0,2"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="Apache License 2.0" Margin="8,2"/>
 
                         <TextBlock Grid.Row="2" Text=".NET:" FontWeight="SemiBold" Margin="0,2"/>
@@ -106,7 +106,7 @@
                                 Cursor="Hand">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <TextBlock Text="Licence" VerticalAlignment="Center"/>
+                                <TextBlock Text="{res:Localize AboutLicenseBtn}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -114,7 +114,7 @@
             </ScrollViewer>
 
             <!-- Footer -->
-            <Button Grid.Row="2" Content="Fermer"
+            <Button Grid.Row="2" Content="{res:Localize Close}"
                     Click="CloseButton_Click"
                     HorizontalAlignment="Center"
                     Padding="24,8" Margin="0,16,0,0"

@@ -15,6 +15,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ILogger<SettingsViewModel> _logger;
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
+    private bool _isInitializing = true;
 
     // Design-time constructor
     public SettingsViewModel() : this(null!, null!, null!) { }
@@ -23,7 +24,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _selectedLanguage = "fr";
 
     [ObservableProperty]
-    private int _selectedThemeIndex;
+    private ThemeMode _selectedTheme = ThemeMode.System;
 
     [ObservableProperty]
     private bool _isExpertModeDefault;
@@ -49,12 +50,7 @@ public partial class SettingsViewModel : ObservableObject
         new LanguageItem("en", "English")
     ];
 
-    public ObservableCollection<ThemeItem> Themes { get; } =
-    [
-        new ThemeItem(ThemeMode.System, Strings.Get("SettingsThemeSystem")),
-        new ThemeItem(ThemeMode.Light, Strings.Get("SettingsThemeLight")),
-        new ThemeItem(ThemeMode.Dark, Strings.Get("SettingsThemeDark"))
-    ];
+    public ObservableCollection<ThemeItem> Themes { get; } = new();
 
     public SettingsViewModel(
         ILogger<SettingsViewModel> logger,
@@ -65,7 +61,17 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService = settingsService;
         _themeService = themeService;
 
+        UpdateThemeList();
         LoadSettings();
+        _isInitializing = false;
+    }
+
+    private void UpdateThemeList()
+    {
+        Themes.Clear();
+        Themes.Add(new ThemeItem(ThemeMode.System, Strings.Get("SettingsThemeSystem")));
+        Themes.Add(new ThemeItem(ThemeMode.Light, Strings.Get("SettingsThemeLight")));
+        Themes.Add(new ThemeItem(ThemeMode.Dark, Strings.Get("SettingsThemeDark")));
     }
 
     private void LoadSettings()
@@ -73,7 +79,7 @@ public partial class SettingsViewModel : ObservableObject
         var settings = _settingsService.Settings;
 
         SelectedLanguage = settings.Language;
-        SelectedThemeIndex = (int)settings.Theme;
+        SelectedTheme = settings.Theme;
         IsExpertModeDefault = settings.ExpertModeDefault;
         CheckForUpdatesOnStartup = settings.CheckUpdatesOnStartup;
         BackupRetentionDays = settings.BackupRetentionDays;
@@ -83,21 +89,55 @@ public partial class SettingsViewModel : ObservableObject
 
     partial void OnSelectedLanguageChanged(string value)
     {
+        if (_isInitializing || string.IsNullOrEmpty(value))
+            return;
+
+        var previousLanguage = Strings.CurrentLanguage;
         Strings.CurrentLanguage = value;
         _settingsService.Settings.Language = value;
         _settingsService.Save();
+
+        UpdateThemeList();
+
+        if (previousLanguage != value)
+        {
+            var message = value == "fr"
+                ? "La langue sera appliquée après le redémarrage.\n\nRedémarrer l'application maintenant ?"
+                : "The language will be applied after restart.\n\nRestart the application now?";
+
+            var result = System.Windows.MessageBox.Show(
+                message,
+                value == "fr" ? "Changement de langue" : "Language Change",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                RestartApplication();
+            }
+        }
+
         StatusMessage = Strings.Get("SettingsLanguage") + ": " + value;
     }
 
-    partial void OnSelectedThemeIndexChanged(int value)
+    private static void RestartApplication()
     {
-        if (value >= 0 && value < Themes.Count)
+        var exePath = Environment.ProcessPath;
+        if (exePath != null)
         {
-            var theme = Themes[value].Mode;
-            _themeService.CurrentTheme = theme;
-            _settingsService.Settings.Theme = theme;
-            _settingsService.Save();
+            System.Diagnostics.Process.Start(exePath);
+            System.Windows.Application.Current.Shutdown();
         }
+    }
+
+    partial void OnSelectedThemeChanged(ThemeMode value)
+    {
+        if (_isInitializing)
+            return;
+
+        _themeService.CurrentTheme = value;
+        _settingsService.Settings.Theme = value;
+        _settingsService.Save();
     }
 
     partial void OnIsExpertModeDefaultChanged(bool value)

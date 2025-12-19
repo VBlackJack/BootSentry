@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Wpf.Ui.Controls;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Models;
 using BootSentry.UI.Services;
@@ -12,7 +13,7 @@ namespace BootSentry.UI.Views;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : FluentWindow
 {
     public MainWindow()
     {
@@ -20,9 +21,24 @@ public partial class MainWindow : Window
         DataContext = App.Services.GetRequiredService<MainViewModel>();
 
         Loaded += MainWindow_Loaded;
+        Closing += MainWindow_Closing;
 
         // Handle Ctrl+F to focus search box
         PreviewKeyDown += MainWindow_PreviewKeyDown;
+    }
+
+    private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        // Unsubscribe from events to prevent memory leaks
+        Loaded -= MainWindow_Loaded;
+        Closing -= MainWindow_Closing;
+        PreviewKeyDown -= MainWindow_PreviewKeyDown;
+
+        // Dispose the view model
+        if (DataContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     private void EntriesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

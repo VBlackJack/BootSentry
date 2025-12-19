@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using BootSentry.UI.Services;
 
@@ -22,12 +23,21 @@ public partial class OnboardingDialog : Window
         UpdateUI();
         KeyDown += OnboardingDialog_KeyDown;
         Loaded += OnboardingDialog_Loaded;
+        Closing += OnboardingDialog_Closing;
     }
 
     private void OnboardingDialog_Loaded(object sender, RoutedEventArgs e)
     {
         var themeService = App.Services.GetRequiredService<ThemeService>();
         ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+    }
+
+    private void OnboardingDialog_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        // Unsubscribe from events to prevent memory leaks
+        KeyDown -= OnboardingDialog_KeyDown;
+        Loaded -= OnboardingDialog_Loaded;
+        Closing -= OnboardingDialog_Closing;
     }
 
     private void OnboardingDialog_KeyDown(object sender, KeyEventArgs e)
@@ -60,6 +70,13 @@ public partial class OnboardingDialog : Window
 
         PreviousButton.Visibility = _currentStep > 1 ? Visibility.Visible : Visibility.Collapsed;
         NextButton.Content = _currentStep == TotalSteps ? "Commencer" : "Suivant";
+
+        // Update step indicators
+        var accentBrush = (Brush)FindResource("AccentBrush");
+        var borderBrush = (Brush)FindResource("BorderBrush");
+        Step1Indicator.Fill = _currentStep >= 1 ? accentBrush : borderBrush;
+        Step2Indicator.Fill = _currentStep >= 2 ? accentBrush : borderBrush;
+        StepText.Text = $"Étape {_currentStep} sur {TotalSteps}";
     }
 
     private void NextButton_Click(object sender, RoutedEventArgs e)

@@ -16,17 +16,27 @@ public partial class HistoryView : Window
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<HistoryViewModel>();
 
-        Loaded += async (s, e) =>
-        {
-            // Apply title bar theme
-            var themeService = App.Services.GetRequiredService<ThemeService>();
-            ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+        Loaded += HistoryView_Loaded;
+        Closing += HistoryView_Closing;
+    }
 
-            if (DataContext is HistoryViewModel vm)
-            {
-                await vm.LoadTransactionsCommand.ExecuteAsync(null);
-            }
-        };
+    private async void HistoryView_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Apply title bar theme
+        var themeService = App.Services.GetRequiredService<ThemeService>();
+        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+
+        if (DataContext is HistoryViewModel vm)
+        {
+            await vm.LoadTransactionsCommand.ExecuteAsync(null);
+        }
+    }
+
+    private void HistoryView_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        // Unsubscribe from events to prevent memory leaks
+        Loaded -= HistoryView_Loaded;
+        Closing -= HistoryView_Closing;
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)

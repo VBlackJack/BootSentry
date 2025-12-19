@@ -1,12 +1,14 @@
 using BootSentry.Core.Enums;
+using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Core.Services;
 
 /// <summary>
 /// Analyzes startup entries and assigns risk levels based on heuristics.
+/// Implements IRiskService to centralize all risk assessment logic.
 /// </summary>
-public class RiskAnalyzer
+public class RiskAnalyzer : IRiskService
 {
     /// <summary>
     /// List of known trusted publishers.
@@ -170,6 +172,43 @@ public class RiskAnalyzer
     {
         var assessment = Analyze(entry);
         entry.RiskLevel = assessment.RecommendedRiskLevel;
+    }
+
+    /// <inheritdoc/>
+    public bool IsTrustedPublisher(string? publisher)
+    {
+        if (string.IsNullOrEmpty(publisher))
+            return false;
+        return TrustedPublishers.Contains(publisher);
+    }
+
+    /// <inheritdoc/>
+    public bool IsSuspiciousLocation(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return false;
+
+        var pathLower = path.ToLowerInvariant();
+        return SuspiciousLocations.Any(loc => pathLower.Contains(loc));
+    }
+
+    /// <inheritdoc/>
+    public RiskLevel DetermineBaseRiskLevel(SignatureStatus signatureStatus, string? publisher)
+    {
+        // Signed by trusted publisher = Safe
+        if (signatureStatus == SignatureStatus.SignedTrusted && IsTrustedPublisher(publisher))
+            return RiskLevel.Safe;
+
+        // Signed by trusted publisher without full trust chain = still relatively safe
+        if (IsTrustedPublisher(publisher))
+            return RiskLevel.Safe;
+
+        // Signed with trusted chain but unknown publisher = Unknown
+        if (signatureStatus == SignatureStatus.SignedTrusted)
+            return RiskLevel.Unknown;
+
+        // Unsigned or untrusted signature = Unknown
+        return RiskLevel.Unknown;
     }
 
     private static RiskFactor? AnalyzeSignature(StartupEntry entry)

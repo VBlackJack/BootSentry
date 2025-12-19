@@ -41,29 +41,84 @@ public class KnowledgeEntry
     public SafetyLevel SafetyLevel { get; set; }
 
     /// <summary>
-    /// Short description (1-2 sentences).
+    /// Short description in French (1-2 sentences).
     /// </summary>
     public required string ShortDescription { get; set; }
 
     /// <summary>
-    /// Full detailed description (wiki-style).
+    /// Short description in English.
+    /// </summary>
+    public string? ShortDescriptionEn { get; set; }
+
+    /// <summary>
+    /// Full detailed description in French (wiki-style).
     /// </summary>
     public string? FullDescription { get; set; }
 
     /// <summary>
-    /// What happens if disabled.
+    /// Full detailed description in English.
+    /// </summary>
+    public string? FullDescriptionEn { get; set; }
+
+    /// <summary>
+    /// What happens if disabled (French).
     /// </summary>
     public string? DisableImpact { get; set; }
 
     /// <summary>
-    /// Performance impact (CPU/RAM/Startup time).
+    /// What happens if disabled (English).
+    /// </summary>
+    public string? DisableImpactEn { get; set; }
+
+    /// <summary>
+    /// Performance impact (CPU/RAM/Startup time) - French.
     /// </summary>
     public string? PerformanceImpact { get; set; }
 
     /// <summary>
-    /// Recommendation text (e.g., "Can be safely disabled if you don't use Steam").
+    /// Performance impact (English).
+    /// </summary>
+    public string? PerformanceImpactEn { get; set; }
+
+    /// <summary>
+    /// Recommendation text in French.
     /// </summary>
     public string? Recommendation { get; set; }
+
+    /// <summary>
+    /// Recommendation text in English.
+    /// </summary>
+    public string? RecommendationEn { get; set; }
+
+    /// <summary>
+    /// Gets the localized short description.
+    /// </summary>
+    public string GetShortDescription(string language) =>
+        language == "en" && !string.IsNullOrEmpty(ShortDescriptionEn) ? ShortDescriptionEn : ShortDescription;
+
+    /// <summary>
+    /// Gets the localized full description.
+    /// </summary>
+    public string? GetFullDescription(string language) =>
+        language == "en" && !string.IsNullOrEmpty(FullDescriptionEn) ? FullDescriptionEn : FullDescription;
+
+    /// <summary>
+    /// Gets the localized disable impact.
+    /// </summary>
+    public string? GetDisableImpact(string language) =>
+        language == "en" && !string.IsNullOrEmpty(DisableImpactEn) ? DisableImpactEn : DisableImpact;
+
+    /// <summary>
+    /// Gets the localized performance impact.
+    /// </summary>
+    public string? GetPerformanceImpact(string language) =>
+        language == "en" && !string.IsNullOrEmpty(PerformanceImpactEn) ? PerformanceImpactEn : PerformanceImpact;
+
+    /// <summary>
+    /// Gets the localized recommendation.
+    /// </summary>
+    public string? GetRecommendation(string language) =>
+        language == "en" && !string.IsNullOrEmpty(RecommendationEn) ? RecommendationEn : Recommendation;
 
     /// <summary>
     /// URL for more information.

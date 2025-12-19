@@ -3,14 +3,16 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Win32;
+using Wpf.Ui.Appearance;
 
 namespace BootSentry.UI.Services;
 
 /// <summary>
 /// Service for managing application themes.
 /// </summary>
-public class ThemeService
+public class ThemeService : IDisposable
 {
+    private bool _disposed;
     // DWM API for dark title bar (Windows 10 1809+)
     [DllImport("dwmapi.dll", PreserveSig = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
@@ -157,6 +159,9 @@ public class ThemeService
 
         // Apply dark title bar to all windows
         ApplyTitleBarTheme(isDark);
+
+        // Apply WPF-UI theme
+        ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light);
     }
 
     /// <summary>
@@ -249,6 +254,28 @@ public class ThemeService
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Releases resources and unsubscribes from system events.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+            return;
+
+        if (disposing)
+        {
+            SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
+        }
+
+        _disposed = true;
     }
 }
 

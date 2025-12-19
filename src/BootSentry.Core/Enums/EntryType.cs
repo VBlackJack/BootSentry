@@ -48,5 +48,8 @@ public enum EntryType
     AppInitDlls,
 
     /// <summary>Winsock Layered Service Provider (LSP)</summary>
-    WinsockLSP
+    WinsockLSP,
+
+    /// <summary>Browser Extension (Chrome, Edge, Firefox)</summary>
+    BrowserExtension
 }

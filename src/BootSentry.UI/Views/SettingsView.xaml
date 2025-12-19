@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
-        Title="Paramètres - BootSentry"
+        Title="{res:Localize SettingsWindowTitle}"
         Height="550" Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
@@ -20,7 +21,7 @@
 
         <!-- Header -->
         <TextBlock Grid.Row="0"
-                   Text="Paramètres"
+                   Text="{res:Localize SettingsTitle}"
                    FontSize="24" FontWeight="Bold"
                    Foreground="{DynamicResource WindowForeground}"/>
 
@@ -28,7 +29,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
             <StackPanel>
                 <!-- General Section -->
-                <TextBlock Text="Général" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{res:Localize SettingsGeneral}" Style="{StaticResource SectionHeader}"/>
 
                 <Grid Margin="0,8">
                     <Grid.ColumnDefinitions>
@@ -36,50 +37,53 @@
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Langue" Style="{StaticResource SettingLabel}"/>
-                        <TextBlock Text="Redémarrage requis pour certains éléments" Style="{StaticResource SettingDescription}"/>
+                        <TextBlock Text="{res:Localize SettingsLanguage}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{res:Localize SettingsLanguageHint}" Style="{StaticResource SettingDescription}"/>
                     </StackPanel>
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding Languages}"
                               SelectedValue="{Binding SelectedLanguage}"
                               SelectedValuePath="Code"
                               DisplayMemberPath="Name"
-                              VerticalAlignment="Center"/>
+                              Height="38"
+                              HorizontalAlignment="Stretch"/>
                 </Grid>
 
-                <CheckBox Content="Démarrer en mode Expert par défaut"
+                <CheckBox Content="{res:Localize SettingsExpertDefault}"
                           IsChecked="{Binding IsExpertModeDefault}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
-                <CheckBox Content="Vérifier les mises à jour au démarrage"
+                <CheckBox Content="{res:Localize SettingsCheckUpdates}"
                           IsChecked="{Binding CheckForUpdatesOnStartup}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
-                <CheckBox Content="Afficher l'assistant au premier démarrage"
+                <CheckBox Content="{res:Localize SettingsShowOnboarding}"
                           IsChecked="{Binding ShowOnboarding}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
                 <!-- Appearance Section -->
-                <TextBlock Text="Apparence" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{res:Localize SettingsAppearance}" Style="{StaticResource SectionHeader}"/>
 
                 <Grid Margin="0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Thème" Style="{StaticResource SettingLabel}"/>
+                    <TextBlock Text="{res:Localize SettingsTheme}" Style="{StaticResource SettingLabel}"/>
                     <ComboBox Grid.Column="1"
                               ItemsSource="{Binding Themes}"
-                              SelectedIndex="{Binding SelectedThemeIndex}"
+                              SelectedValue="{Binding SelectedTheme}"
+                              SelectedValuePath="Mode"
                               DisplayMemberPath="Name"
-                              VerticalAlignment="Center"/>
+                              Height="38"
+                              HorizontalAlignment="Stretch"/>
                 </Grid>
 
                 <!-- Backup Section -->
-                <TextBlock Text="Sauvegardes" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{res:Localize SettingsBackups}" Style="{StaticResource SectionHeader}"/>
 
                 <Grid Margin="0,8">
                     <Grid.ColumnDefinitions>
@@ -88,37 +92,36 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Conservation des backups" Style="{StaticResource SettingLabel}"/>
-                        <TextBlock Text="0 = conserver indéfiniment" Style="{StaticResource SettingDescription}"/>
+                        <TextBlock Text="{res:Localize SettingsBackupRetention}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock Text="{res:Localize SettingsBackupHint}" Style="{StaticResource SettingDescription}"/>
                     </StackPanel>
                     <TextBox Grid.Column="1"
                              Text="{Binding BackupRetentionDays, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center"
                              HorizontalContentAlignment="Center"
-                             PreviewTextInput="NumericTextBox_PreviewTextInput"
-                             AutomationProperties.Name="Nombre de jours de conservation"/>
-                    <TextBlock Grid.Column="2" Text=" jours"
+                             PreviewTextInput="NumericTextBox_PreviewTextInput"/>
+                    <TextBlock Grid.Column="2" Text="{res:Localize SettingsDays}"
                                Style="{StaticResource SettingLabel}"
                                Margin="4,0,0,0"/>
                 </Grid>
 
                 <!-- Advanced Section -->
-                <TextBlock Text="Avancé" Style="{StaticResource SectionHeader}"/>
+                <TextBlock Text="{res:Localize SettingsAdvanced}" Style="{StaticResource SectionHeader}"/>
 
-                <CheckBox Content="Calculer automatiquement les hashes SHA-256"
+                <CheckBox Content="{res:Localize SettingsAutoHash}"
                           IsChecked="{Binding AutoCalculateHashes}"
                           Foreground="{DynamicResource WindowForeground}"
                           Margin="0,8"/>
 
-                <TextBlock Text="Attention: peut ralentir le scan pour les gros fichiers"
+                <TextBlock Text="{res:Localize SettingsAutoHashWarning}"
                            Style="{StaticResource SettingDescription}"
                            Margin="20,0,0,0"/>
 
                 <!-- Danger Zone -->
-                <TextBlock Text="Zone de danger" Style="{StaticResource SectionHeader}"
+                <TextBlock Text="{res:Localize SettingsDangerZone}" Style="{StaticResource SectionHeader}"
                            Foreground="{DynamicResource ErrorBrush}"/>
 
-                <Button Content="Réinitialiser les paramètres"
+                <Button Content="{res:Localize SettingsResetButton}"
                         Command="{Binding ResetToDefaultsCommand}"
                         Padding="12,8"
                         Margin="0,8"
@@ -127,7 +130,7 @@
                         Foreground="{DynamicResource ControlForeground}"
                         BorderBrush="{DynamicResource BorderBrush}"/>
 
-                <Button Content="Purger toutes les données"
+                <Button Content="{res:Localize SettingsPurgeData}"
                         Command="{Binding PurgeAllDataCommand}"
                         Padding="12,8"
                         Margin="0,8"
@@ -136,7 +139,7 @@
                         Foreground="White"
                         BorderThickness="0"/>
 
-                <TextBlock Text="Supprime les logs, backups et préférences"
+                <TextBlock Text="{res:Localize SettingsPurgeHint}"
                            Style="{StaticResource SettingDescription}"
                            Foreground="{DynamicResource ErrorBrush}"
                            Margin="0,0,0,16"/>
@@ -156,7 +159,7 @@
                        VerticalAlignment="Center"/>
 
             <Button Grid.Column="1"
-                    Content="Fermer"
+                    Content="{res:Localize Close}"
                     Click="CloseButton_Click"
                     Padding="24,8"
                     Background="{DynamicResource AccentBrush}"
