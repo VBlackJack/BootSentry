@@ -7,6 +7,16 @@
 
 **BootSentry** is a modern Windows startup manager that allows you to safely manage programs that start automatically with Windows.
 
+## What's New in v1.1
+
+- **Redesigned Interface** - User-centric tabs (Applications, Browsers, System, Advanced) instead of technical categories
+- **Smart Microsoft Filter** - Hide system noise across ALL entry types (Services, Drivers, AND Apps like OneDrive/Edge)
+- **Surgical Security** - Safe "Reset" for Winlogon entries and precise DLL removal for AppInit (prevents system breakage)
+- **Full Undo Engine** - Complete rollback capability for all actions including complex registry list modifications
+- **Browser Extensions** - Support for Chrome, Edge, Firefox, Brave, Opera, Opera GX, and Vivaldi
+- **Onboarding Tour** - New welcome experience for first-time users
+- **Improved Layout** - Optimized window dimensions and proportions for 1080p screens
+
 ## Features
 
 - **Complete Startup Analysis** - Scans 14+ startup locations including Registry, Startup folders, Scheduled Tasks, Services, Drivers, and more
@@ -42,6 +52,7 @@ BootSentry analyzes the following startup locations:
 | Browser Helper Objects | IE/Edge BHOs |
 | Print Monitors | Spooler print monitors |
 | Winsock LSP | Layered Service Providers |
+| Browser Extensions | Chrome, Edge, Firefox, Brave, Opera, Vivaldi |
 
 ## Installation
 

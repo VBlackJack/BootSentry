@@ -1,5 +1,5 @@
 #define MyAppName "BootSentry"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Julien Bombled"
 #define MyAppURL "https://github.com/VBlackJack/BootSentry"
 #define MyAppExeName "BootSentry.UI.exe"
