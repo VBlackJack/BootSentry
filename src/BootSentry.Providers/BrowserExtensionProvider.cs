@@ -13,6 +13,7 @@ namespace BootSentry.Providers;
 public sealed class BrowserExtensionProvider : IStartupProvider
 {
     private readonly ILogger<BrowserExtensionProvider> _logger;
+    private readonly IBrowserPolicyManager? _policyManager;
 
     /// <summary>
     /// Database of known extension descriptions (ID -> Description).
@@ -113,9 +114,10 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         ["gbkeegbaiigmenfmjfclcdgdpimamgkj"] = "Office Online - Word, Excel, PowerPoint dans le navigateur.",
     };
 
-    public BrowserExtensionProvider(ILogger<BrowserExtensionProvider> logger)
+    public BrowserExtensionProvider(ILogger<BrowserExtensionProvider> logger, IBrowserPolicyManager? policyManager = null)
     {
         _logger = logger;
+        _policyManager = policyManager;
     }
 
     public EntryType EntryType => EntryType.BrowserExtension;
@@ -322,6 +324,10 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         // Determine risk level based on permissions and origin
         var riskLevel = DetermineExtensionRisk(root, extensionId);
 
+        // Check if extension is blocked by policy
+        var isBlocked = _policyManager?.IsExtensionBlocked(extensionId, browserName) ?? false;
+        var status = isBlocked ? EntryStatus.Disabled : EntryStatus.Enabled;
+
         return new StartupEntry
         {
             Id = $"BrowserExt_{browserName}_{extensionId}",
@@ -335,7 +341,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
             Notes = $"v{version}",
             TargetPath = extensionPath,
             CommandLineRaw = $"{browserName} Extension ({profileName})",
-            Status = EntryStatus.Enabled,
+            Status = status,
             FileExists = true,
             RiskLevel = riskLevel,
             SignatureStatus = SignatureStatus.Unknown
@@ -538,6 +544,10 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
         var active = addon.TryGetProperty("active", out var activeProp) && activeProp.GetBoolean();
 
+        // Check if extension is blocked by policy (overrides JSON status)
+        var isBlocked = id != null && (_policyManager?.IsExtensionBlocked(id, "Firefox") ?? false);
+        var status = isBlocked ? EntryStatus.Disabled : (active ? EntryStatus.Enabled : EntryStatus.Disabled);
+
         return new StartupEntry
         {
             Id = $"BrowserExt_Firefox_{id}",
@@ -551,7 +561,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
             Notes = $"v{version}",
             TargetPath = null,
             CommandLineRaw = $"Firefox Extension ({profileName})",
-            Status = active ? EntryStatus.Enabled : EntryStatus.Disabled,
+            Status = status,
             FileExists = true,
             RiskLevel = RiskLevel.Unknown,
             SignatureStatus = SignatureStatus.Unknown

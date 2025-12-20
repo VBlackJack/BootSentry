@@ -323,6 +323,8 @@ public static class Strings
             ["ActionDeleteHelp"] = "Supprime définitivement l'entrée sélectionnée (un backup sera créé)",
             ["StatusFilterLabel"] = "Filtre par statut",
             ["StatusFilterHelp"] = "Filtrer les entrées par leur statut (Tous, Activé, Désactivé)",
+            ["HideMicrosoftEntries"] = "Masquer Microsoft",
+            ["HideMicrosoftEntriesTooltip"] = "Masquer les services et pilotes signés par Microsoft",
             ["DataGridHelp"] = "Liste des entrées de démarrage. Utilisez les flèches pour naviguer.",
             ["HistoryEmptyHint"] = "Les actions seront enregistrées ici",
             ["SelectEntryHintLarge"] = "Cliquez sur une entrée dans la liste pour afficher ses détails",
@@ -370,6 +372,7 @@ public static class Strings
             ["NotifDeleted"] = "'{0}' a été supprimé (backup créé)",
             ["NotifCopied"] = "Copié dans le presse-papiers",
             ["NotifExportSuccess"] = "Export réussi: {0}",
+            ["NotifBrowserRestartRequired"] = "Redémarrez le navigateur pour appliquer les changements",
 
             // Misc
             ["Yes"] = "Oui",
@@ -703,6 +706,8 @@ public static class Strings
             ["ActionDeleteHelp"] = "Permanently delete the selected entry (a backup will be created)",
             ["StatusFilterLabel"] = "Filter by status",
             ["StatusFilterHelp"] = "Filter entries by their status (All, Enabled, Disabled)",
+            ["HideMicrosoftEntries"] = "Hide Microsoft",
+            ["HideMicrosoftEntriesTooltip"] = "Hide services and drivers signed by Microsoft",
             ["DataGridHelp"] = "List of startup entries. Use arrow keys to navigate.",
             ["HistoryEmptyHint"] = "Actions will be recorded here",
             ["SelectEntryHintLarge"] = "Click on an entry in the list to view its details",
@@ -750,6 +755,7 @@ public static class Strings
             ["NotifDeleted"] = "'{0}' has been deleted (backup created)",
             ["NotifCopied"] = "Copied to clipboard",
             ["NotifExportSuccess"] = "Export successful: {0}",
+            ["NotifBrowserRestartRequired"] = "Restart browser to apply changes",
 
             // Misc
             ["Yes"] = "Yes",

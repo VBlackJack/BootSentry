@@ -263,6 +263,11 @@
                               TabIndex="2"
                               AutomationProperties.Name="{res:Localize StatusFilterLabel}"
                               AutomationProperties.HelpText="{res:Localize StatusFilterHelp}"/>
+                    <CheckBox Content="{res:Localize HideMicrosoftEntries}"
+                              IsChecked="{Binding HideMicrosoftEntries}"
+                              Margin="10,0,0,0"
+                              VerticalAlignment="Center"
+                              ToolTip="{res:Localize HideMicrosoftEntriesTooltip}"/>
                     <StackPanel Orientation="Horizontal" Margin="8,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding VisibleEntriesCount}" FontWeight="SemiBold"/>
                         <TextBlock Text=" / "/>

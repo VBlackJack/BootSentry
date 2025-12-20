@@ -182,6 +182,11 @@ public class AppSettings
     /// Column widths for the entry list.
     /// </summary>
     public Dictionary<string, double>? ColumnWidths { get; set; }
+
+    /// <summary>
+    /// Whether to hide Microsoft system entries (Services/Drivers) from the list.
+    /// </summary>
+    public bool HideMicrosoftEntries { get; set; } = true;
 }
 
 /// <summary>

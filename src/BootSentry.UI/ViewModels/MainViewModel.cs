@@ -41,6 +41,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly KnowledgeService _knowledgeService;
     private readonly IMalwareScanner? _malwareScanner;
     private readonly ToastService _toastService;
+    private readonly SettingsService _settingsService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     // Smart Background Scan
@@ -49,6 +50,25 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _isExpertMode;
+
+    /// <summary>
+    /// Gets or sets whether to hide Microsoft system entries (Services/Drivers).
+    /// </summary>
+    public bool HideMicrosoftEntries
+    {
+        get => _settingsService.Settings.HideMicrosoftEntries;
+        set
+        {
+            if (_settingsService.Settings.HideMicrosoftEntries != value)
+            {
+                _settingsService.Settings.HideMicrosoftEntries = value;
+                _settingsService.Save();
+                OnPropertyChanged();
+                _entriesView.Refresh();
+                UpdateCounts();
+            }
+        }
+    }
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -115,6 +135,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private bool ShouldShowInNonExpertMode(StartupEntry entry)
     {
+        // Microsoft Services/Drivers noise filter (works in both modes)
+        if (HideMicrosoftEntries && (entry.Type == EntryType.Service || entry.Type == EntryType.Driver))
+        {
+            bool isMicrosoft = entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
+                               entry.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
+                               entry.ProtectionReason?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true;
+            if (isMicrosoft)
+                return false;
+        }
+
         if (IsExpertMode) return true;
         if (entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true
             && entry.SignatureStatus == SignatureStatus.SignedTrusted)
@@ -132,6 +162,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ExportService exportService,
         IRiskService riskAnalyzer,
         ToastService toastService,
+        SettingsService settingsService,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -143,6 +174,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _exportService = exportService;
         _riskAnalyzer = riskAnalyzer;
         _toastService = toastService;
+        _settingsService = settingsService;
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;
@@ -273,6 +305,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             // Hide drivers in non-expert mode
             if (entry.Type == EntryType.Driver)
+                return false;
+        }
+
+        // Microsoft Services/Drivers noise filter (works in both modes)
+        if (HideMicrosoftEntries && (entry.Type == EntryType.Service || entry.Type == EntryType.Driver))
+        {
+            bool isMicrosoft = entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
+                               entry.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
+                               entry.ProtectionReason?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true;
+            if (isMicrosoft)
                 return false;
         }
 
@@ -639,6 +681,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
             UpdateCounts();
             StatusMessage = Strings.Format("NotifDisabled", SelectedEntry.DisplayName);
             _toastService.ShowSuccess(StatusMessage);
+
+            // Show browser restart warning for browser extensions
+            if (SelectedEntry.Type == EntryType.BrowserExtension)
+            {
+                _toastService.ShowWarning(Strings.Get("NotifBrowserRestartRequired"));
+            }
+
             // Update command states after status change
             EnableSelectedCommand.NotifyCanExecuteChanged();
             DisableSelectedCommand.NotifyCanExecuteChanged();
@@ -695,6 +744,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
             UpdateCounts();
             StatusMessage = Strings.Format("NotifEnabled", SelectedEntry.DisplayName);
             _toastService.ShowSuccess(StatusMessage);
+
+            // Show browser restart warning for browser extensions
+            if (SelectedEntry.Type == EntryType.BrowserExtension)
+            {
+                _toastService.ShowWarning(Strings.Get("NotifBrowserRestartRequired"));
+            }
+
             // Update command states after status change
             EnableSelectedCommand.NotifyCanExecuteChanged();
             DisableSelectedCommand.NotifyCanExecuteChanged();
