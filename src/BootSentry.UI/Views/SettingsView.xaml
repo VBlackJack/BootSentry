@@ -7,10 +7,12 @@
         mc:Ignorable="d"
         Title="{res:Localize SettingsWindowTitle}"
         Height="550" Width="500"
+        MinHeight="450" MinWidth="400"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
+        ResizeMode="CanResize"
         Background="{DynamicResource WindowBackground}"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=CloseButton}">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -82,6 +84,42 @@
                               HorizontalAlignment="Stretch"/>
                 </Grid>
 
+                <!-- Theme Preview -->
+                <Border Background="{DynamicResource PanelBackground}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="6"
+                        Padding="12" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="{res:Localize ThemePreview}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource WindowForeground}" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4">
+                            <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
+                                    Background="{DynamicResource AccentBrush}" ToolTip="Accent"/>
+                            <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
+                                    Background="{DynamicResource SuccessBrush}" ToolTip="Success"/>
+                            <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
+                                    Background="{DynamicResource WarningBrush}" ToolTip="Warning"/>
+                            <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
+                                    Background="{DynamicResource ErrorBrush}" ToolTip="Error"/>
+                            <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
+                                    Background="{DynamicResource NeutralBrush}" ToolTip="Neutral"/>
+                        </StackPanel>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Primary" Margin="0,0,4,0"
+                                    Background="{DynamicResource AccentBrush}"
+                                    Foreground="{DynamicResource AccentForeground}"
+                                    Padding="8,4" IsEnabled="False"/>
+                            <Button Grid.Column="1" Content="Secondary" Margin="4,0,0,0"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="8,4" IsEnabled="False"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
                 <!-- Backup Section -->
                 <TextBlock Text="{res:Localize SettingsBackups}" Style="{StaticResource SectionHeader}"/>
 
@@ -92,14 +130,15 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="{res:Localize SettingsBackupRetention}" Style="{StaticResource SettingLabel}"/>
+                        <TextBlock x:Name="BackupRetentionLabel" Text="{res:Localize SettingsBackupRetention}" Style="{StaticResource SettingLabel}"/>
                         <TextBlock Text="{res:Localize SettingsBackupHint}" Style="{StaticResource SettingDescription}"/>
                     </StackPanel>
                     <TextBox Grid.Column="1"
                              Text="{Binding BackupRetentionDays, UpdateSourceTrigger=PropertyChanged}"
                              VerticalAlignment="Center"
                              HorizontalContentAlignment="Center"
-                             PreviewTextInput="NumericTextBox_PreviewTextInput"/>
+                             PreviewTextInput="NumericTextBox_PreviewTextInput"
+                             AutomationProperties.LabeledBy="{Binding ElementName=BackupRetentionLabel}"/>
                     <TextBlock Grid.Column="2" Text="{res:Localize SettingsDays}"
                                Style="{StaticResource SettingLabel}"
                                Margin="4,0,0,0"/>
@@ -158,9 +197,11 @@
                        Foreground="{DynamicResource DisabledForeground}"
                        VerticalAlignment="Center"/>
 
-            <Button Grid.Column="1"
+            <Button x:Name="CloseButton"
+                    Grid.Column="1"
                     Content="{res:Localize Close}"
                     Click="CloseButton_Click"
+                    IsDefault="True"
                     Padding="24,8"
                     Background="{DynamicResource AccentBrush}"
                     Foreground="{DynamicResource AccentForeground}"

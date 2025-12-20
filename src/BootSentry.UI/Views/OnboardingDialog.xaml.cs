@@ -12,7 +12,7 @@ namespace BootSentry.UI.Views;
 public partial class OnboardingDialog : Window
 {
     private int _currentStep = 1;
-    private const int TotalSteps = 2;
+    private const int TotalSteps = 3;
 
     public bool IsExpertModeSelected { get; private set; }
     public bool DontShowAgain { get; private set; }
@@ -67,16 +67,20 @@ public partial class OnboardingDialog : Window
     {
         Step1Panel.Visibility = _currentStep == 1 ? Visibility.Visible : Visibility.Collapsed;
         Step2Panel.Visibility = _currentStep == 2 ? Visibility.Visible : Visibility.Collapsed;
+        Step3Panel.Visibility = _currentStep == 3 ? Visibility.Visible : Visibility.Collapsed;
 
         PreviousButton.Visibility = _currentStep > 1 ? Visibility.Visible : Visibility.Collapsed;
-        NextButton.Content = _currentStep == TotalSteps ? "Commencer" : "Suivant";
+        NextButton.Content = _currentStep == TotalSteps
+            ? UI.Resources.Strings.Get("OnboardingStart")
+            : UI.Resources.Strings.Get("OnboardingNext");
 
         // Update step indicators
         var accentBrush = (Brush)FindResource("AccentBrush");
         var borderBrush = (Brush)FindResource("BorderBrush");
         Step1Indicator.Fill = _currentStep >= 1 ? accentBrush : borderBrush;
         Step2Indicator.Fill = _currentStep >= 2 ? accentBrush : borderBrush;
-        StepText.Text = $"Étape {_currentStep} sur {TotalSteps}";
+        Step3Indicator.Fill = _currentStep >= 3 ? accentBrush : borderBrush;
+        StepText.Text = UI.Resources.Strings.Format("OnboardingStepN", _currentStep, TotalSteps);
     }
 
     private void NextButton_Click(object sender, RoutedEventArgs e)

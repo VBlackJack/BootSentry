@@ -29,6 +29,9 @@ public partial class MainWindow : FluentWindow
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        // Save window state before closing
+        SaveWindowState();
+
         // Unsubscribe from events to prevent memory leaks
         Loaded -= MainWindow_Loaded;
         Closing -= MainWindow_Closing;
@@ -60,14 +63,31 @@ public partial class MainWindow : FluentWindow
         }
     }
 
+    private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Return && DataContext is MainViewModel vm)
+        {
+            // Force refresh when Enter is pressed in search box
+            vm.RefreshCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         // Apply title bar theme
         var themeService = App.Services.GetRequiredService<ThemeService>();
         ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
 
-        // Show onboarding if needed
+        // Set up toast container
+        var toastService = App.Services.GetRequiredService<ToastService>();
+        toastService.SetContainer(ToastContainer);
+
+        // Restore window size and position
         var settingsService = App.Services.GetRequiredService<SettingsService>();
+        RestoreWindowState(settingsService);
+
+        // Show onboarding if needed
         if (settingsService.Settings.ShowOnboarding)
         {
             var dialog = new OnboardingDialog { Owner = this };
@@ -80,6 +100,48 @@ public partial class MainWindow : FluentWindow
                 }
             }
         }
+    }
+
+    private void RestoreWindowState(SettingsService settingsService)
+    {
+        var windowState = settingsService.Settings.Window;
+        if (windowState != null)
+        {
+            if (windowState.Width > 0 && windowState.Height > 0)
+            {
+                Width = windowState.Width;
+                Height = windowState.Height;
+            }
+
+            // Ensure window is within screen bounds
+            var screenWidth = SystemParameters.VirtualScreenWidth;
+            var screenHeight = SystemParameters.VirtualScreenHeight;
+            if (windowState.Left >= 0 && windowState.Top >= 0 &&
+                windowState.Left < screenWidth && windowState.Top < screenHeight)
+            {
+                Left = windowState.Left;
+                Top = windowState.Top;
+            }
+
+            if (windowState.IsMaximized)
+            {
+                WindowState = System.Windows.WindowState.Maximized;
+            }
+        }
+    }
+
+    private void SaveWindowState()
+    {
+        var settingsService = App.Services.GetRequiredService<SettingsService>();
+        settingsService.Settings.Window = new Services.WindowState
+        {
+            Width = Width,
+            Height = Height,
+            Left = Left,
+            Top = Top,
+            IsMaximized = WindowState == System.Windows.WindowState.Maximized
+        };
+        settingsService.Save();
     }
 
     private void CategoryTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)

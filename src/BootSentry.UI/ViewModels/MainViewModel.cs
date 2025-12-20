@@ -18,8 +18,10 @@ using BootSentry.Knowledge.Models;
 using BootSentry.Knowledge.Services;
 using BootSentry.Security;
 using BootSentry.Security.Services;
+using BootSentry.UI.Controls;
 using BootSentry.UI.Models;
 using BootSentry.UI.Resources;
+using BootSentry.UI.Services;
 
 namespace BootSentry.UI.ViewModels;
 
@@ -38,6 +40,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IRiskService _riskAnalyzer;
     private readonly KnowledgeService _knowledgeService;
     private readonly IMalwareScanner? _malwareScanner;
+    private readonly ToastService _toastService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     // Smart Background Scan
@@ -128,6 +131,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         KnowledgeService knowledgeService,
         ExportService exportService,
         IRiskService riskAnalyzer,
+        ToastService toastService,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -138,13 +142,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _malwareScanner = malwareScanner;
         _exportService = exportService;
         _riskAnalyzer = riskAnalyzer;
+        _toastService = toastService;
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;
 
         // Check admin status
         IsAdmin = UacHelper.IsRunningAsAdmin();
-        AdminStatusText = IsAdmin ? "Administrateur" : "Standard";
+        AdminStatusText = IsAdmin ? Strings.Get("AdminStatusAdmin") : Strings.Get("AdminStatusStandard");
 
         // Load entries on startup
         _ = RefreshAsync();
@@ -208,6 +213,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedCategoryChanged(EntryCategory? value)
     {
+        // Sort Extensions by DisplayName to group by browser
+        _entriesView.SortDescriptions.Clear();
+        if (value == EntryCategory.Extensions)
+        {
+            _entriesView.SortDescriptions.Add(new System.ComponentModel.SortDescription(
+                nameof(StartupEntry.DisplayName), System.ComponentModel.ListSortDirection.Ascending));
+        }
+
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
@@ -245,8 +258,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             if (entry.IsProtected)
                 return false;
 
-            // Hide expert-only categories in non-expert mode
-            if (entry.Category == EntryCategory.System || entry.Category == EntryCategory.Extensions)
+            // Hide System category in non-expert mode (Extensions are now visible to all)
+            if (entry.Category == EntryCategory.System)
                 return false;
 
             // Hide drivers in non-expert mode
@@ -309,7 +322,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IsLoading = true;
         CanCancel = true;
         ProgressText = string.Empty;
-        StatusMessage = "Analyse en cours...";
+        StatusMessage = Strings.Get("ProgressStep1");
 
         try
         {
@@ -317,10 +330,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             Entries.Clear();
             var providerList = _providers.Where(p => p.IsAvailable()).ToList();
+            var totalSteps = providerList.Count + 2; // providers + risk analysis + finalization
+            var currentStep = 0;
 
-            StatusMessage = Strings.Get("ScanningProviders");
+            // Step 1: Initialize
+            ProgressText = $"{Strings.Get("Step")} 1/{totalSteps}";
+            StatusMessage = Strings.Get("ProgressStep1");
+            await Task.Delay(100, token); // Small delay for UI update
 
-            // Parallel scan of all providers
+            // Step 2+: Scan each provider with progress
+            var completedProviders = 0;
+            var allEntries = new System.Collections.Concurrent.ConcurrentBag<(IStartupProvider Provider, List<StartupEntry> Entries, Exception? Error)>();
+
             var scanTasks = providerList.Select(async provider =>
             {
                 try
@@ -329,6 +350,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     var entries = await provider.ScanAsync(token);
                     _logger.LogInformation("Provider {Provider} found {Count} entries",
                         provider.DisplayName, entries.Count);
+
+                    // Update progress on completion
+                    var completed = System.Threading.Interlocked.Increment(ref completedProviders);
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        currentStep = completed + 1;
+                        ProgressText = $"{Strings.Get("Step")} {currentStep}/{totalSteps}";
+                        StatusMessage = Strings.Format("ProgressScanning", provider.DisplayName, entries.Count);
+                    });
+
                     return (Provider: provider, Entries: entries, Error: (Exception?)null);
                 }
                 catch (OperationCanceledException)
@@ -338,6 +369,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error scanning with provider {Provider}", provider.DisplayName);
+                    System.Threading.Interlocked.Increment(ref completedProviders);
                     return (Provider: provider, Entries: new List<StartupEntry>(), Error: ex);
                 }
             }).ToList();
@@ -345,6 +377,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var results = await Task.WhenAll(scanTasks);
 
             token.ThrowIfCancellationRequested();
+
+            // Step N-1: Risk analysis
+            currentStep = providerList.Count + 1;
+            ProgressText = $"{Strings.Get("Step")} {currentStep}/{totalSteps}";
+            StatusMessage = Strings.Get("ProgressAnalyzing");
 
             // Process results on UI thread
             var totalEntries = 0;
@@ -360,10 +397,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 }
             }
 
+            // Step N: Finalization
+            currentStep = totalSteps;
+            ProgressText = $"{Strings.Get("Step")} {currentStep}/{totalSteps}";
+            StatusMessage = Strings.Get("ProgressFinalizing");
+
             _entriesView.Refresh();
             UpdateCounts();
 
-            StatusMessage = $"Scan terminé - {totalEntries} entrées trouvées";
+            StatusMessage = Strings.Format("ProgressComplete", totalEntries);
             _logger.LogInformation("Scan complete: {Count} entries found", totalEntries);
         }
         catch (OperationCanceledException)
@@ -580,7 +622,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _entriesView.Refresh();
             UpdateCounts();
-            StatusMessage = $"{SelectedEntry.DisplayName} désactivé";
+            StatusMessage = Strings.Format("NotifDisabled", SelectedEntry.DisplayName);
+            _toastService.ShowSuccess(StatusMessage);
         }
         else
         {
@@ -627,7 +670,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _entriesView.Refresh();
             UpdateCounts();
-            StatusMessage = $"{SelectedEntry.DisplayName} activé";
+            StatusMessage = Strings.Format("NotifEnabled", SelectedEntry.DisplayName);
+            _toastService.ShowSuccess(StatusMessage);
         }
         else
         {
@@ -656,15 +700,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        // Confirmation dialog
-        var confirmResult = MessageBox.Show(
-            $"Êtes-vous sûr de vouloir supprimer '{SelectedEntry.DisplayName}'?\n\n" +
-            "Un backup sera créé et permettra de restaurer cette entrée.",
-            "Confirmation de suppression",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (confirmResult != MessageBoxResult.Yes)
+        // Confirmation dialog with animation
+        var confirmDialog = Views.ConfirmationDialog.ForDelete(SelectedEntry.DisplayName, Application.Current.MainWindow);
+        if (confirmDialog.ShowDialog() != true)
             return;
 
         // Check if admin is required
@@ -700,7 +738,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             _entriesView.Refresh();
             UpdateCounts();
 
-            StatusMessage = $"{entryName} supprimé (backup créé)";
+            StatusMessage = Strings.Format("NotifDeleted", entryName);
+            _toastService.ShowSuccess(StatusMessage);
         }
         else
         {
@@ -907,12 +946,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedEntry?.TargetPath != null)
         {
             Clipboard.SetText(SelectedEntry.TargetPath);
-            StatusMessage = "Chemin copié dans le presse-papiers";
+            StatusMessage = Strings.Get("NotifCopied");
         }
         else if (SelectedEntry?.CommandLineRaw != null)
         {
             Clipboard.SetText(SelectedEntry.CommandLineRaw);
-            StatusMessage = "Commande copiée dans le presse-papiers";
+            StatusMessage = Strings.Get("NotifCopied");
         }
     }
 
@@ -938,15 +977,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void OpenInRegedit()
     {
-        if (SelectedEntry?.SourcePath == null)
+        // Silently return if no entry selected
+        if (SelectedEntry == null)
             return;
 
-        // Only works for registry entries
-        if (!SelectedEntry.SourcePath.StartsWith("HK", StringComparison.OrdinalIgnoreCase))
+        // Check if it's a registry entry
+        if (SelectedEntry.SourcePath == null ||
+            !SelectedEntry.SourcePath.StartsWith("HK", StringComparison.OrdinalIgnoreCase))
         {
             MessageBox.Show(
-                "Cette entrée n'est pas une clé de registre.",
-                "Action impossible",
+                Strings.Get("ErrorNotARegistryKey"),
+                Strings.Get("ErrorActionImpossible"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
@@ -981,11 +1022,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void OpenInServices()
     {
-        if (SelectedEntry?.Type != EntryType.Service)
+        // Silently return if no entry selected
+        if (SelectedEntry == null)
+            return;
+
+        // Show message only if entry is selected but wrong type
+        if (SelectedEntry.Type != EntryType.Service)
         {
             MessageBox.Show(
-                "Cette entrée n'est pas un service.",
-                "Action impossible",
+                Strings.Get("ErrorNotAService"),
+                Strings.Get("ErrorActionImpossible"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
@@ -999,17 +1045,27 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening services.msc");
+            MessageBox.Show(
+                $"{Strings.Get("ErrorOpeningServices")}: {ex.Message}",
+                Strings.Get("ErrorTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
     [RelayCommand]
     private void OpenInTaskScheduler()
     {
-        if (SelectedEntry?.Type != EntryType.ScheduledTask)
+        // Silently return if no entry selected
+        if (SelectedEntry == null)
+            return;
+
+        // Show message only if entry is selected but wrong type
+        if (SelectedEntry.Type != EntryType.ScheduledTask)
         {
             MessageBox.Show(
-                "Cette entrée n'est pas une tâche planifiée.",
-                "Action impossible",
+                Strings.Get("ErrorNotATask"),
+                Strings.Get("ErrorActionImpossible"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
@@ -1023,6 +1079,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening task scheduler");
+            MessageBox.Show(
+                $"{Strings.Get("ErrorOpeningTaskScheduler")}: {ex.Message}",
+                Strings.Get("ErrorTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -1175,6 +1236,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private string _scanProgressText = string.Empty;
+
+    /// <summary>
+    /// Gets the scan percentage for progress bar display.
+    /// </summary>
+    public int ScanPercentage => ScanTotal > 0 ? (int)((double)ScanProgress / ScanTotal * 100) : 0;
+
+    partial void OnScanProgressChanged(int value)
+    {
+        OnPropertyChanged(nameof(ScanPercentage));
+    }
+
+    partial void OnScanTotalChanged(int value)
+    {
+        OnPropertyChanged(nameof(ScanPercentage));
+    }
 
     private CancellationTokenSource? _scanCts;
 

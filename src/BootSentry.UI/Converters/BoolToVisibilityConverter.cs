@@ -199,3 +199,61 @@ public class EntryStatusToColorConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// Converts ScanResult enum to a localized string.
+/// </summary>
+public class ScanResultToStringConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is BootSentry.Core.Enums.ScanResult result)
+        {
+            return result switch
+            {
+                BootSentry.Core.Enums.ScanResult.Clean => Resources.Strings.Get("ScanResultCleanShort"),
+                BootSentry.Core.Enums.ScanResult.Malware => Resources.Strings.Get("ScanResultMalwareShort"),
+                BootSentry.Core.Enums.ScanResult.Blocked => Resources.Strings.Get("ScanResultBlockedShort"),
+                BootSentry.Core.Enums.ScanResult.NotScanned => Resources.Strings.Get("ScanResultNotScannedShort"),
+                BootSentry.Core.Enums.ScanResult.TooLarge => Resources.Strings.Get("ScanResultTooLargeShort"),
+                BootSentry.Core.Enums.ScanResult.Error => Resources.Strings.Get("ScanResultErrorShort"),
+                BootSentry.Core.Enums.ScanResult.NoAntivirusProvider => Resources.Strings.Get("ScanResultNoAVShort"),
+                _ => Resources.Strings.Get("ScanResultUnknown")
+            };
+        }
+        return Resources.Strings.Get("ScanResultUnknown");
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts SafetyLevel enum to a localized string.
+/// </summary>
+public class SafetyLevelToStringConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is BootSentry.Knowledge.Models.SafetyLevel level)
+        {
+            return level switch
+            {
+                BootSentry.Knowledge.Models.SafetyLevel.Critical => Resources.Strings.Get("SafetyCritical"),
+                BootSentry.Knowledge.Models.SafetyLevel.Important => Resources.Strings.Get("SafetyImportant"),
+                BootSentry.Knowledge.Models.SafetyLevel.Safe => Resources.Strings.Get("SafetySafe"),
+                BootSentry.Knowledge.Models.SafetyLevel.RecommendedDisable => Resources.Strings.Get("SafetyRecommendedDisable"),
+                BootSentry.Knowledge.Models.SafetyLevel.ShouldRemove => Resources.Strings.Get("SafetyShouldRemove"),
+                _ => Resources.Strings.Get("SafetyUnknown")
+            };
+        }
+        return Resources.Strings.Get("SafetyUnknown");
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

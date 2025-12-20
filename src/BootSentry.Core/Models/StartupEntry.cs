@@ -113,6 +113,11 @@ public class StartupEntry : INotifyPropertyChanged
     /// </summary>
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// Description of the entry (e.g., browser extension description).
+    /// </summary>
+    public string? Description { get; set; }
+
     // Optional metadata
 
     /// <summary>

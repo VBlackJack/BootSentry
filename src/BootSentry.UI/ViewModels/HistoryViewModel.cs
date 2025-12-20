@@ -16,12 +16,19 @@ public partial class HistoryViewModel : ObservableObject
     private readonly ITransactionManager _transactionManager;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNoTransactions))]
     private ObservableCollection<TransactionItem> _transactions = [];
 
     [ObservableProperty]
     private TransactionItem? _selectedTransaction;
 
+    /// <summary>
+    /// Gets whether there are no transactions to display.
+    /// </summary>
+    public bool HasNoTransactions => !IsLoading && Transactions.Count == 0;
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNoTransactions))]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -47,7 +54,7 @@ public partial class HistoryViewModel : ObservableObject
         try
         {
             IsLoading = true;
-            StatusMessage = Strings.Get("History_Loading");
+            StatusMessage = Strings.Get("HistoryLoading");
 
             var transactions = await _transactionManager.GetTransactionsAsync(100);
 
@@ -57,12 +64,12 @@ public partial class HistoryViewModel : ObservableObject
                 Transactions.Add(new TransactionItem(tx));
             }
 
-            StatusMessage = Strings.Format("History_Count", Transactions.Count);
+            StatusMessage = Strings.Format("HistoryCount", Transactions.Count);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load transactions");
-            StatusMessage = Strings.Get("History_LoadError");
+            StatusMessage = Strings.Get("HistoryLoadError");
         }
         finally
         {
@@ -82,20 +89,20 @@ public partial class HistoryViewModel : ObservableObject
         try
         {
             IsLoading = true;
-            StatusMessage = Strings.Get("History_Restoring");
+            StatusMessage = Strings.Get("HistoryRestoring");
 
             var result = await _transactionManager.RollbackAsync(SelectedTransaction.Id);
 
             if (result.Success)
             {
-                StatusMessage = Strings.Get("History_RestoreSuccess");
+                StatusMessage = Strings.Get("HistoryRestoreSuccess");
                 SelectedTransaction.CanRestore = false;
-                SelectedTransaction.StatusText = Strings.Get("History_Restored");
+                SelectedTransaction.StatusText = Strings.Get("HistoryRestored");
                 _logger.LogInformation("Rolled back transaction {Id}", SelectedTransaction.Id);
             }
             else
             {
-                StatusMessage = Strings.Format("History_RestoreError", result.ErrorMessage ?? "Unknown error");
+                StatusMessage = Strings.Format("HistoryRestoreError", result.ErrorMessage ?? "Unknown error");
                 _logger.LogWarning("Failed to rollback transaction {Id}: {Error}",
                     SelectedTransaction.Id, result.ErrorMessage);
             }
@@ -103,7 +110,7 @@ public partial class HistoryViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during rollback of {Id}", SelectedTransaction?.Id);
-            StatusMessage = Strings.Format("History_RestoreError", ex.Message);
+            StatusMessage = Strings.Format("HistoryRestoreError", ex.Message);
         }
         finally
         {
@@ -124,7 +131,7 @@ public partial class HistoryViewModel : ObservableObject
                 maxAge: TimeSpan.FromDays(30),
                 maxCount: 100);
 
-            StatusMessage = Strings.Format("History_Purged", purged);
+            StatusMessage = Strings.Format("HistoryPurged", purged);
             _logger.LogInformation("Purged {Count} old transactions", purged);
 
             // Reload
@@ -133,7 +140,7 @@ public partial class HistoryViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to purge transactions");
-            StatusMessage = Strings.Get("History_PurgeError");
+            StatusMessage = Strings.Get("HistoryPurgeError");
         }
         finally
         {
@@ -171,6 +178,6 @@ public partial class TransactionItem : ObservableObject
         EntryType = transaction.EntrySnapshotBefore.Type.ToString();
         SourcePath = transaction.EntrySnapshotBefore.SourcePath;
         CanRestore = transaction.CanRestore;
-        StatusText = transaction.CanRestore ? Strings.Get("History_CanRestore") : Strings.Get("History_CannotRestore");
+        StatusText = transaction.CanRestore ? Strings.Get("HistoryCanRestore") : Strings.Get("HistoryCannotRestore");
     }
 }

@@ -16,7 +16,6 @@ public partial class AboutDialog : Window
     {
         InitializeComponent();
         LoadInfo();
-        KeyDown += AboutDialog_KeyDown;
         Loaded += AboutDialog_Loaded;
     }
 

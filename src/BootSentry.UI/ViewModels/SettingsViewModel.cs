@@ -173,6 +173,10 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ResetToDefaults()
     {
+        var confirmDialog = Views.ConfirmationDialog.ForReset(System.Windows.Application.Current.MainWindow);
+        if (confirmDialog.ShowDialog() != true)
+            return;
+
         _settingsService.Reset();
         LoadSettings();
         _themeService.CurrentTheme = ThemeMode.System;
@@ -184,19 +188,14 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void PurgeAllData()
     {
-        var result = System.Windows.MessageBox.Show(
-            Strings.Get("SettingsPurgeConfirm"),
-            Strings.Get("WarningTitle"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+        var confirmDialog = Views.ConfirmationDialog.ForPurge(System.Windows.Application.Current.MainWindow);
+        if (confirmDialog.ShowDialog() != true)
+            return;
 
-        if (result == System.Windows.MessageBoxResult.Yes)
-        {
-            _settingsService.PurgeAllData();
-            LoadSettings();
-            StatusMessage = Strings.Get("SettingsPurgeData") + " - OK";
-            _logger.LogInformation("All application data purged");
-        }
+        _settingsService.PurgeAllData();
+        LoadSettings();
+        StatusMessage = Strings.Get("SettingsPurgeData") + " - OK";
+        _logger.LogInformation("All application data purged");
     }
 }
 

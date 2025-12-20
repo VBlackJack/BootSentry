@@ -14,6 +14,105 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 {
     private readonly ILogger<BrowserExtensionProvider> _logger;
 
+    /// <summary>
+    /// Database of known extension descriptions (ID -> Description).
+    /// Used as fallback when manifest description is not available.
+    /// </summary>
+    private static readonly Dictionary<string, string> KnownExtensionDescriptions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Ad blockers
+        ["cjpalhdlnbpafiamejdnhcphjbkeiagm"] = "Bloqueur de publicités efficace et léger. Bloque les pubs, trackers et malwares.",
+        ["cfhdojbkjhnklbpkdaibdccddilifddb"] = "Bloque les publicités intrusives sur le web.",
+        ["gighmmpiobklfepjocnamgkkbiglidom"] = "Bloque les publicités sur YouTube, Facebook et partout sur le web.",
+        ["epcnnfbjfcgphgdmggkamkmgojdagdnn"] = "Bloqueur de publicités ultra-rapide basé sur uBlock Origin.",
+
+        // Password managers
+        ["hdokiejnpimakedhajhdlcegeplioahd"] = "Gestionnaire de mots de passe sécurisé. Enregistre et remplit automatiquement vos identifiants.",
+        ["nkbihfbeogaeaoehlefnkodbefgpgknn"] = "Portefeuille Ethereum pour interagir avec les applications blockchain.",
+        ["oboonakemofpalcgghocfoadofidjkkk"] = "Gestionnaire de mots de passe open-source KeePassXC.",
+        ["fdjamakpfbbddfjaooikfcpapjohcfmg"] = "Gestionnaire de mots de passe Dashlane.",
+        ["naepdomgkenhinolocfifgehidddafch"] = "Gestionnaire de mots de passe Bitwarden gratuit et open-source.",
+        ["eiaeiblijfjekdanodkjadfinkhbfgcd"] = "Proton Pass - Gestionnaire de mots de passe chiffré.",
+
+        // Privacy & Security
+        ["gcknhkkoolaabfmlnjonogaaifnjlfnp"] = "FoxyProxy - Configuration et gestion avancée des proxies.",
+        ["pkehgijcmpdhfbdbbnkijodmdjhbjlgp"] = "Privacy Badger - Bloque automatiquement les trackers invisibles.",
+        ["gcbommkclmclpchllfjekcdonpmejbdp"] = "HTTPS Everywhere - Force les connexions HTTPS sécurisées.",
+        ["cmedhionkhpnakcndndgjdbohmhepckk"] = "Decentraleyes - Protège contre le tracking par les CDN.",
+        ["fhcgjolkccmbidfldomjliifgaodjagh"] = "Cookie AutoDelete - Supprime automatiquement les cookies inutilisés.",
+        ["ldpochfccmkkmhdbclfhpagapcfdljkj"] = "Decentraleyes - Émule les CDN localement pour la confidentialité.",
+        ["bgnkhhnnamicmpeenaelnjfhikgbkllg"] = "AdGuard - Bloqueur de publicités et protection de la vie privée.",
+        ["odfafepnkmbhccpbejgmiehpchacaeak"] = "uMatrix - Contrôle précis des requêtes web par type et origine.",
+
+        // VPN & Proxy
+        ["bihmplhobchoageeokmgbdihknkjbknd"] = "NordVPN - Proxy VPN rapide et sécurisé.",
+        ["eppiocemhmnlbhjplcgkofciiegomcon"] = "Browsec VPN - VPN gratuit pour contourner les restrictions.",
+        ["majdfhpaihoncoakbjgbdhglocklcgno"] = "Windscribe VPN - VPN et bloqueur de pubs.",
+        ["ffbkglfijbcbgblgflchnbphjdllaogb"] = "Hotspot Shield VPN - Proxy VPN gratuit.",
+
+        // Developer tools
+        ["fmkadmapgofadopljbjfkapdkoienihi"] = "React Developer Tools - Outils de débogage pour React.",
+        ["nhdogjmejiglipccpnnnanhbledajbpd"] = "Vue.js devtools - Outils de débogage pour Vue.js.",
+        ["lmhkpmbekcpmknklioeibfkpmmfibljd"] = "Redux DevTools - Outils de débogage pour Redux.",
+        ["bhlhnicpbhignbdhedgjhgdocnmhomnp"] = "ColorZilla - Pipette à couleurs et générateur de dégradés.",
+        ["jdkknkkbebbapilgoeccciglkfbmbnfm"] = "Apollo Client DevTools - Outils pour GraphQL Apollo.",
+        ["iaajmlceplecbljialhhkmedjlpdblhp"] = "JSON Viewer Pro - Affiche le JSON de manière formatée.",
+
+        // Productivity
+        ["aapbdbdomjkkjkaonfhkkikfgjllcleb"] = "Google Translate - Traduction instantanée de pages web.",
+        ["ghbmnnjooekpmoecnnnilnnbdlolhkhi"] = "Google Docs Offline - Accès hors ligne aux documents Google.",
+        ["lpcaedmchfhocbbapmcbpinfpgnhiddi"] = "Google Keep - Notes et listes de tâches.",
+        ["efaidnbmnnnibpcajpcglclefindmkaj"] = "Adobe Acrobat - Lecteur et éditeur PDF.",
+        ["pioclpoplcdbaefihamjohnefbikjilc"] = "Evernote Web Clipper - Sauvegarde de pages web dans Evernote.",
+        ["nplieblnkhgboloddbbabmhbdakmekkh"] = "Grammarly - Correcteur orthographique et grammatical.",
+        ["aomjjhallfgjeglblehebfpbcfeobpgk"] = "1Password - Gestionnaire de mots de passe.",
+        ["hlepfoohegkhhmjieoechaddaejaokhf"] = "Refined GitHub - Interface GitHub améliorée.",
+        ["kbfnbcaeplbcioakkpcpgfkobkghlhen"] = "Grammarly - Assistant d'écriture intelligent.",
+
+        // Download & Media
+        ["cjelfplplebdjjenllpjcblmjkfcffne"] = "Video DownloadHelper - Téléchargement de vidéos.",
+        ["ajpgkpeckebdhofmmjfgcjjiiejpodla"] = "Xender - Transfert de fichiers.",
+        ["ggbgaokmhkjligaokkfpojilddllkfkb"] = "Free Download Manager - Gestionnaire de téléchargements.",
+
+        // Shopping
+        ["chhjbpecpncaggjpdakmflnfcopglcmi"] = "Honey - Recherche automatique de codes promo.",
+        ["hgmloofddffdnphfgcellkdfbfbjeloo"] = "RetailMeNot - Coupons et cashback.",
+        ["pbjikboenpfhbbejgkoklgkhjpfogcam"] = "Amazon Assistant - Assistant shopping Amazon.",
+
+        // Social & Communication
+        ["edibdbjbnpennamipnfcpkbpgeocfceo"] = "Checker Plus for Gmail - Notifications Gmail.",
+        ["oeopbcgkkoapgobdbedcemjljbihmemj"] = "Checker Plus for Google Calendar - Notifications agenda.",
+        ["pnjaodmkngahhkoihejjehlcdlnohgmp"] = "Todoist - Gestionnaire de tâches et to-do list.",
+
+        // Tab & Bookmark managers
+        ["ophjlpahpchlmihnnnihgmmeilfjmjjc"] = "OneTab - Convertit tous les onglets en liste.",
+        ["eggkanocgddhmamlbiijnphhppkpkmkl"] = "Tab Manager Plus - Gestion avancée des onglets.",
+        ["klbibkeccnjlkjkiokjodocebajanakg"] = "The Great Suspender - Suspend les onglets inactifs.",
+        ["chphlpgkkbolifaimnlloiipkdnihall"] = "OneNote Web Clipper - Sauvegarde dans OneNote.",
+
+        // Screenshot & Screen recording
+        ["liecbddmkiiihnedobmlmillhodjkdmb"] = "Loom - Enregistrement d'écran et vidéo.",
+        ["mclkkofklkfljcocdinagocijmpgbhab"] = "Awesome Screenshot - Capture et annotation d'écran.",
+        ["goficmpcgcnombioohjcgdhbaloknabb"] = "GoFullPage - Capture de page web complète.",
+        ["alelhddbbhepgpmgidjdcjakblofbmce"] = "Full Page Screen Capture - Capture d'écran pleine page.",
+
+        // YouTube enhancements
+        ["mnjggcdmjocbbbhaepdhchncahnbgone"] = "SponsorBlock - Passe automatiquement les sponsors YouTube.",
+        ["gebbhagfogifgggkldgodflihgfeippi"] = "Return YouTube Dislike - Restaure le compteur de dislikes.",
+        ["cimiefiiaegbelhefglklhhakcgmhkai"] = "Plasma Integration - Intégration avec KDE Plasma.",
+        ["enamippconapkdmgfgjchkhakpfinmaj"] = "DeArrow - Remplace les miniatures clickbait sur YouTube.",
+
+        // Dark mode & Themes
+        ["dmghijelimhndkbmpgbldicpogfkceaj"] = "Dark Mode - Mode sombre pour tous les sites.",
+        ["pnakfcaoefokdmgdfmkolodnhifidemk"] = "Stylish - Thèmes personnalisés pour les sites web.",
+        ["clngdbkpkpeebahjckkjfobafhncgmne"] = "Stylus - Gestionnaire de styles CSS personnalisés.",
+
+        // Reading & Articles
+        ["hipbfijinpcgfogaopmgehiegacbhmob"] = "Clearly - Mode lecture épuré pour les articles.",
+        ["ecabifbgmdmgdllomnfinbmaellmclnh"] = "Reader View - Affichage lecture sans distractions.",
+        ["gbkeegbaiigmenfmjfclcdgdpimamgkj"] = "Office Online - Word, Excel, PowerPoint dans le navigateur.",
+    };
+
     public BrowserExtensionProvider(ILogger<BrowserExtensionProvider> logger)
     {
         _logger = logger;
@@ -48,6 +147,38 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 cancellationToken);
             entries.AddRange(edgeEntries);
 
+            // Scan Brave extensions
+            var braveEntries = await ScanChromiumExtensionsAsync(
+                "Brave",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "BraveSoftware", "Brave-Browser", "User Data"),
+                cancellationToken);
+            entries.AddRange(braveEntries);
+
+            // Scan Opera extensions
+            var operaEntries = await ScanChromiumExtensionsAsync(
+                "Opera",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Opera Software", "Opera Stable"),
+                cancellationToken);
+            entries.AddRange(operaEntries);
+
+            // Scan Opera GX extensions
+            var operaGxEntries = await ScanChromiumExtensionsAsync(
+                "Opera GX",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Opera Software", "Opera GX Stable"),
+                cancellationToken);
+            entries.AddRange(operaGxEntries);
+
+            // Scan Vivaldi extensions
+            var vivaldiEntries = await ScanChromiumExtensionsAsync(
+                "Vivaldi",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Vivaldi", "User Data"),
+                cancellationToken);
+            entries.AddRange(vivaldiEntries);
+
             // Scan Firefox extensions
             var firefoxEntries = await ScanFirefoxExtensionsAsync(cancellationToken);
             entries.AddRange(firefoxEntries);
@@ -78,8 +209,16 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         try
         {
             // Check all profiles (Default, Profile 1, etc.)
+            // Opera uses a flat structure, so we also check for Extensions directly in userDataPath
             var profiles = Directory.GetDirectories(userDataPath)
-                .Where(d => Path.GetFileName(d) == "Default" || Path.GetFileName(d).StartsWith("Profile "));
+                .Where(d => Path.GetFileName(d) == "Default" || Path.GetFileName(d).StartsWith("Profile "))
+                .ToList();
+
+            // For Opera/Opera GX, Extensions folder is directly in the user data path
+            if (profiles.Count == 0 && Directory.Exists(Path.Combine(userDataPath, "Extensions")))
+            {
+                profiles.Add(userDataPath);
+            }
 
             foreach (var profilePath in profiles)
             {
@@ -141,12 +280,44 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         var version = GetJsonString(root, "version") ?? "Unknown";
         var description = GetJsonString(root, "description") ?? "";
         var author = GetJsonString(root, "author");
+        var defaultLocale = GetJsonString(root, "default_locale");
+        var shortName = GetJsonString(root, "short_name");
+        var homepageUrl = GetJsonString(root, "homepage_url");
 
-        // Clean up localized names (e.g., "__MSG_appName__")
+        // Clean up localized strings (e.g., "__MSG_appName__", "__MSG_appDesc__")
         if (name.StartsWith("__MSG_"))
-            name = TryGetLocalizedName(latestVersion, name) ?? name;
+            name = TryGetLocalizedString(latestVersion, name, defaultLocale) ?? name;
+        if (description.StartsWith("__MSG_"))
+        {
+            var localizedDesc = TryGetLocalizedString(latestVersion, description, defaultLocale);
+            _logger.LogDebug("Localization lookup for {Desc}: result={Result}, path={Path}",
+                description, localizedDesc ?? "(null)", latestVersion);
+            description = localizedDesc ?? description; // Keep original if not found
+        }
 
         var extensionId = Path.GetFileName(extensionPath);
+
+        // Fallback: use known descriptions database if description is empty or still localized
+        if (string.IsNullOrWhiteSpace(description) || description.StartsWith("__MSG_"))
+        {
+            if (KnownExtensionDescriptions.TryGetValue(extensionId, out var knownDesc))
+            {
+                description = knownDesc;
+            }
+            else
+            {
+                // Last resort: use homepage URL or short name
+                var parts = new List<string>();
+                if (!string.IsNullOrEmpty(shortName) && shortName != name)
+                    parts.Add(shortName);
+                if (!string.IsNullOrEmpty(homepageUrl))
+                    parts.Add(homepageUrl);
+                if (parts.Count > 0)
+                    description = string.Join(" - ", parts);
+                else
+                    description = $"Extension {browserName}"; // Debug fallback
+            }
+        }
 
         // Determine risk level based on permissions and origin
         var riskLevel = DetermineExtensionRisk(root, extensionId);
@@ -160,7 +331,8 @@ public sealed class BrowserExtensionProvider : IStartupProvider
             SourcePath = extensionPath,
             SourceName = extensionId,
             Publisher = author ?? "Unknown",
-            Notes = $"v{version} - {description}".Trim(),
+            Description = string.IsNullOrWhiteSpace(description) ? null : description,
+            Notes = $"v{version}",
             TargetPath = extensionPath,
             CommandLineRaw = $"{browserName} Extension ({profileName})",
             Status = EntryStatus.Enabled,
@@ -170,18 +342,34 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         };
     }
 
-    private string? TryGetLocalizedName(string versionPath, string msgKey)
+    private string? TryGetLocalizedString(string versionPath, string msgKey, string? defaultLocale)
     {
         try
         {
-            // Try to find _locales/en/messages.json or _locales/en_US/messages.json
+            // Try to find localized messages in _locales folder
             var localesPath = Path.Combine(versionPath, "_locales");
             if (!Directory.Exists(localesPath))
+            {
+                _logger.LogDebug("Locales path not found: {Path}", localesPath);
                 return null;
+            }
 
             var key = msgKey.Replace("__MSG_", "").Replace("__", "");
+            _logger.LogDebug("Looking for key '{Key}' in {Path}", key, localesPath);
 
-            foreach (var locale in new[] { "en", "en_US", "en_GB" })
+            // Build locale priority list: default_locale first, then French, then English
+            var locales = new List<string>();
+            if (!string.IsNullOrEmpty(defaultLocale))
+                locales.Add(defaultLocale);
+            locales.AddRange(new[] { "fr", "fr_FR", "en", "en_US", "en_GB" });
+
+            // Also try all available locales if nothing found
+            var availableLocales = Directory.GetDirectories(localesPath)
+                .Select(Path.GetFileName)
+                .Where(l => l != null)
+                .Cast<string>();
+
+            foreach (var locale in locales.Concat(availableLocales).Distinct())
             {
                 var messagesPath = Path.Combine(localesPath, locale, "messages.json");
                 if (!File.Exists(messagesPath))
@@ -190,16 +378,31 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 var content = File.ReadAllText(messagesPath);
                 using var doc = JsonDocument.Parse(content);
 
+                // Try exact match first, then case-insensitive
                 if (doc.RootElement.TryGetProperty(key, out var msgObj) &&
                     msgObj.TryGetProperty("message", out var message))
                 {
+                    _logger.LogDebug("Found '{Key}' in {Locale}: {Value}", key, locale, message.GetString());
                     return message.GetString();
                 }
+
+                // Case-insensitive search
+                foreach (var prop in doc.RootElement.EnumerateObject())
+                {
+                    if (prop.Name.Equals(key, StringComparison.OrdinalIgnoreCase) &&
+                        prop.Value.TryGetProperty("message", out var msg))
+                    {
+                        _logger.LogDebug("Found '{Key}' (case-insensitive) in {Locale}: {Value}", key, locale, msg.GetString());
+                        return msg.GetString();
+                    }
+                }
             }
+
+            _logger.LogDebug("Key '{Key}' not found in any locale", key);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors in localization lookup
+            _logger.LogWarning(ex, "Error in localization lookup for {Key}", msgKey);
         }
 
         return null;
@@ -344,7 +547,8 @@ public sealed class BrowserExtensionProvider : IStartupProvider
             SourcePath = "Firefox Extensions",
             SourceName = id,
             Publisher = creator ?? "Unknown",
-            Notes = $"v{version} - {description}".Trim(),
+            Description = string.IsNullOrWhiteSpace(description) ? null : description,
+            Notes = $"v{version}",
             TargetPath = null,
             CommandLineRaw = $"Firefox Extension ({profileName})",
             Status = active ? EntryStatus.Enabled : EntryStatus.Disabled,

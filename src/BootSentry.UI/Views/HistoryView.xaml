@@ -7,10 +7,13 @@
         xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
         Title="{res:Localize HistoryWindowTitle}"
-        Height="500" Width="800"
+        Height="550" Width="900"
+        MinHeight="400" MinWidth="600"
         WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
         Background="{DynamicResource WindowBackground}"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=CloseButton}">
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -48,14 +51,26 @@
                   RowBackground="{DynamicResource PanelBackground}"
                   AlternatingRowBackground="{DynamicResource RowAlternate}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{res:Localize History_Date}" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
-                <DataGridTextColumn Header="{res:Localize History_Action}" Binding="{Binding ActionType}" Width="80"/>
-                <DataGridTextColumn Header="{res:Localize History_Entry}" Binding="{Binding EntryDisplayName}" Width="*"/>
-                <DataGridTextColumn Header="{res:Localize History_Type}" Binding="{Binding EntryType}" Width="100"/>
-                <DataGridTextColumn Header="{res:Localize History_User}" Binding="{Binding User}" Width="100"/>
-                <DataGridTextColumn Header="{res:Localize History_Status}" Binding="{Binding StatusText}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize HistoryDate}" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
+                <DataGridTextColumn Header="{res:Localize HistoryAction}" Binding="{Binding ActionType}" Width="80"/>
+                <DataGridTextColumn Header="{res:Localize HistoryEntry}" Binding="{Binding EntryDisplayName}" Width="*"/>
+                <DataGridTextColumn Header="{res:Localize HistoryType}" Binding="{Binding EntryType}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize HistoryUser}" Binding="{Binding User}" Width="100"/>
+                <DataGridTextColumn Header="{res:Localize HistoryStatus}" Binding="{Binding StatusText}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!-- Empty State -->
+        <StackPanel Grid.Row="1"
+                    Visibility="{Binding HasNoTransactions, Converter={StaticResource BoolToVisibility}}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="&#xE81C;" FontFamily="Segoe MDL2 Assets" FontSize="48"
+                       HorizontalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Opacity="0.4"/>
+            <TextBlock Text="{res:Localize HistoryEmpty}" FontSize="16" FontWeight="SemiBold"
+                       Foreground="{DynamicResource WindowForeground}" HorizontalAlignment="Center" Margin="0,16,0,4"/>
+            <TextBlock Text="{res:Localize HistoryEmptyHint}" FontSize="12"
+                       Foreground="{DynamicResource MutedForeground}" HorizontalAlignment="Center"/>
+        </StackPanel>
 
         <!-- Selected Transaction Details -->
         <Border Grid.Row="2"
@@ -118,8 +133,10 @@
                         Background="{DynamicResource ControlBackground}"
                         Foreground="{DynamicResource ControlForeground}"
                         BorderBrush="{DynamicResource BorderBrush}"/>
-                <Button Content="{res:Localize Close}"
+                <Button x:Name="CloseButton"
+                        Content="{res:Localize Close}"
                         Click="CloseButton_Click"
+                        IsDefault="True"
                         Padding="12,8"
                         Margin="4,0,0,0"
                         Background="{DynamicResource ControlBackground}"

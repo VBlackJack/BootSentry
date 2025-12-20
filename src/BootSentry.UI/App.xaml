@@ -21,6 +21,8 @@
             <converters:RiskLevelToColorConverter x:Key="RiskToColor"/>
             <converters:SignatureStatusToColorConverter x:Key="SignatureToColor"/>
             <converters:EntryStatusToColorConverter x:Key="StatusToColor"/>
+            <converters:ScanResultToStringConverter x:Key="ScanResultToString"/>
+            <converters:SafetyLevelToStringConverter x:Key="SafetyLevelToString"/>
             <!-- Colors - Unified palette matching ThemeService -->
             <Color x:Key="PrimaryColor">#0078D4</Color>
             <Color x:Key="SuccessColor">#10B981</Color>
@@ -59,7 +61,7 @@
             <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
             <SolidColorBrush x:Key="AccentForeground" Color="White"/>
             <SolidColorBrush x:Key="InfoBrush" Color="#3B82F6"/>
-            <SolidColorBrush x:Key="DisabledForeground" Color="#757575"/>
+            <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
             <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
             <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
             <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
@@ -86,6 +88,11 @@
             <Thickness x:Key="PaddingL">24</Thickness>
             <Thickness x:Key="PaddingXL">32</Thickness>
 
+            <!-- Corner Radius values -->
+            <CornerRadius x:Key="RadiusSmall">4</CornerRadius>
+            <CornerRadius x:Key="RadiusMedium">6</CornerRadius>
+            <CornerRadius x:Key="RadiusLarge">8</CornerRadius>
+
             <!-- Common Thickness values -->
             <Thickness x:Key="ButtonPadding">16,8</Thickness>
             <Thickness x:Key="ToolbarButtonPadding">12,8</Thickness>
@@ -95,14 +102,19 @@
             <Thickness x:Key="HeaderPadding">16,12</Thickness>
             <Thickness x:Key="StatusBarPadding">12,6</Thickness>
 
-            <!-- Focus Visual Style for keyboard navigation -->
+            <!-- Focus Visual Style for keyboard navigation - Enhanced visibility -->
             <Style x:Key="FocusVisual">
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
-                            <Rectangle Margin="2" StrokeDashArray="1 2"
-                                       Stroke="{DynamicResource AccentBrush}"
-                                       StrokeThickness="1" SnapsToDevicePixels="true"/>
+                            <Border Margin="-2" BorderThickness="2" CornerRadius="4"
+                                    BorderBrush="{DynamicResource AccentBrush}"
+                                    SnapsToDevicePixels="true">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="{StaticResource PrimaryColor}"
+                                                      BlurRadius="6" ShadowDepth="0" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -205,21 +217,78 @@
                 <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
             </Style>
 
-            <!-- DataGridColumnHeader Style -->
+            <!-- DataGridColumnHeader Style with sort indicator -->
             <Style TargetType="DataGridColumnHeader">
                 <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
                 <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="Padding" Value="8,6"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridColumnHeader">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0" VerticalAlignment="Center"/>
+                                    <Path x:Name="SortArrow" Grid.Column="1"
+                                          Fill="{DynamicResource AccentBrush}"
+                                          VerticalAlignment="Center" Margin="4,0,0,0"
+                                          Visibility="Collapsed"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="SortDirection" Value="Ascending">
+                                    <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                                    <Setter TargetName="SortArrow" Property="Data" Value="M0,6 L4,0 L8,6 Z"/>
+                                </Trigger>
+                                <Trigger Property="SortDirection" Value="Descending">
+                                    <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                                    <Setter TargetName="SortArrow" Property="Data" Value="M0,0 L4,6 L8,0 Z"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource RowHover}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- DataGridRow Style with hover animation -->
+            <Style TargetType="DataGridRow">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="MinHeight" Value="36"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Style.Triggers>
+                    <Trigger Property="AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="{DynamicResource RowAlternate}"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RowHover}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource RowSelected}"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- DataGridCell Style -->
             <Style TargetType="DataGridCell">
                 <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
                 <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Padding" Value="4"/>
+                <Setter Property="Padding" Value="6,4"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="{DynamicResource RowSelected}"/>

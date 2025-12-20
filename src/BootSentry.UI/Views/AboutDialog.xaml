@@ -9,7 +9,9 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        KeyDown="AboutDialog_KeyDown"
+        FocusManager.FocusedElement="{Binding ElementName=CloseButton}">
 
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource AccentBrush}"
@@ -114,8 +116,10 @@
             </ScrollViewer>
 
             <!-- Footer -->
-            <Button Grid.Row="2" Content="{res:Localize Close}"
+            <Button x:Name="CloseButton"
+                    Grid.Row="2" Content="{res:Localize Close}"
                     Click="CloseButton_Click"
+                    IsDefault="True"
                     HorizontalAlignment="Center"
                     Padding="24,8" Margin="0,16,0,0"
                     Background="{DynamicResource AccentBrush}"

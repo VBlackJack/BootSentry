@@ -4,11 +4,13 @@
         xmlns:res="clr-namespace:BootSentry.UI.Resources"
         Title="{res:Localize OnboardingWindowTitle}"
         Height="450" Width="550"
+        MinHeight="400" MinWidth="450"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="Transparent">
+        Background="Transparent"
+        FocusManager.FocusedElement="{Binding ElementName=NextButton}">
 
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource AccentBrush}"
@@ -40,6 +42,8 @@
                     <Ellipse x:Name="Step1Indicator" Width="10" Height="10"
                              Fill="{DynamicResource AccentBrush}" Margin="4,0"/>
                     <Ellipse x:Name="Step2Indicator" Width="10" Height="10"
+                             Fill="{DynamicResource BorderBrush}" Margin="4,0"/>
+                    <Ellipse x:Name="Step3Indicator" Width="10" Height="10"
                              Fill="{DynamicResource BorderBrush}" Margin="4,0"/>
                 </StackPanel>
                 <TextBlock x:Name="StepText" Text="{res:Localize OnboardingStep1of2}"
@@ -79,7 +83,9 @@
                     <RadioButton x:Name="StandardModeRadio"
                                  GroupName="Mode"
                                  IsChecked="True"
-                                 Margin="0,24,0,0">
+                                 Margin="0,24,0,0"
+                                 AutomationProperties.Name="{res:Localize OnboardingModePublic}"
+                                 AutomationProperties.HelpText="{res:Localize OnboardingModePublicDesc}">
                         <RadioButton.Template>
                             <ControlTemplate TargetType="RadioButton">
                                 <Border x:Name="Border"
@@ -123,7 +129,9 @@
 
                     <RadioButton x:Name="ExpertModeRadio"
                                  GroupName="Mode"
-                                 Margin="0,8,0,0">
+                                 Margin="0,8,0,0"
+                                 AutomationProperties.Name="{res:Localize OnboardingModeExpert}"
+                                 AutomationProperties.HelpText="{res:Localize OnboardingModeExpertDesc}">
                         <RadioButton.Template>
                             <ControlTemplate TargetType="RadioButton">
                                 <Border x:Name="Border"
@@ -164,6 +172,83 @@
                             </ControlTemplate>
                         </RadioButton.Template>
                     </RadioButton>
+                </StackPanel>
+
+                <!-- Step 3: Keyboard Shortcuts -->
+                <StackPanel x:Name="Step3Panel" Visibility="Collapsed">
+                    <TextBlock Text="{res:Localize OnboardingShortcutsTitle}"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="{DynamicResource WindowForeground}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{res:Localize OnboardingShortcutsDesc}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               Foreground="{DynamicResource DisabledForeground}"
+                               Margin="0,8,0,16"/>
+
+                    <!-- Shortcuts Grid -->
+                    <Border Background="{DynamicResource PanelBackground}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- F5 -->
+                            <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="F5" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{res:Localize ShortcutRefresh}"
+                                       Foreground="{DynamicResource WindowForeground}"
+                                       VerticalAlignment="Center" Margin="12,4,0,4"/>
+
+                            <!-- Ctrl+F -->
+                            <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="Ctrl+F" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{res:Localize ShortcutSearch}"
+                                       Foreground="{DynamicResource WindowForeground}"
+                                       VerticalAlignment="Center" Margin="12,4,0,4"/>
+
+                            <!-- Delete -->
+                            <Border Grid.Row="2" Grid.Column="0" Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="Suppr" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{res:Localize ShortcutDelete}"
+                                       Foreground="{DynamicResource WindowForeground}"
+                                       VerticalAlignment="Center" Margin="12,4,0,4"/>
+
+                            <!-- Ctrl+Z -->
+                            <Border Grid.Row="3" Grid.Column="0" Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="Ctrl+Z" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{res:Localize ShortcutUndo}"
+                                       Foreground="{DynamicResource WindowForeground}"
+                                       VerticalAlignment="Center" Margin="12,4,0,4"/>
+
+                            <!-- F1 -->
+                            <Border Grid.Row="4" Grid.Column="0" Background="{DynamicResource AccentBrush}"
+                                    CornerRadius="4" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="F1" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{res:Localize ShortcutHelp}"
+                                       Foreground="{DynamicResource WindowForeground}"
+                                       VerticalAlignment="Center" Margin="12,4,0,4"/>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </Grid>
 

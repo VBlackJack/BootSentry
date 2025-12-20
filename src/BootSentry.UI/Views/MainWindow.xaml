@@ -6,6 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
         xmlns:res="clr-namespace:BootSentry.UI.Resources"
+        xmlns:controls="clr-namespace:BootSentry.UI.Controls"
         mc:Ignorable="d"
         Title="{res:Localize AppTitleFull}"
         Height="1000" Width="1400"
@@ -179,21 +180,30 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Button Command="{Binding RefreshCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource AccentBrush}" ToolTip="{res:Localize MenuRefresh}">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource AccentBrush}"
+                            ToolTip="{res:Localize TooltipRefresh}" MinHeight="36"
+                            AutomationProperties.Name="{res:Localize TooltipRefresh}"
+                            AutomationProperties.HelpText="F5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="{res:Localize MenuRefresh}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding EnableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource SuccessBrush}"
+                            ToolTip="{res:Localize ActionEnable}" MinHeight="36"
+                            AutomationProperties.Name="{res:Localize ActionEnable}"
+                            AutomationProperties.HelpText="{res:Localize ActionEnableHelp}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="{res:Localize ActionEnable}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding DisableSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource WarningBrush}">
+                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource WarningBrush}"
+                            ToolTip="{res:Localize TooltipDisable}" MinHeight="36"
+                            AutomationProperties.Name="{res:Localize ActionDisable}"
+                            AutomationProperties.HelpText="{res:Localize ActionDisableHelp}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE769;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="{res:Localize ActionDisable}" VerticalAlignment="Center"/>
@@ -201,7 +211,10 @@
                     </Button>
                     <Button Command="{Binding DeleteSelectedCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource ErrorBrush}"
-                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
+                            ToolTip="{res:Localize TooltipDelete}" MinHeight="36"
+                            Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
+                            AutomationProperties.Name="{res:Localize ActionDelete}"
+                            AutomationProperties.HelpText="{res:Localize ActionDeleteHelp}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="{res:Localize ActionDelete}" VerticalAlignment="Center"/>
@@ -210,13 +223,15 @@
                     <Separator Margin="8,4"/>
                     <Button Command="{Binding OpenFileLocationCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
-                            ToolTip="{res:Localize ActionOpenLocation}">
-                        <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets"/>
+                            ToolTip="{res:Localize ActionOpenLocation}" MinWidth="36" MinHeight="36"
+                            AutomationProperties.Name="{res:Localize ActionOpenLocation}">
+                        <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16"/>
                     </Button>
                     <Button Command="{Binding CopyPathCommand}"
                             Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}"
-                            ToolTip="{res:Localize ActionCopyPath}">
-                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets"/>
+                            ToolTip="{res:Localize ActionCopyPath}" MinWidth="36" MinHeight="36"
+                            AutomationProperties.Name="{res:Localize ActionCopyPath}">
+                        <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="16"/>
                     </Button>
                 </StackPanel>
 
@@ -233,14 +248,21 @@
                         <TextBox x:Name="SearchBox"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent" BorderThickness="0"
-                                 Padding="10,8" VerticalContentAlignment="Center"/>
+                                 Padding="10,8" VerticalContentAlignment="Center"
+                                 KeyDown="SearchBox_KeyDown"
+                                 TabIndex="1"
+                                 AutomationProperties.Name="{res:Localize SearchPlaceholder}"
+                                 AutomationProperties.HelpText="Ctrl+F"/>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ComboBox ItemsSource="{Binding StatusFilters}"
                               SelectedItem="{Binding SelectedStatusFilter}"
-                              Width="120" Margin="0,0,8,0"/>
+                              Width="120" Margin="0,0,8,0"
+                              TabIndex="2"
+                              AutomationProperties.Name="{res:Localize StatusFilterLabel}"
+                              AutomationProperties.HelpText="{res:Localize StatusFilterHelp}"/>
                     <StackPanel Orientation="Horizontal" Margin="8,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding VisibleEntriesCount}" FontWeight="SemiBold"/>
                         <TextBlock Text=" / "/>
@@ -255,9 +277,9 @@
         <!-- Main Content -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="400"/>
+                <ColumnDefinition Width="2*" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="500" MinWidth="300"/>
+                <ColumnDefinition Width="*" MinWidth="280" MaxWidth="600"/>
             </Grid.ColumnDefinitions>
 
             <!-- Entry List with Category Tabs -->
@@ -342,10 +364,10 @@
                                 </StackPanel>
                             </TabItem.Header>
                         </TabItem>
-                        <TabItem Tag="Extensions" Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
+                        <TabItem Tag="Extensions">
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE74C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Text="{res:Localize TabExtensions}" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding ExtensionsCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
@@ -356,6 +378,11 @@
 
                     <!-- Entry List Content -->
                     <Grid Grid.Row="1">
+                        <!-- Skeleton Loader during initial load -->
+                        <controls:SkeletonLoader RowCount="8"
+                                                  Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
+                                                  Margin="8"/>
+
                         <!-- No Results Message -->
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                     Visibility="{Binding HasNoVisibleEntries, Converter={StaticResource BoolToVisibility}}"
@@ -379,7 +406,7 @@
                           IsReadOnly="True"
                           SelectionMode="Extended"
                           SelectionChanged="EntriesGrid_SelectionChanged"
-                          GridLinesVisibility="Horizontal"
+                          GridLinesVisibility="None"
                           HeadersVisibility="Column"
                           CanUserResizeRows="False"
                           CanUserReorderColumns="True"
@@ -388,10 +415,12 @@
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           Background="Transparent"
                           BorderThickness="0"
+                          RowHeight="36"
                           RowBackground="{DynamicResource PanelBackground}"
                           AlternatingRowBackground="{DynamicResource RowAlternate}"
-                          AutomationProperties.Name="Liste des entrées de démarrage"
-                          AutomationProperties.HelpText="Utilisez les flèches pour naviguer, Entrée pour sélectionner">
+                          TabIndex="3"
+                          AutomationProperties.Name="{res:Localize DataGridHelp}"
+                          AutomationProperties.HelpText="{res:Localize DataGridHelp}">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="{res:Localize ActionEnable}" Command="{Binding EnableSelectedCommand}"/>
@@ -416,6 +445,10 @@
                     </DataGrid.ContextMenu>
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="MinHeight" Value="36"/>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="{DynamicResource RowHover}"/>
@@ -427,8 +460,48 @@
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Padding" Value="8,0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border x:Name="CellBorder"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="CellBorder" Property="Background" Value="{DynamicResource RowSelected}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{res:Localize ColumnName}" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnDescription}" Binding="{Binding Description}" Width="200" MinWidth="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    <Setter Property="ToolTip" Value="{Binding Description}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
                         <DataGridTextColumn Header="{res:Localize ColumnType}" Binding="{Binding Type}" Width="110"/>
                         <DataGridTextColumn Header="{res:Localize ColumnScope}" Binding="{Binding Scope}" Width="80"/>
                         <DataGridTextColumn Header="{res:Localize ColumnPublisher}" Binding="{Binding Publisher}" Width="150" MinWidth="100"/>
@@ -454,13 +527,37 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="{res:Localize ColumnRisk}" Width="70"
+                        <DataGridTemplateColumn Header="{res:Localize ColumnRisk}" Width="80"
                                             SortMemberPath="RiskLevel" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Ellipse Width="16" Height="16"
-                                             Fill="{Binding RiskLevel, Converter={StaticResource RiskToColor}}"
-                                             ToolTip="{Binding RiskLevel}"/>
+                                    <Border CornerRadius="12" Width="28" Height="28"
+                                            Background="{Binding RiskLevel, Converter={StaticResource RiskToColor}}"
+                                            ToolTip="{Binding RiskLevel}"
+                                            VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="&#xE9CE;"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
+                                                            <Setter Property="Text" Value="&#xE73E;"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Unknown">
+                                                            <Setter Property="Text" Value="&#xE9CE;"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Suspicious">
+                                                            <Setter Property="Text" Value="&#xE7BA;"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Critical">
+                                                            <Setter Property="Text" Value="&#xE783;"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -471,8 +568,29 @@
             </Border>
 
             <!-- Splitter -->
-            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center"
-                          VerticalAlignment="Stretch" Background="Transparent" Cursor="SizeWE"/>
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch" Cursor="SizeWE"
+                          ToolTip="{res:Localize SplitterTooltip}"
+                          AutomationProperties.Name="{res:Localize SplitterTooltip}">
+                <GridSplitter.Style>
+                    <Style TargetType="GridSplitter">
+                        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+                        <Setter Property="Opacity" Value="0.5"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Opacity" Value="0.8"/>
+                                <Setter Property="Cursor" Value="SizeWE"/>
+                            </Trigger>
+                            <!-- During drag (when focused) -->
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Opacity" Value="1.0"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </GridSplitter.Style>
+            </GridSplitter>
 
             <!-- Details Panel -->
             <Border Grid.Column="2" Background="{DynamicResource PanelBackground}"
@@ -484,10 +602,14 @@
 
                         <!-- No Selection -->
                         <StackPanel Visibility="{Binding SelectedEntry, Converter={StaticResource NullToVisibility}}"
-                                    HorizontalAlignment="Center" Margin="0,40">
-                            <TextBlock Text="&#xE8C8;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                            <TextBlock Text="{res:Localize SelectEntryHint}"
-                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,60">
+                            <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="56" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource AccentBrush}" Opacity="0.4"/>
+                            <TextBlock Text="{res:Localize SelectEntryHint}" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource WindowForeground}" HorizontalAlignment="Center" Margin="0,20,0,8"/>
+                            <TextBlock Text="{res:Localize SelectEntryHintLarge}" FontSize="12"
+                                       Foreground="{DynamicResource MutedForeground}" HorizontalAlignment="Center" TextWrapping="Wrap"
+                                       TextAlignment="Center" MaxWidth="250"/>
                         </StackPanel>
 
                         <!-- Entry Details -->
@@ -583,36 +705,8 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock Foreground="White" FontSize="11">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="Inconnu"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Clean">
-                                                            <Setter Property="Text" Value="Fichier sain"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Malware">
-                                                            <Setter Property="Text" Value="Menace détectée!"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Blocked">
-                                                            <Setter Property="Text" Value="Bloqué"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NotScanned">
-                                                            <Setter Property="Text" Value="Non scanné"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="TooLarge">
-                                                            <Setter Property="Text" Value="Fichier trop volumineux"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="Error">
-                                                            <Setter Property="Text" Value="Erreur"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding SelectedEntry.MalwareScanResult}" Value="NoAntivirusProvider">
-                                                            <Setter Property="Text" Value="Aucun antivirus"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
+                                        <TextBlock Text="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource ScanResultToString}}"
+                                                   Foreground="White" FontSize="11"/>
                                     </Border>
                                     <TextBlock Text="{Binding SelectedEntry.LastMalwareScan, StringFormat=' ({0:g})'}"
                                                FontSize="10" Foreground="{DynamicResource DisabledForeground}" VerticalAlignment="Center"/>
@@ -680,30 +774,8 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-                                                <TextBlock Foreground="White" FontSize="11">
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Text" Value="Inconnu"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Critical">
-                                                                    <Setter Property="Text" Value="Critique - Ne pas désactiver"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Important">
-                                                                    <Setter Property="Text" Value="Important"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="Safe">
-                                                                    <Setter Property="Text" Value="Peut être désactivé"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="RecommendedDisable">
-                                                                    <Setter Property="Text" Value="Désactivation recommandée"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding KnowledgeInfo.SafetyLevel}" Value="ShouldRemove">
-                                                                    <Setter Property="Text" Value="À supprimer"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
+                                                <TextBlock Text="{Binding KnowledgeInfo.SafetyLevel, Converter={StaticResource SafetyLevelToString}}"
+                                                       Foreground="White" FontSize="11"/>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding KnowledgeInfo.Category}" FontSize="11"
@@ -881,9 +953,30 @@
             </Grid>
         </Border>
 
+        <!-- Toast Container -->
+        <Grid x:Name="ToastContainer" Grid.RowSpan="6" VerticalAlignment="Top" Margin="0,80,0,0"
+              Panel.ZIndex="1000" IsHitTestVisible="False"/>
+
         <!-- Loading Overlay -->
         <Border Grid.RowSpan="6" Background="{DynamicResource OverlayBackground}"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
+                Panel.ZIndex="999">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4"/>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource AccentForeground}"
@@ -907,14 +1000,36 @@
         <!-- Scanning Overlay -->
         <Border Grid.RowSpan="6" Background="{DynamicResource OverlayBackground}"
                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="350">
                 <TextBlock Text="&#xE8FE;" FontFamily="Segoe MDL2 Assets" FontSize="48"
                            HorizontalAlignment="Center" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,16"/>
                 <TextBlock Text="{res:Localize ScanInProgress}" FontSize="18" FontWeight="SemiBold"
                            Foreground="{DynamicResource WindowForeground}"
                            HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                <ProgressBar Value="{Binding ScanProgress}" Maximum="{Binding ScanTotal}"
-                             Width="300" Height="8" Margin="0,0,0,8"/>
+                <!-- ProgressBar with percentage overlay -->
+                <Grid Width="300" Margin="0,0,0,8">
+                    <ProgressBar Value="{Binding ScanProgress}" Maximum="{Binding ScanTotal}"
+                                 Height="20"/>
+                    <TextBlock Text="{Binding ScanPercentage, StringFormat={}{0}%}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontWeight="SemiBold" FontSize="11" Foreground="White"/>
+                </Grid>
                 <TextBlock Text="{Binding ScanProgressText}" Foreground="{DynamicResource DisabledForeground}"
                            HorizontalAlignment="Center" FontSize="12" Margin="0,0,0,16"
                            TextTrimming="CharacterEllipsis" MaxWidth="300"/>

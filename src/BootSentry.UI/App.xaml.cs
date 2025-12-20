@@ -133,6 +133,7 @@ public partial class App : Application
         // UI Services
         services.AddSingleton<SettingsService>();
         services.AddSingleton<ThemeService>();
+        services.AddSingleton<ToastService>();
 
         // Core services
         services.AddSingleton<IRiskService, RiskAnalyzer>();

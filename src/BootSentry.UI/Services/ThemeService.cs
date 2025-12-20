@@ -63,6 +63,50 @@ public class ThemeService : IDisposable
     public static bool IsHighContrastEnabled => SystemParameters.HighContrast;
 
     /// <summary>
+    /// Gets whether animations should be reduced based on Windows accessibility settings.
+    /// This respects the "Show animations in Windows" setting.
+    /// </summary>
+    public static bool ShouldReduceMotion
+    {
+        get
+        {
+            try
+            {
+                // Check Windows "Turn off all unnecessary animations" setting
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Control Panel\Desktop\WindowMetrics");
+                if (key?.GetValue("MinAnimate") is string value)
+                {
+                    return value == "0";
+                }
+
+                // Also check the newer accessibility setting
+                using var accessKey = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects");
+                if (accessKey?.GetValue("VisualFXSetting") is int vfx)
+                {
+                    // 2 = Let Windows choose, 3 = Adjust for best performance (no animations)
+                    return vfx == 3;
+                }
+            }
+            catch
+            {
+                // Default to false (animations enabled)
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets the animation duration based on reduced motion preference.
+    /// Returns a very short duration if reduced motion is preferred.
+    /// </summary>
+    public static Duration GetAnimationDuration(int normalMs = 200)
+    {
+        return new Duration(TimeSpan.FromMilliseconds(ShouldReduceMotion ? 1 : normalMs));
+    }
+
+    /// <summary>
     /// Initializes the theme service.
     /// </summary>
     public void Initialize()
@@ -105,8 +149,8 @@ public class ThemeService : IDisposable
             resources["InfoBrush"] = new SolidColorBrush(Color.FromRgb(59, 130, 246));
             // #A0A0A0 = 4.5:1 contrast ratio on dark background (WCAG AA compliant)
             resources["DisabledForeground"] = new SolidColorBrush(Color.FromRgb(160, 160, 160));
-            resources["RowAlternate"] = new SolidColorBrush(Color.FromRgb(38, 38, 38));
-            resources["RowHover"] = new SolidColorBrush(Color.FromRgb(60, 60, 60));
+            resources["RowAlternate"] = new SolidColorBrush(Color.FromRgb(32, 32, 32));  // Darker for better contrast
+            resources["RowHover"] = new SolidColorBrush(Color.FromRgb(70, 70, 70));   // Lighter for better visibility
             resources["RowSelected"] = new SolidColorBrush(Color.FromRgb(0, 90, 158));
             // Note/warning box colors for dark theme
             resources["NoteBackgroundBrush"] = new SolidColorBrush(Color.FromRgb(78, 65, 23));  // Dark amber
@@ -150,7 +194,7 @@ public class ThemeService : IDisposable
             // Header bar colors
             resources["HeaderBackground"] = new SolidColorBrush(Color.FromRgb(0, 120, 212));
             resources["HeaderForeground"] = new SolidColorBrush(Colors.White);
-            resources["HeaderSecondaryForeground"] = new SolidColorBrush(Color.FromArgb(204, 255, 255, 255)); // #CCFFFFFF
+            resources["HeaderSecondaryForeground"] = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)); // #E6FFFFFF - More opaque for better readability
             // Overlay
             resources["OverlayBackground"] = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0));
             // Muted text

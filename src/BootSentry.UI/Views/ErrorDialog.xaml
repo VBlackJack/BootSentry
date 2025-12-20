@@ -1,0 +1,141 @@
+<Window x:Class="BootSentry.UI.Views.ErrorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding Title}"
+        Height="280" Width="480"
+        MinHeight="220" MinWidth="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        KeyDown="Window_KeyDown"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <Storyboard x:Key="ShowAnimation">
+            <DoubleAnimation Storyboard.TargetName="DialogBorder"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.2"/>
+            <DoubleAnimation Storyboard.TargetName="ScaleTransform"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="0.9" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="ScaleTransform"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.9" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </Window.Resources>
+
+    <Border x:Name="DialogBorder"
+            Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource ErrorBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Opacity="0"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="ScaleTransform" ScaleX="1" ScaleY="1"/>
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.3" Color="Black"/>
+        </Border.Effect>
+
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with Icon -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                <TextBlock Text="&#xE783;"
+                           FontFamily="Segoe MDL2 Assets"
+                           FontSize="28"
+                           Foreground="{DynamicResource ErrorBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+                <TextBlock Text="{Binding Title}"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource WindowForeground}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Error Message -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Top">
+                <TextBlock Text="{Binding Message}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource WindowForeground}"
+                           FontSize="14"
+                           LineHeight="22"/>
+
+                <!-- Technical details (collapsed by default) -->
+                <Expander Header="Détails techniques" Margin="0,12,0,0"
+                          Visibility="{Binding HasDetails, Converter={StaticResource BoolToVisibility}}">
+                    <Border Background="{DynamicResource RowAlternate}" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                        <TextBox Text="{Binding TechnicalDetails, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontFamily="Consolas"
+                                 FontSize="11"
+                                 MaxHeight="80"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </Border>
+                </Expander>
+
+                <!-- Suggestion -->
+                <Border Background="{DynamicResource NoteBackgroundBrush}" CornerRadius="4" Padding="8" Margin="0,12,0,0"
+                        Visibility="{Binding HasSuggestion, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE82F;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                   Foreground="{DynamicResource NoteForegroundBrush}" VerticalAlignment="Top" Margin="0,2,8,0"/>
+                        <TextBlock Text="{Binding Suggestion}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource NoteForegroundBrush}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,16,0,0">
+                <Button Content="Réessayer" Click="RetryButton_Click"
+                        Visibility="{Binding CanRetry, Converter={StaticResource BoolToVisibility}}"
+                        Padding="16,8" Margin="0,0,8,0"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="White" BorderThickness="0"/>
+                <Button Content="Copier l'erreur" Click="CopyButton_Click"
+                        Padding="16,8" Margin="0,0,8,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ControlForeground}"
+                        BorderBrush="{DynamicResource BorderBrush}"/>
+            </StackPanel>
+
+            <!-- Close Button -->
+            <Button Grid.Row="3"
+                    Content="Fermer"
+                    Click="CloseButton_Click"
+                    IsDefault="True"
+                    HorizontalAlignment="Right"
+                    Padding="20,10"
+                    Margin="0,16,0,0"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ControlForeground}"
+                    BorderBrush="{DynamicResource BorderBrush}"/>
+        </Grid>
+    </Border>
+</Window>
