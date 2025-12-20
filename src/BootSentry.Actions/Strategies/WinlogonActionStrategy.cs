@@ -22,11 +22,29 @@ public sealed class WinlogonActionStrategy : IActionStrategy
     /// Default values for critical Winlogon entries.
     /// Deleting these values would cause Windows to fail to boot properly.
     /// </summary>
-    private static readonly Dictionary<string, string> DefaultValues = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly Dictionary<string, string> DefaultValues = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Shell"] = "explorer.exe",
         ["Userinit"] = @"C:\Windows\system32\userinit.exe,", // Trailing comma is important
     };
+
+    /// <summary>
+    /// Checks if a value name is critical and should be reset instead of deleted.
+    /// </summary>
+    internal static bool IsCriticalValue(string? valueName)
+    {
+        return !string.IsNullOrEmpty(valueName) && DefaultValues.ContainsKey(valueName);
+    }
+
+    /// <summary>
+    /// Gets the default value for a critical Winlogon entry, or null if not critical.
+    /// </summary>
+    internal static string? GetDefaultValue(string? valueName)
+    {
+        if (string.IsNullOrEmpty(valueName))
+            return null;
+        return DefaultValues.TryGetValue(valueName, out var value) ? value : null;
+    }
 
     public WinlogonActionStrategy(ILogger<WinlogonActionStrategy> logger, ITransactionManager transactionManager)
     {

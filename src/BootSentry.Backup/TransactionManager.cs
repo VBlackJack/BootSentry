@@ -166,6 +166,7 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.RegistryRun:
             case EntryType.RegistryRunOnce:
             case EntryType.Winlogon:
+            case EntryType.AppInitDlls:
                 // Backup registry value
                 if (!string.IsNullOrEmpty(entry.CommandLineRaw))
                 {
@@ -216,6 +217,7 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.RegistryRun:
             case EntryType.RegistryRunOnce:
             case EntryType.Winlogon:
+            case EntryType.AppInitDlls:
                 await RestoreRegistryValueAsync(manifest, cancellationToken);
                 break;
 

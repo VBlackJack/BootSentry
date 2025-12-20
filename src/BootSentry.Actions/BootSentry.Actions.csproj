@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="BootSentry.Actions.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BootSentry.Core\BootSentry.Core.csproj" />
     <ProjectReference Include="..\BootSentry.Backup\BootSentry.Backup.csproj" />
   </ItemGroup>

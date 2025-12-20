@@ -16,10 +16,12 @@ namespace BootSentry.Actions.Strategies;
 public sealed class AppInitActionStrategy : IActionStrategy
 {
     private readonly ILogger<AppInitActionStrategy> _logger;
+    private readonly ITransactionManager _transactionManager;
 
-    public AppInitActionStrategy(ILogger<AppInitActionStrategy> logger)
+    public AppInitActionStrategy(ILogger<AppInitActionStrategy> logger, ITransactionManager transactionManager)
     {
         _logger = logger;
+        _transactionManager = transactionManager;
     }
 
     public EntryType EntryType => EntryType.AppInitDlls;
@@ -34,21 +36,21 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
     public async Task<ActionResult> DisableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => RemoveDllFromList(entry, isDelete: false), cancellationToken);
+        return await RemoveDllFromListAsync(entry, ActionType.Disable, cancellationToken);
     }
 
     public async Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => AddDllToList(entry), cancellationToken);
+        return await AddDllToListAsync(entry, cancellationToken);
     }
 
     public async Task<ActionResult> DeleteAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
         // Delete is same as Disable for AppInit_DLLs (remove from list)
-        return await Task.Run(() => RemoveDllFromList(entry, isDelete: true), cancellationToken);
+        return await RemoveDllFromListAsync(entry, ActionType.Delete, cancellationToken);
     }
 
-    private ActionResult RemoveDllFromList(StartupEntry entry, bool isDelete)
+    private async Task<ActionResult> RemoveDllFromListAsync(StartupEntry entry, ActionType actionType, CancellationToken cancellationToken)
     {
         if (entry.Type != EntryType.AppInitDlls)
         {
@@ -69,6 +71,9 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
         try
         {
+            // Create backup transaction BEFORE making changes
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, actionType, cancellationToken);
+
             _logger.LogInformation("Removing DLL {DllPath} from AppInit_DLLs at {Path}", dllPath, registryPath);
 
             using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
@@ -97,10 +102,13 @@ public sealed class AppInitActionStrategy : IActionStrategy
             var newValue = string.Join(" ", dlls);
             key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
 
+            // Commit transaction
+            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
             entry.Status = EntryStatus.Disabled;
             _logger.LogInformation("Successfully removed DLL from AppInit_DLLs. New value: '{Value}'", newValue);
 
-            return ActionResult.Ok(entry);
+            return ActionResult.Ok(entry, transaction.Id);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -114,7 +122,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
         }
     }
 
-    private ActionResult AddDllToList(StartupEntry entry)
+    private async Task<ActionResult> AddDllToListAsync(StartupEntry entry, CancellationToken cancellationToken)
     {
         if (entry.Type != EntryType.AppInitDlls)
         {
@@ -135,6 +143,9 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
         try
         {
+            // Create backup transaction BEFORE making changes
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
+
             _logger.LogInformation("Adding DLL {DllPath} to AppInit_DLLs at {Path}", dllPath, registryPath);
 
             using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
@@ -153,8 +164,9 @@ public sealed class AppInitActionStrategy : IActionStrategy
             if (dlls.Any(d => string.Equals(d, dllPath, StringComparison.OrdinalIgnoreCase)))
             {
                 _logger.LogInformation("DLL {DllPath} already in AppInit_DLLs list", dllPath);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
                 entry.Status = EntryStatus.Enabled;
-                return ActionResult.Ok(entry);
+                return ActionResult.Ok(entry, transaction.Id);
             }
 
             // Add the DLL
@@ -164,10 +176,13 @@ public sealed class AppInitActionStrategy : IActionStrategy
             var newValue = string.Join(" ", dlls);
             key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
 
+            // Commit transaction
+            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
             entry.Status = EntryStatus.Enabled;
             _logger.LogInformation("Successfully added DLL to AppInit_DLLs. New value: '{Value}'", newValue);
 
-            return ActionResult.Ok(entry);
+            return ActionResult.Ok(entry, transaction.Id);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -184,7 +199,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
     /// <summary>
     /// Parses the registry path from SourcePath (e.g., "HKLM\SOFTWARE\..." -> "SOFTWARE\...").
     /// </summary>
-    private static string? ParseRegistryPath(string? sourcePath)
+    internal static string? ParseRegistryPath(string? sourcePath)
     {
         if (string.IsNullOrWhiteSpace(sourcePath))
             return null;
@@ -203,7 +218,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
     /// Parses the AppInit_DLLs value into a list of DLL paths.
     /// Handles space, comma, and semicolon separators.
     /// </summary>
-    private static List<string> ParseDllList(string value)
+    internal static List<string> ParseDllList(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return new List<string>();
