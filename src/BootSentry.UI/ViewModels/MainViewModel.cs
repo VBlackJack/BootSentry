@@ -53,7 +53,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isExpertMode;
 
     /// <summary>
-    /// Gets or sets whether to hide Microsoft system entries (Services/Drivers).
+    /// Gets or sets whether to hide all Microsoft entries (applies to all entry types).
     /// </summary>
     public bool HideMicrosoftEntries
     {
@@ -146,8 +146,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private bool ShouldShowInNonExpertMode(StartupEntry entry)
     {
-        // Microsoft Services/Drivers noise filter (works in both modes)
-        if (HideMicrosoftEntries && (entry.Type == EntryType.Service || entry.Type == EntryType.Driver))
+        // Microsoft Noise Filter (Global - applies to ALL entry types)
+        if (HideMicrosoftEntries)
         {
             bool isMicrosoft = entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
                                entry.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
@@ -332,8 +332,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 return false;
         }
 
-        // Microsoft Services/Drivers noise filter (works in both modes)
-        if (HideMicrosoftEntries && (entry.Type == EntryType.Service || entry.Type == EntryType.Driver))
+        // Microsoft Noise Filter (Global - applies to ALL entry types)
+        if (HideMicrosoftEntries)
         {
             bool isMicrosoft = entry.Publisher?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||
                                entry.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true ||

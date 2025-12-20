@@ -9,7 +9,7 @@
         xmlns:controls="clr-namespace:BootSentry.UI.Controls"
         mc:Ignorable="d"
         Title="{res:Localize AppTitleFull}"
-        Height="1000" Width="1400"
+        Height="850" Width="1280"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
@@ -47,7 +47,8 @@
                      Title="{res:Localize AppTitleFull}"
                      ShowMaximize="True"
                      ShowMinimize="True"
-                     CanMaximize="True"/>
+                     CanMaximize="True"
+                     MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"/>
 
         <!-- Menu Bar -->
         <Menu Grid.Row="1" Background="{DynamicResource PanelBackground}"
@@ -307,13 +308,13 @@
         <!-- Main Content -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" MinWidth="400"/>
+                <ColumnDefinition Width="3*" MinWidth="400"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*" MinWidth="280" MaxWidth="600"/>
+                <ColumnDefinition Width="1.2*" MinWidth="350" MaxWidth="600"/>
             </Grid.ColumnDefinitions>
 
             <!-- Entry List with Category Tabs -->
-            <Border Grid.Column="0" Margin="8" Background="{DynamicResource PanelBackground}"
+            <Border Grid.Column="0" Margin="12,12,4,12" Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -661,8 +662,8 @@
             <!-- Details Panel -->
             <Border Grid.Column="2" Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                    CornerRadius="4" Margin="0,8,8,8">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    CornerRadius="4" Margin="4,12,12,12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                     <StackPanel>
                         <TextBlock Text="{res:Localize DetailTitle}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
 

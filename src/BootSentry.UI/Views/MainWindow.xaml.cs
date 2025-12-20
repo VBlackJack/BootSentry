@@ -162,4 +162,19 @@ public partial class MainWindow : FluentWindow
             };
         }
     }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            // Double-click to maximize/restore
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+        else
+        {
+            DragMove();
+        }
+    }
 }
