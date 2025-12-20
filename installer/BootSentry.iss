@@ -2,7 +2,7 @@
 #define MyAppVersion "1.1.0"
 #define MyAppPublisher "Julien Bombled"
 #define MyAppURL "https://github.com/VBlackJack/BootSentry"
-#define MyAppExeName "BootSentry.UI.exe"
+#define MyAppExeName "BootSentry.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
