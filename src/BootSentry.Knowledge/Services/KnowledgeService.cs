@@ -99,6 +99,21 @@ public class KnowledgeService : IDisposable
 
         using var cmd = _connection.CreateCommand();
 
+        // 0. Try browser extension ID match (for extensions, the path contains the ID)
+        var extensionId = ExtractBrowserExtensionId(executable);
+        if (!string.IsNullOrWhiteSpace(extensionId))
+        {
+            cmd.CommandText = @"
+                SELECT * FROM KnowledgeEntries
+                WHERE Aliases LIKE @extPattern COLLATE NOCASE
+                LIMIT 1";
+            cmd.Parameters.AddWithValue("@extPattern", $"%{extensionId}%");
+
+            var entry = ReadEntry(cmd);
+            if (entry != null) return entry;
+            cmd.Parameters.Clear();
+        }
+
         // 1. Try executable match FIRST (most reliable)
         if (!string.IsNullOrWhiteSpace(executable))
         {
@@ -208,6 +223,45 @@ public class KnowledgeService : IDisposable
         result = result.Trim(' ', '.', '-', '_');
 
         return result;
+    }
+
+    /// <summary>
+    /// Extracts browser extension ID from extension paths.
+    /// e.g., "C:\Users\...\Extensions\cjpalhdlnbpafiamejdnhcphjbkeiagm\1.51.0_0" -> "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+    /// </summary>
+    private static string? ExtractBrowserExtensionId(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        // Check if path contains "Extensions" folder (Chrome, Edge, Brave, etc.)
+        var extensionsIndex = path.IndexOf("Extensions", StringComparison.OrdinalIgnoreCase);
+        if (extensionsIndex == -1)
+            return null;
+
+        // Extract the part after "Extensions\"
+        var afterExtensions = path.Substring(extensionsIndex + 11); // "Extensions\".Length = 11
+        if (string.IsNullOrWhiteSpace(afterExtensions))
+            return null;
+
+        // The extension ID is the first folder after "Extensions\"
+        var parts = afterExtensions.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+            return null;
+
+        var potentialId = parts[0];
+
+        // Chrome extension IDs are 32 lowercase letters (a-p)
+        if (potentialId.Length == 32 && System.Text.RegularExpressions.Regex.IsMatch(potentialId, @"^[a-p]+$"))
+            return potentialId;
+
+        // Firefox extension IDs can be like {guid} or name@domain
+        if (potentialId.StartsWith("{") && potentialId.EndsWith("}"))
+            return potentialId;
+        if (potentialId.Contains("@"))
+            return potentialId;
+
+        return null;
     }
 
     /// <summary>

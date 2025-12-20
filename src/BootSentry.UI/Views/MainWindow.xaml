@@ -409,6 +409,7 @@
                           GridLinesVisibility="None"
                           HeadersVisibility="Column"
                           CanUserResizeRows="False"
+                          CanUserResizeColumns="True"
                           CanUserReorderColumns="True"
                           EnableRowVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True"
@@ -460,6 +461,38 @@
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource WindowForeground}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="8,6"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridColumnHeader">
+                                        <Grid>
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Thumb x:Name="PART_RightHeaderGripper"
+                                                   HorizontalAlignment="Right" Width="4"
+                                                   Cursor="SizeWE" Background="Transparent"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource RowHover}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="Background" Value="Transparent"/>
@@ -494,14 +527,6 @@
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{res:Localize ColumnName}" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
-                        <DataGridTextColumn Header="{res:Localize ColumnDescription}" Binding="{Binding Description}" Width="200" MinWidth="100">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                    <Setter Property="ToolTip" Value="{Binding Description}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
                         <DataGridTextColumn Header="{res:Localize ColumnType}" Binding="{Binding Type}" Width="110"/>
                         <DataGridTextColumn Header="{res:Localize ColumnScope}" Binding="{Binding Scope}" Width="80"/>
                         <DataGridTextColumn Header="{res:Localize ColumnPublisher}" Binding="{Binding Publisher}" Width="150" MinWidth="100"/>
@@ -629,6 +654,11 @@
                                                FontSize="11" Foreground="White"/>
                                 </Border>
                             </Grid>
+
+                            <!-- Description (for extensions) -->
+                            <TextBlock Text="{Binding SelectedEntry.Description}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource MutedForeground}" Margin="0,0,0,12"
+                                       Visibility="{Binding SelectedEntry.Description, Converter={StaticResource NotNullToVisibility}}"/>
 
                             <Separator Margin="0,0,0,12"/>
 

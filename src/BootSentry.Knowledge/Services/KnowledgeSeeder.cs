@@ -61,6 +61,7 @@ internal class KnowledgeSeeder
         SeedHardwareTools();
         SeedCommunicationApps();
         SeedMiscApps();
+        SeedBrowserExtensions();
     }
 
     private void SeedWindowsSystem()
@@ -9973,6 +9974,1288 @@ internal class KnowledgeSeeder
             Recommendation = "Gardez actif si vous utilisez Xbox Game Pass ou la Game Bar.",
             RecommendationEn = "Keep enabled if you use Xbox Game Pass or Game Bar.",
             Tags = "xbox,gamepass,microsoft,gaming,gamebar",
+            LastUpdated = DateTime.Now
+        });
+    }
+
+    private void SeedBrowserExtensions()
+    {
+        // Ad Blockers
+        Save(new KnowledgeEntry
+        {
+            Name = "AdBlock",
+            Aliases = "gighmmpiobklfepjocnamgkkbiglidom,{d10d0bf8-f5b5-c8b4-a8b2-2b9879e08c5d}",
+            Publisher = "Adblock, Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloqueur de publicités populaire pour YouTube, Facebook et tous les sites.",
+            ShortDescriptionEn = "Popular ad blocker for YouTube, Facebook and all websites.",
+            FullDescription = "AdBlock est l'une des extensions de blocage de publicités les plus téléchargées. Elle bloque les publicités sur YouTube, Facebook, Twitch et la plupart des sites web. Permet de personnaliser les filtres et de mettre des sites en liste blanche.",
+            FullDescriptionEn = "AdBlock is one of the most downloaded ad blocking extensions. It blocks ads on YouTube, Facebook, Twitch and most websites. Allows customizing filters and whitelisting sites.",
+            DisableImpact = "Les publicités apparaîtront sur tous les sites web.",
+            DisableImpactEn = "Ads will appear on all websites.",
+            PerformanceImpact = "Modéré. Peut améliorer les performances en bloquant le contenu publicitaire.",
+            PerformanceImpactEn = "Moderate. Can improve performance by blocking ad content.",
+            Recommendation = "Extension utile pour bloquer les publicités. Alternative : uBlock Origin (plus léger).",
+            RecommendationEn = "Useful extension for blocking ads. Alternative: uBlock Origin (lighter).",
+            Tags = "adblock,publicite,ads,blocker,youtube",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "uBlock Origin",
+            Aliases = "cjpalhdlnbpafiamejdnhcphjbkeiagm,uBlock0@raymondhill.net",
+            Publisher = "Raymond Hill",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloqueur de publicités et de traqueurs efficace et léger.",
+            ShortDescriptionEn = "Efficient and lightweight ad and tracker blocker.",
+            FullDescription = "uBlock Origin est un bloqueur de contenu à large spectre. Il bloque les publicités, les traqueurs, les domaines malveillants et peut appliquer des filtres cosmétiques. Il est réputé pour sa faible consommation de ressources par rapport à d'autres bloqueurs.",
+            FullDescriptionEn = "uBlock Origin is a wide-spectrum content blocker. It blocks ads, trackers, malware domains and can apply cosmetic filters. It's known for its low resource consumption compared to other blockers.",
+            DisableImpact = "Les publicités et traqueurs ne seront plus bloqués. La navigation pourrait être plus lente et moins sécurisée.",
+            DisableImpactEn = "Ads and trackers will no longer be blocked. Browsing may be slower and less secure.",
+            PerformanceImpact = "Très faible. Améliore souvent les performances en bloquant le contenu indésirable.",
+            PerformanceImpactEn = "Very low. Often improves performance by blocking unwanted content.",
+            Recommendation = "Extension recommandée pour tous les utilisateurs. Améliore sécurité et performances.",
+            RecommendationEn = "Recommended extension for all users. Improves security and performance.",
+            Tags = "ublock,adblock,publicite,tracker,securite,extension",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AdBlock Plus",
+            Aliases = "cfhdojbkjhnklbpkdaibdccddilifddb,{d10d0bf8-f5b5-c8b4-a8b2-2b9879e08c5d}",
+            Publisher = "eyeo GmbH",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloqueur de publicités populaire avec liste blanche de publicités acceptables.",
+            ShortDescriptionEn = "Popular ad blocker with acceptable ads whitelist.",
+            FullDescription = "AdBlock Plus est l'un des bloqueurs de publicités les plus utilisés. Il inclut par défaut une liste de 'publicités acceptables' qui laisse passer certaines annonces non intrusives. Cette option peut être désactivée.",
+            FullDescriptionEn = "AdBlock Plus is one of the most widely used ad blockers. It includes an 'Acceptable Ads' list by default that allows some non-intrusive ads. This option can be disabled.",
+            DisableImpact = "Les publicités ne seront plus bloquées sur les sites web.",
+            DisableImpactEn = "Ads will no longer be blocked on websites.",
+            PerformanceImpact = "Modéré. Consomme plus de ressources que uBlock Origin.",
+            PerformanceImpactEn = "Moderate. Uses more resources than uBlock Origin.",
+            Recommendation = "Alternative à uBlock Origin. Préférez uBlock Origin pour de meilleures performances.",
+            RecommendationEn = "Alternative to uBlock Origin. Prefer uBlock Origin for better performance.",
+            Tags = "adblock,plus,publicite,extension",
+            LastUpdated = DateTime.Now
+        });
+
+        // Password Managers
+        Save(new KnowledgeEntry
+        {
+            Name = "Bitwarden",
+            Aliases = "nngceckbapebfimnlniiiahkandclblb,{446900e4-71c2-419f-a6a7-df9c091e268b}",
+            Publisher = "Bitwarden Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe open source gratuit.",
+            ShortDescriptionEn = "Free open source password manager.",
+            FullDescription = "Bitwarden est un gestionnaire de mots de passe open source qui stocke vos identifiants de manière sécurisée. Il synchronise vos mots de passe entre tous vos appareils et offre le remplissage automatique des formulaires.",
+            FullDescriptionEn = "Bitwarden is an open source password manager that securely stores your credentials. It syncs passwords across all your devices and offers automatic form filling.",
+            DisableImpact = "Le remplissage automatique des mots de passe ne fonctionnera plus dans le navigateur.",
+            DisableImpactEn = "Password auto-fill will no longer work in the browser.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Extension essentielle pour la sécurité. Gardez-la activée.",
+            RecommendationEn = "Essential extension for security. Keep it enabled.",
+            Tags = "bitwarden,password,mot de passe,securite,open source",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "LastPass",
+            Aliases = "hdokiejnpimakedhajhdlcegeplioahd,{e87aa1c5-c1a5-4a82-b0a1-e4c52d311c1f}",
+            Publisher = "LastPass",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe populaire.",
+            ShortDescriptionEn = "Popular password manager.",
+            FullDescription = "LastPass stocke et gère vos mots de passe dans un coffre-fort chiffré. Il remplit automatiquement les formulaires de connexion et peut générer des mots de passe forts.",
+            FullDescriptionEn = "LastPass stores and manages your passwords in an encrypted vault. It auto-fills login forms and can generate strong passwords.",
+            DisableImpact = "Pas de remplissage automatique des mots de passe.",
+            DisableImpactEn = "No automatic password filling.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Gardez activé si c'est votre gestionnaire principal.",
+            RecommendationEn = "Keep enabled if it's your main password manager.",
+            Tags = "lastpass,password,mot de passe,securite",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "1Password",
+            Aliases = "aeblfdkhhhdcdjpifhhbdiojplfjncoa,{d634138d-c276-4fc8-924b-40a0ea21d284}",
+            Publisher = "1Password",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe premium.",
+            ShortDescriptionEn = "Premium password manager.",
+            FullDescription = "1Password est un gestionnaire de mots de passe premium offrant stockage sécurisé, remplissage automatique, et partage familial ou d'équipe.",
+            FullDescriptionEn = "1Password is a premium password manager offering secure storage, auto-fill, and family or team sharing.",
+            DisableImpact = "Le remplissage automatique ne fonctionnera plus.",
+            DisableImpactEn = "Auto-fill will no longer work.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Gardez activé pour une expérience optimale.",
+            RecommendationEn = "Keep enabled for optimal experience.",
+            Tags = "1password,password,mot de passe,securite,premium",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "KeePassXC-Browser",
+            Aliases = "oboonakemofpalcgghocfoadofidjkkk,keepassxc-browser@nicksoftware.net",
+            Publisher = "KeePassXC Team",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Intégration navigateur pour KeePassXC.",
+            ShortDescriptionEn = "Browser integration for KeePassXC.",
+            FullDescription = "Cette extension connecte votre navigateur à KeePassXC pour le remplissage automatique des mots de passe. Elle nécessite KeePassXC installé sur votre ordinateur.",
+            FullDescriptionEn = "This extension connects your browser to KeePassXC for automatic password filling. It requires KeePassXC installed on your computer.",
+            DisableImpact = "Pas d'intégration avec KeePassXC dans le navigateur.",
+            DisableImpactEn = "No KeePassXC integration in browser.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Nécessaire si vous utilisez KeePassXC.",
+            RecommendationEn = "Required if you use KeePassXC.",
+            Tags = "keepass,keepassxc,password,open source,securite",
+            LastUpdated = DateTime.Now
+        });
+
+        // Privacy & Security
+        Save(new KnowledgeEntry
+        {
+            Name = "Privacy Badger",
+            Aliases = "pkehgijcmpdhfbdbbnkijodmdjhbjlgp,jid1-MnnxcxisBPnSXQ@nicksoftware.net",
+            Publisher = "Electronic Frontier Foundation",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloque automatiquement les traqueurs invisibles.",
+            ShortDescriptionEn = "Automatically blocks invisible trackers.",
+            FullDescription = "Privacy Badger apprend automatiquement à bloquer les traqueurs invisibles. Créé par l'EFF, il ne nécessite aucune configuration et s'améliore avec l'usage.",
+            FullDescriptionEn = "Privacy Badger automatically learns to block invisible trackers. Created by the EFF, it requires no configuration and improves with use.",
+            DisableImpact = "Les traqueurs tiers ne seront plus bloqués automatiquement.",
+            DisableImpactEn = "Third-party trackers will no longer be automatically blocked.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Bon complément à uBlock Origin pour la vie privée.",
+            RecommendationEn = "Good complement to uBlock Origin for privacy.",
+            Tags = "privacy,badger,eff,tracker,vie privee",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "HTTPS Everywhere",
+            Aliases = "gcbommkclmclpchllfjekcdonpmejbdp,https-everywhere@eff.org",
+            Publisher = "Electronic Frontier Foundation",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Force les connexions HTTPS sécurisées.",
+            ShortDescriptionEn = "Forces secure HTTPS connections.",
+            FullDescription = "HTTPS Everywhere réécrit automatiquement les requêtes HTTP en HTTPS lorsque c'est possible, assurant une connexion chiffrée avec les sites web.",
+            FullDescriptionEn = "HTTPS Everywhere automatically rewrites HTTP requests to HTTPS when possible, ensuring encrypted connections to websites.",
+            DisableImpact = "Certaines connexions pourraient utiliser HTTP non sécurisé.",
+            DisableImpactEn = "Some connections might use insecure HTTP.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Les navigateurs modernes intègrent souvent cette fonctionnalité. Peut être redondant.",
+            RecommendationEn = "Modern browsers often include this feature. May be redundant.",
+            Tags = "https,eff,securite,chiffrement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DuckDuckGo Privacy Essentials",
+            Aliases = "bkdgflcldnnnapblkhphbgpggdiikppg,{b0f60d5d-3c4a-4f3a-9a3a-5f3f5f3f5f3f}",
+            Publisher = "DuckDuckGo",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Protection vie privée et blocage de traqueurs par DuckDuckGo.",
+            ShortDescriptionEn = "Privacy protection and tracker blocking by DuckDuckGo.",
+            FullDescription = "DuckDuckGo Privacy Essentials bloque les traqueurs, force le chiffrement HTTPS et affiche une note de confidentialité pour chaque site.",
+            FullDescriptionEn = "DuckDuckGo Privacy Essentials blocks trackers, forces HTTPS encryption and displays a privacy grade for each site.",
+            DisableImpact = "Perte de la protection contre les traqueurs.",
+            DisableImpactEn = "Loss of tracker protection.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Bonne alternative tout-en-un pour la vie privée.",
+            RecommendationEn = "Good all-in-one privacy alternative.",
+            Tags = "duckduckgo,privacy,tracker,vie privee",
+            LastUpdated = DateTime.Now
+        });
+
+        // Productivity
+        Save(new KnowledgeEntry
+        {
+            Name = "Dark Reader",
+            Aliases = "eimadpbcbfnmbkopoojfekhnkhdbieeh,addon@nicksoftware.net",
+            Publisher = "Dark Reader Ltd",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Mode sombre pour tous les sites web.",
+            ShortDescriptionEn = "Dark mode for all websites.",
+            FullDescription = "Dark Reader inverse les couleurs des sites web pour créer un mode sombre, réduisant la fatigue oculaire. Personnalisable par site avec luminosité, contraste et filtres.",
+            FullDescriptionEn = "Dark Reader inverts website colors to create dark mode, reducing eye strain. Customizable per site with brightness, contrast and filters.",
+            DisableImpact = "Les sites s'afficheront avec leurs couleurs par défaut.",
+            DisableImpactEn = "Websites will display with their default colors.",
+            PerformanceImpact = "Modéré. Peut ralentir certains sites complexes.",
+            PerformanceImpactEn = "Moderate. May slow down some complex sites.",
+            Recommendation = "Utile pour le confort visuel, surtout la nuit.",
+            RecommendationEn = "Useful for visual comfort, especially at night.",
+            Tags = "dark,reader,mode sombre,theme,nuit",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Grammarly",
+            Aliases = "kbfnbcaeplbcioakkpcpgfkobkghlhen,grammarly@grammarly.com",
+            Publisher = "Grammarly Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Correction grammaticale et orthographique en temps réel.",
+            ShortDescriptionEn = "Real-time grammar and spelling correction.",
+            FullDescription = "Grammarly analyse votre texte en temps réel et suggère des corrections grammaticales, orthographiques et stylistiques. Fonctionne sur la plupart des sites avec des champs de texte.",
+            FullDescriptionEn = "Grammarly analyzes your text in real-time and suggests grammar, spelling and style corrections. Works on most websites with text fields.",
+            DisableImpact = "Pas de correction automatique lors de la saisie.",
+            DisableImpactEn = "No automatic correction when typing.",
+            PerformanceImpact = "Modéré. Envoie le texte aux serveurs Grammarly.",
+            PerformanceImpactEn = "Moderate. Sends text to Grammarly servers.",
+            Recommendation = "Utile pour l'écriture en anglais. Attention à la vie privée.",
+            RecommendationEn = "Useful for English writing. Mind privacy concerns.",
+            Tags = "grammarly,grammar,orthographe,ecriture,anglais",
+            LastUpdated = DateTime.Now
+        });
+
+        // Video & Media
+        Save(new KnowledgeEntry
+        {
+            Name = "Enhancer for YouTube",
+            Aliases = "ponfpcnoihfmfllpaingbgckeeldkhle,nicksoftware.net",
+            Publisher = "Maxime RF",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Améliore l'expérience YouTube avec de nombreuses fonctionnalités.",
+            ShortDescriptionEn = "Enhances YouTube experience with many features.",
+            FullDescription = "Enhancer for YouTube ajoute de nombreuses fonctionnalités : contrôle du volume avec la molette, thèmes personnalisés, téléchargement, lecture automatique, et plus.",
+            FullDescriptionEn = "Enhancer for YouTube adds many features: volume control with scroll wheel, custom themes, downloading, autoplay control, and more.",
+            DisableImpact = "YouTube fonctionnera normalement sans les fonctionnalités supplémentaires.",
+            DisableImpactEn = "YouTube will work normally without additional features.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Améliore significativement l'expérience YouTube.",
+            RecommendationEn = "Significantly improves YouTube experience.",
+            Tags = "youtube,video,enhancer,amelioration",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "SponsorBlock",
+            Aliases = "mnjggcdmjocbbbhaepdhchncahnbgone,sponsorblock@ajay.app",
+            Publisher = "Ajay Ramachandran",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Saute automatiquement les segments sponsorisés sur YouTube.",
+            ShortDescriptionEn = "Automatically skips sponsored segments on YouTube.",
+            FullDescription = "SponsorBlock utilise une base de données communautaire pour identifier et sauter automatiquement les segments sponsorisés, les intros, les outros et autres parties non essentielles des vidéos YouTube.",
+            FullDescriptionEn = "SponsorBlock uses a community database to identify and automatically skip sponsored segments, intros, outros and other non-essential parts of YouTube videos.",
+            DisableImpact = "Vous devrez regarder les segments sponsorisés.",
+            DisableImpactEn = "You'll have to watch sponsored segments.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Très utile pour gagner du temps sur YouTube.",
+            RecommendationEn = "Very useful for saving time on YouTube.",
+            Tags = "youtube,sponsor,skip,video,publicite",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Video DownloadHelper",
+            Aliases = "lmjnegcaeklhafolokijcfjliaokphfk,{b9db16a4-6edc-47ec-a1f4-b86292ed211d}",
+            Publisher = "DownloadHelper",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Télécharge des vidéos depuis de nombreux sites.",
+            ShortDescriptionEn = "Downloads videos from many websites.",
+            FullDescription = "Video DownloadHelper permet de télécharger des vidéos depuis YouTube, Vimeo et des centaines d'autres sites. Supporte plusieurs formats et qualités.",
+            FullDescriptionEn = "Video DownloadHelper allows downloading videos from YouTube, Vimeo and hundreds of other sites. Supports multiple formats and qualities.",
+            DisableImpact = "Pas de téléchargement de vidéos depuis le navigateur.",
+            DisableImpactEn = "No video downloading from browser.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour sauvegarder des vidéos. Respectez les droits d'auteur.",
+            RecommendationEn = "Useful for saving videos. Respect copyright.",
+            Tags = "video,download,telechargement,youtube",
+            LastUpdated = DateTime.Now
+        });
+
+        // Developer Tools
+        Save(new KnowledgeEntry
+        {
+            Name = "React Developer Tools",
+            Aliases = "fmkadmapgofadopljbjfkapdkoienihi,nicksoftware.net",
+            Publisher = "Facebook",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outils de développement pour React.",
+            ShortDescriptionEn = "Development tools for React.",
+            FullDescription = "React Developer Tools ajoute des panneaux dans les outils de développement du navigateur pour inspecter les composants React, leur état et leurs props.",
+            FullDescriptionEn = "React Developer Tools adds panels to browser devtools to inspect React components, their state and props.",
+            DisableImpact = "Pas d'inspection des composants React.",
+            DisableImpactEn = "No React component inspection.",
+            PerformanceImpact = "Faible sauf en mode développement.",
+            PerformanceImpactEn = "Low except in development mode.",
+            Recommendation = "Essentiel pour les développeurs React.",
+            RecommendationEn = "Essential for React developers.",
+            Tags = "react,dev,developpement,debug,facebook",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Vue.js devtools",
+            Aliases = "nhdogjmejiglipccpnnnanhbledajbpd,nicksoftware.net",
+            Publisher = "Vue.js",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Outils de développement pour Vue.js.",
+            ShortDescriptionEn = "Development tools for Vue.js.",
+            FullDescription = "Vue.js devtools permet d'inspecter les composants Vue, Vuex et Vue Router directement dans les outils de développement du navigateur.",
+            FullDescriptionEn = "Vue.js devtools allows inspecting Vue components, Vuex and Vue Router directly in browser devtools.",
+            DisableImpact = "Pas d'inspection des composants Vue.",
+            DisableImpactEn = "No Vue component inspection.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Essentiel pour les développeurs Vue.js.",
+            RecommendationEn = "Essential for Vue.js developers.",
+            Tags = "vue,vuejs,dev,developpement,debug",
+            LastUpdated = DateTime.Now
+        });
+
+        // Shopping & Coupons
+        Save(new KnowledgeEntry
+        {
+            Name = "Honey",
+            Aliases = "bmnlcjabgnpnenekpadlanbbkooimhnj,nicksoftware.net",
+            Publisher = "PayPal",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Trouve automatiquement des codes promo lors des achats.",
+            ShortDescriptionEn = "Automatically finds promo codes when shopping.",
+            FullDescription = "Honey teste automatiquement les codes promo disponibles lors du paiement sur les sites de commerce. Propose aussi un programme de cashback (Honey Gold).",
+            FullDescriptionEn = "Honey automatically tests available promo codes during checkout on shopping sites. Also offers a cashback program (Honey Gold).",
+            DisableImpact = "Pas de recherche automatique de codes promo.",
+            DisableImpactEn = "No automatic promo code search.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Peut faire économiser de l'argent. Collecte des données d'achat.",
+            RecommendationEn = "Can save money. Collects shopping data.",
+            Tags = "honey,coupon,promo,shopping,paypal",
+            LastUpdated = DateTime.Now
+        });
+
+        // Translation
+        Save(new KnowledgeEntry
+        {
+            Name = "Google Translate",
+            Aliases = "aapbdbdomjkkjkaonfhkkikfgjllcleb,nicksoftware.net",
+            Publisher = "Google",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Traduction de pages et de texte sélectionné.",
+            ShortDescriptionEn = "Translation of pages and selected text.",
+            FullDescription = "L'extension Google Translate permet de traduire des pages entières ou du texte sélectionné vers la langue de votre choix. Intégration avec le service Google Translate.",
+            FullDescriptionEn = "The Google Translate extension allows translating entire pages or selected text to your language of choice. Integration with Google Translate service.",
+            DisableImpact = "Pas de traduction rapide dans le navigateur.",
+            DisableImpactEn = "No quick translation in browser.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Utile pour la navigation multilingue.",
+            RecommendationEn = "Useful for multilingual browsing.",
+            Tags = "google,translate,traduction,langue",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "DeepL Translate",
+            Aliases = "cofdbpoegempjloogbagkncekinflcnj,nicksoftware.net",
+            Publisher = "DeepL GmbH",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Traduction de haute qualité par DeepL.",
+            ShortDescriptionEn = "High quality translation by DeepL.",
+            FullDescription = "DeepL Translate offre des traductions de haute qualité utilisant l'intelligence artificielle. Souvent considéré comme plus précis que Google Translate pour les langues européennes.",
+            FullDescriptionEn = "DeepL Translate offers high quality translations using artificial intelligence. Often considered more accurate than Google Translate for European languages.",
+            DisableImpact = "Pas d'accès rapide à DeepL depuis le navigateur.",
+            DisableImpactEn = "No quick access to DeepL from browser.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Excellente alternative à Google Translate.",
+            RecommendationEn = "Excellent alternative to Google Translate.",
+            Tags = "deepl,translate,traduction,ia,langue",
+            LastUpdated = DateTime.Now
+        });
+
+        // VPN & Proxy
+        Save(new KnowledgeEntry
+        {
+            Name = "FoxyProxy",
+            Aliases = "gcknhkkoolaabfmlnjonogaaifnjlfnp,{b47f9e67-8f98-4c12-8c76-2c3f55c4f8c1}",
+            Publisher = "FoxyProxy",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestion avancée des proxies pour le navigateur.",
+            ShortDescriptionEn = "Advanced proxy management for browser.",
+            FullDescription = "FoxyProxy permet de basculer facilement entre plusieurs proxies selon des règles URL. Utile pour le développement, les tests ou l'accès à des contenus géo-bloqués.",
+            FullDescriptionEn = "FoxyProxy allows easily switching between multiple proxies based on URL rules. Useful for development, testing or accessing geo-blocked content.",
+            DisableImpact = "Pas de gestion automatique des proxies.",
+            DisableImpactEn = "No automatic proxy management.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Essentiel pour les utilisateurs de proxies.",
+            RecommendationEn = "Essential for proxy users.",
+            Tags = "proxy,foxyproxy,vpn,reseau",
+            LastUpdated = DateTime.Now
+        });
+
+        // Tab Management
+        Save(new KnowledgeEntry
+        {
+            Name = "OneTab",
+            Aliases = "chphlpgkkbolifaimnlloiipkdnihall,nicksoftware.net",
+            Publisher = "OneTab Team",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Convertit tous les onglets en une liste pour économiser la mémoire.",
+            ShortDescriptionEn = "Converts all tabs to a list to save memory.",
+            FullDescription = "OneTab réduit drastiquement l'utilisation de mémoire en convertissant tous vos onglets ouverts en une liste. Vous pouvez restaurer les onglets individuellement ou tous à la fois.",
+            FullDescriptionEn = "OneTab drastically reduces memory usage by converting all your open tabs into a list. You can restore tabs individually or all at once.",
+            DisableImpact = "Pas de sauvegarde rapide des onglets.",
+            DisableImpactEn = "No quick tab saving.",
+            PerformanceImpact = "Négatif - améliore les performances en réduisant les onglets.",
+            PerformanceImpactEn = "Negative - improves performance by reducing tabs.",
+            Recommendation = "Très utile si vous ouvrez beaucoup d'onglets.",
+            RecommendationEn = "Very useful if you open many tabs.",
+            Tags = "onetab,tabs,onglets,memoire,performance",
+            LastUpdated = DateTime.Now
+        });
+
+        // Screenshot & Capture
+        Save(new KnowledgeEntry
+        {
+            Name = "Awesome Screenshot",
+            Aliases = "nlipoenfbbikpbjkfpfillcgkoblgpmj,nicksoftware.net",
+            Publisher = "Diigo Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Capture d'écran et annotation de pages web.",
+            ShortDescriptionEn = "Screenshot and annotation of web pages.",
+            FullDescription = "Awesome Screenshot permet de capturer des pages entières ou partielles, d'annoter les captures avec du texte, des formes et des flèches, et de les partager.",
+            FullDescriptionEn = "Awesome Screenshot allows capturing full or partial pages, annotating captures with text, shapes and arrows, and sharing them.",
+            DisableImpact = "Utilisez les outils de capture intégrés du navigateur.",
+            DisableImpactEn = "Use browser's built-in capture tools.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Pratique pour les captures annotées.",
+            RecommendationEn = "Handy for annotated screenshots.",
+            Tags = "screenshot,capture,annotation,image",
+            LastUpdated = DateTime.Now
+        });
+
+        // Notes & Bookmarks
+        Save(new KnowledgeEntry
+        {
+            Name = "Notion Web Clipper",
+            Aliases = "knheggckgoiihginacbkhaalnibhilkk,nicksoftware.net",
+            Publisher = "Notion Labs, Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Sauvegarde des pages web dans Notion.",
+            ShortDescriptionEn = "Save web pages to Notion.",
+            FullDescription = "Notion Web Clipper permet de sauvegarder n'importe quelle page web directement dans votre espace Notion, avec le texte, les images et la mise en forme.",
+            FullDescriptionEn = "Notion Web Clipper allows saving any web page directly to your Notion workspace, with text, images and formatting.",
+            DisableImpact = "Pas de sauvegarde rapide vers Notion.",
+            DisableImpactEn = "No quick saving to Notion.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Indispensable pour les utilisateurs de Notion.",
+            RecommendationEn = "Essential for Notion users.",
+            Tags = "notion,clipper,notes,sauvegarde",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Evernote Web Clipper",
+            Aliases = "pioclpoplcdbaefihamjohnefbikjilc,nicksoftware.net",
+            Publisher = "Evernote Corporation",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Sauvegarde des pages web dans Evernote.",
+            ShortDescriptionEn = "Save web pages to Evernote.",
+            FullDescription = "Evernote Web Clipper capture des articles, des pages ou des extraits et les sauvegarde directement dans Evernote avec tags et annotations.",
+            FullDescriptionEn = "Evernote Web Clipper captures articles, pages or snippets and saves them directly to Evernote with tags and annotations.",
+            DisableImpact = "Pas de capture vers Evernote depuis le navigateur.",
+            DisableImpactEn = "No capture to Evernote from browser.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour les utilisateurs d'Evernote.",
+            RecommendationEn = "Useful for Evernote users.",
+            Tags = "evernote,clipper,notes,sauvegarde",
+            LastUpdated = DateTime.Now
+        });
+
+        // Download Managers
+        Save(new KnowledgeEntry
+        {
+            Name = "IDM Integration Module",
+            Aliases = "ngpampappnmepgilojfohadhhmbhlaek,idm-integration@nicksoftware.net",
+            Publisher = "Tonec FZE",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Intégration d'Internet Download Manager dans le navigateur.",
+            ShortDescriptionEn = "Internet Download Manager browser integration.",
+            FullDescription = "Cette extension permet à Internet Download Manager (IDM) de capturer les téléchargements depuis le navigateur. IDM accélère les téléchargements jusqu'à 5x grâce au téléchargement segmenté.",
+            FullDescriptionEn = "This extension allows Internet Download Manager (IDM) to capture downloads from the browser. IDM accelerates downloads up to 5x through segmented downloading.",
+            DisableImpact = "IDM ne capturera plus automatiquement les téléchargements.",
+            DisableImpactEn = "IDM will no longer automatically capture downloads.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Nécessaire si vous utilisez IDM pour les téléchargements.",
+            RecommendationEn = "Required if you use IDM for downloads.",
+            Tags = "idm,download,telechargement,accelerateur",
+            LastUpdated = DateTime.Now
+        });
+
+        // AI Assistants
+        Save(new KnowledgeEntry
+        {
+            Name = "ChatGPT Writer",
+            Aliases = "pdnenlnelpdomajfejgapbdpmjkfpjkp,chatgpt-writer@nicksoftware.net",
+            Publisher = "ChatGPT Writer",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Utilise ChatGPT pour écrire des emails et messages.",
+            ShortDescriptionEn = "Uses ChatGPT to write emails and messages.",
+            FullDescription = "ChatGPT Writer génère des réponses aux emails et messages en utilisant l'IA. Fonctionne avec Gmail et la plupart des sites de messagerie.",
+            FullDescriptionEn = "ChatGPT Writer generates responses to emails and messages using AI. Works with Gmail and most messaging sites.",
+            DisableImpact = "Pas d'assistance IA pour l'écriture d'emails.",
+            DisableImpactEn = "No AI assistance for writing emails.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour gagner du temps sur les emails.",
+            RecommendationEn = "Useful for saving time on emails.",
+            Tags = "chatgpt,ia,ai,email,ecriture",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Perplexity",
+            Aliases = "hlgbcneanomplepojfcnclggenpcoldo,perplexity@nicksoftware.net",
+            Publisher = "Perplexity AI",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Moteur de recherche IA avec réponses conversationnelles.",
+            ShortDescriptionEn = "AI search engine with conversational answers.",
+            FullDescription = "Perplexity est un moteur de recherche alimenté par l'IA qui fournit des réponses directes avec des sources citées. Alternative à la recherche Google traditionnelle.",
+            FullDescriptionEn = "Perplexity is an AI-powered search engine that provides direct answers with cited sources. Alternative to traditional Google search.",
+            DisableImpact = "Pas d'accès rapide à Perplexity depuis le navigateur.",
+            DisableImpactEn = "No quick access to Perplexity from browser.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Utile pour des recherches rapides avec IA.",
+            RecommendationEn = "Useful for quick AI-powered searches.",
+            Tags = "perplexity,ia,ai,recherche,search",
+            LastUpdated = DateTime.Now
+        });
+
+        // Debrid Services
+        Save(new KnowledgeEntry
+        {
+            Name = "AllDebrid Extension",
+            Aliases = "mdjbgnpehbhpibonmjjjbjaoechnlcaf,codhfcgpnacoejfbpihnjgpnldhfppmo",
+            Publisher = "AllDebrid",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Intégration AllDebrid pour débrider les liens de téléchargement.",
+            ShortDescriptionEn = "AllDebrid integration to unlock download links.",
+            FullDescription = "AllDebrid convertit les liens d'hébergeurs (Rapidgator, Uploaded, etc.) en liens de téléchargement direct à haute vitesse. Nécessite un compte AllDebrid.",
+            FullDescriptionEn = "AllDebrid converts file host links (Rapidgator, Uploaded, etc.) to high-speed direct download links. Requires an AllDebrid account.",
+            DisableImpact = "Pas de débridage automatique des liens.",
+            DisableImpactEn = "No automatic link unlocking.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Utile si vous avez un abonnement AllDebrid.",
+            RecommendationEn = "Useful if you have an AllDebrid subscription.",
+            Tags = "alldebrid,debrid,download,telechargement",
+            LastUpdated = DateTime.Now
+        });
+
+        // Media Players
+        Save(new KnowledgeEntry
+        {
+            Name = "Open in VLC",
+            Aliases = "ihpiinojhnfhpdmmacgmpoonphhimkaj,open-in-vlc@nicksoftware.net",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Ouvre les vidéos et streams directement dans VLC.",
+            ShortDescriptionEn = "Opens videos and streams directly in VLC.",
+            FullDescription = "Cette extension permet d'ouvrir des vidéos, flux HLS/DASH et playlists directement dans VLC media player. Utile pour le streaming sans publicités.",
+            FullDescriptionEn = "This extension allows opening videos, HLS/DASH streams and playlists directly in VLC media player. Useful for ad-free streaming.",
+            DisableImpact = "Pas d'ouverture rapide des vidéos dans VLC.",
+            DisableImpactEn = "No quick opening of videos in VLC.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile pour les utilisateurs de VLC.",
+            RecommendationEn = "Useful for VLC users.",
+            Tags = "vlc,video,streaming,media",
+            LastUpdated = DateTime.Now
+        });
+
+        // Shopping & Reviews
+        Save(new KnowledgeEntry
+        {
+            Name = "Fakespot",
+            Aliases = "nakplnnackehceedgkgkokbgbmfghain,fakespot@nicksoftware.net",
+            Publisher = "Fakespot Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Détecte les faux avis sur Amazon et autres sites.",
+            ShortDescriptionEn = "Detects fake reviews on Amazon and other sites.",
+            FullDescription = "Fakespot analyse les avis produits sur Amazon, eBay, Walmart et d'autres sites pour détecter les faux avis et vous donner une note de fiabilité.",
+            FullDescriptionEn = "Fakespot analyzes product reviews on Amazon, eBay, Walmart and other sites to detect fake reviews and give you a reliability rating.",
+            DisableImpact = "Pas d'analyse automatique des avis.",
+            DisableImpactEn = "No automatic review analysis.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Très utile pour les achats en ligne.",
+            RecommendationEn = "Very useful for online shopping.",
+            Tags = "fakespot,avis,reviews,amazon,shopping",
+            LastUpdated = DateTime.Now
+        });
+
+        // Popup Blockers
+        Save(new KnowledgeEntry
+        {
+            Name = "PopUpOFF",
+            Aliases = "ifnkdbpmgkdbfklnbfidaackdenlmhgh,popupoff@nicksoftware.net",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloque les popups et overlays agaçants.",
+            ShortDescriptionEn = "Blocks annoying popups and overlays.",
+            FullDescription = "PopUpOFF supprime les popups de newsletter, les overlays de cookies, les messages 'désactivez votre bloqueur' et autres éléments intrusifs.",
+            FullDescriptionEn = "PopUpOFF removes newsletter popups, cookie overlays, 'disable your adblocker' messages and other intrusive elements.",
+            DisableImpact = "Les popups et overlays réapparaîtront.",
+            DisableImpactEn = "Popups and overlays will reappear.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Bon complément à un bloqueur de publicités.",
+            RecommendationEn = "Good complement to an ad blocker.",
+            Tags = "popup,overlay,blocker,intrusive",
+            LastUpdated = DateTime.Now
+        });
+
+        // PDF Tools
+        Save(new KnowledgeEntry
+        {
+            Name = "PDF-XChange",
+            Aliases = "blgipgnbmnikbdecnjmgckmndlkebhid,naikkflkggolckdmgkgondgaicljafod,djmbpijobamaimdblhkpclfnpkiogeoo",
+            Publisher = "Tracker Software Products",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Ouvre les PDF directement dans PDF-XChange Editor.",
+            ShortDescriptionEn = "Opens PDFs directly in PDF-XChange Editor.",
+            FullDescription = "Cette extension permet d'ouvrir les fichiers PDF du navigateur directement dans PDF-XChange Editor au lieu du lecteur PDF intégré.",
+            FullDescriptionEn = "This extension allows opening PDF files from the browser directly in PDF-XChange Editor instead of the built-in PDF viewer.",
+            DisableImpact = "Les PDF s'ouvriront dans le lecteur intégré du navigateur.",
+            DisableImpactEn = "PDFs will open in browser's built-in viewer.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile si vous préférez PDF-XChange au lecteur intégré.",
+            RecommendationEn = "Useful if you prefer PDF-XChange over built-in viewer.",
+            Tags = "pdf,xchange,viewer,editor",
+            LastUpdated = DateTime.Now
+        });
+
+        // Microsoft
+        Save(new KnowledgeEntry
+        {
+            Name = "Microsoft Single Sign On",
+            Aliases = "ppnbnpeolgkicgegkbkbjmhlideopiji,microsoft-sso@nicksoftware.net",
+            Publisher = "Microsoft Corporation",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Authentification unique Microsoft pour les sites web.",
+            ShortDescriptionEn = "Microsoft single sign-on for websites.",
+            FullDescription = "Cette extension permet de se connecter automatiquement aux sites Microsoft et Azure AD avec votre compte professionnel ou scolaire.",
+            FullDescriptionEn = "This extension allows automatically signing in to Microsoft and Azure AD sites with your work or school account.",
+            DisableImpact = "Vous devrez vous connecter manuellement aux sites Microsoft.",
+            DisableImpactEn = "You'll need to manually sign in to Microsoft sites.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Utile en environnement professionnel Microsoft.",
+            RecommendationEn = "Useful in Microsoft enterprise environments.",
+            Tags = "microsoft,sso,azure,authentification,login",
+            LastUpdated = DateTime.Now
+        });
+
+        // Video Speed
+        Save(new KnowledgeEntry
+        {
+            Name = "HTML5 Universal Speed Hack",
+            Aliases = "lphhofefopnhcakgkdiiaifkjgdlpfep,video-speed@nicksoftware.net",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Contrôle la vitesse de lecture de toutes les vidéos HTML5.",
+            ShortDescriptionEn = "Controls playback speed of all HTML5 videos.",
+            FullDescription = "Cette extension permet de modifier la vitesse de lecture de n'importe quelle vidéo HTML5 (YouTube, Netflix, etc.). Supporte des vitesses de 0.1x à 16x.",
+            FullDescriptionEn = "This extension allows modifying playback speed of any HTML5 video (YouTube, Netflix, etc.). Supports speeds from 0.1x to 16x.",
+            DisableImpact = "Pas de contrôle de vitesse avancé.",
+            DisableImpactEn = "No advanced speed control.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile pour regarder des vidéos plus rapidement.",
+            RecommendationEn = "Useful for watching videos faster.",
+            Tags = "video,speed,vitesse,html5,youtube",
+            LastUpdated = DateTime.Now
+        });
+
+        // Glarity
+        Save(new KnowledgeEntry
+        {
+            Name = "Glarity",
+            Aliases = "cmnlolelipjlhfkhpohphpedmkfbobjc,glarity@nicksoftware.net",
+            Publisher = "Glarity",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Résumés et traductions IA pour YouTube et recherches.",
+            ShortDescriptionEn = "AI summaries and translations for YouTube and searches.",
+            FullDescription = "Glarity utilise ChatGPT pour résumer les vidéos YouTube, les résultats de recherche Google et traduire des pages. Supporte plusieurs modèles d'IA.",
+            FullDescriptionEn = "Glarity uses ChatGPT to summarize YouTube videos, Google search results and translate pages. Supports multiple AI models.",
+            DisableImpact = "Pas de résumés IA automatiques.",
+            DisableImpactEn = "No automatic AI summaries.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour gagner du temps sur les vidéos longues.",
+            RecommendationEn = "Useful for saving time on long videos.",
+            Tags = "glarity,chatgpt,ia,ai,resume,youtube,traduction",
+            LastUpdated = DateTime.Now
+        });
+
+        // Copy Tools
+        Save(new KnowledgeEntry
+        {
+            Name = "Copy Selected Links",
+            Aliases = "kddpiojgkjnpmgiegglncafdpnigcbij,iefcjhkhlbfhcdamgdfnbdmchopckhal",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Copie les liens sélectionnés dans le presse-papiers.",
+            ShortDescriptionEn = "Copies selected links to clipboard.",
+            FullDescription = "Cette extension permet de sélectionner du texte contenant des liens et de copier uniquement les URLs dans le presse-papiers.",
+            FullDescriptionEn = "This extension allows selecting text containing links and copying only the URLs to clipboard.",
+            DisableImpact = "Copie manuelle des liens nécessaire.",
+            DisableImpactEn = "Manual link copying required.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile pour extraire des liens de pages.",
+            RecommendationEn = "Useful for extracting links from pages.",
+            Tags = "copy,links,clipboard,url",
+            LastUpdated = DateTime.Now
+        });
+
+        // Chrome Web Store
+        Save(new KnowledgeEntry
+        {
+            Name = "Chrome Web Store Launcher",
+            Aliases = "gecgipfabdickgidpmbicneamekgbaej,webstore-launcher@nicksoftware.net",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Lance rapidement les applications Chrome depuis la barre d'outils.",
+            ShortDescriptionEn = "Quickly launch Chrome apps from toolbar.",
+            FullDescription = "Cette extension ajoute un bouton pour accéder rapidement au Chrome Web Store et à vos applications installées.",
+            FullDescriptionEn = "This extension adds a button to quickly access Chrome Web Store and your installed apps.",
+            DisableImpact = "Accès au Web Store via le menu standard.",
+            DisableImpactEn = "Access Web Store via standard menu.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Peu utile, peut être désactivé.",
+            RecommendationEn = "Not very useful, can be disabled.",
+            Tags = "chrome,webstore,apps,launcher",
+            LastUpdated = DateTime.Now
+        });
+
+        // Password Managers (additional)
+        Save(new KnowledgeEntry
+        {
+            Name = "Proton Pass",
+            Aliases = "ghmbeldphafepmbegfdlkpapadhbakde",
+            Publisher = "Proton AG",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe chiffré par Proton.",
+            ShortDescriptionEn = "Encrypted password manager by Proton.",
+            FullDescription = "Proton Pass est un gestionnaire de mots de passe open source avec chiffrement de bout en bout. Créé par l'équipe de ProtonMail, il offre stockage sécurisé, remplissage automatique et génération de mots de passe.",
+            FullDescriptionEn = "Proton Pass is an open source password manager with end-to-end encryption. Created by the ProtonMail team, it offers secure storage, auto-fill and password generation.",
+            DisableImpact = "Pas de remplissage automatique des mots de passe Proton.",
+            DisableImpactEn = "No auto-fill for Proton passwords.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Excellent choix pour la vie privée. Alternative à Bitwarden.",
+            RecommendationEn = "Excellent choice for privacy. Alternative to Bitwarden.",
+            Tags = "proton,pass,password,securite,chiffrement",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "RoboForm Password Manager",
+            Aliases = "pnlccmojcmeohlpggmfnbbiapkmbliob,ljfpcifpgbbchoddpjefaipoiigpdmag",
+            Publisher = "Siber Systems Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de mots de passe et remplissage de formulaires.",
+            ShortDescriptionEn = "Password manager and form filler.",
+            FullDescription = "RoboForm stocke vos mots de passe et remplit automatiquement les formulaires web. Il peut aussi générer des mots de passe forts et synchroniser entre appareils.",
+            FullDescriptionEn = "RoboForm stores your passwords and auto-fills web forms. It can also generate strong passwords and sync across devices.",
+            DisableImpact = "Pas de remplissage automatique RoboForm.",
+            DisableImpactEn = "No RoboForm auto-fill.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Gestionnaire de mots de passe établi. Alternatives : Bitwarden, 1Password.",
+            RecommendationEn = "Established password manager. Alternatives: Bitwarden, 1Password.",
+            Tags = "roboform,password,formulaire,securite",
+            LastUpdated = DateTime.Now
+        });
+
+        // Gestures
+        Save(new KnowledgeEntry
+        {
+            Name = "smartUp Gestures",
+            Aliases = "bgjfekefhjemchdeigphccilhncnjldn",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestes souris et raccourcis pour la navigation.",
+            ShortDescriptionEn = "Mouse gestures and shortcuts for navigation.",
+            FullDescription = "smartUp Gestures ajoute des gestes souris personnalisables pour naviguer : retour, avancer, fermer onglet, ouvrir lien, etc. Supporte aussi la molette et les raccourcis clavier.",
+            FullDescriptionEn = "smartUp Gestures adds customizable mouse gestures for navigation: back, forward, close tab, open link, etc. Also supports wheel and keyboard shortcuts.",
+            DisableImpact = "Navigation standard uniquement.",
+            DisableImpactEn = "Standard navigation only.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Améliore la productivité pour les utilisateurs avancés.",
+            RecommendationEn = "Improves productivity for advanced users.",
+            Tags = "gestures,gestes,souris,navigation,productivite",
+            LastUpdated = DateTime.Now
+        });
+
+        // Screenshot Tools
+        Save(new KnowledgeEntry
+        {
+            Name = "Screenpresso",
+            Aliases = "agffhkejbocomabiogfdjnbfcnpdljie",
+            Publisher = "Learnpulse SAS",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Capture d'écran et enregistrement vidéo.",
+            ShortDescriptionEn = "Screenshot and video recording.",
+            FullDescription = "Screenpresso permet de capturer des screenshots, d'enregistrer des vidéos d'écran et d'annoter les captures. Intégration avec l'application desktop Screenpresso.",
+            FullDescriptionEn = "Screenpresso allows capturing screenshots, recording screen videos and annotating captures. Integration with Screenpresso desktop app.",
+            DisableImpact = "Utilisez l'application desktop ou les outils intégrés.",
+            DisableImpactEn = "Use desktop app or built-in tools.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile si vous utilisez Screenpresso desktop.",
+            RecommendationEn = "Useful if you use Screenpresso desktop.",
+            Tags = "screenpresso,screenshot,capture,video,annotation",
+            LastUpdated = DateTime.Now
+        });
+
+        // Shopping
+        Save(new KnowledgeEntry
+        {
+            Name = "The Camelizer",
+            Aliases = "ghnomdcacenbmilgjigehppbamfndblo",
+            Publisher = "CamelCamelCamel",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Historique des prix Amazon via CamelCamelCamel.",
+            ShortDescriptionEn = "Amazon price history via CamelCamelCamel.",
+            FullDescription = "The Camelizer affiche l'historique des prix des produits Amazon et permet de créer des alertes de baisse de prix. Utilise les données de CamelCamelCamel.",
+            FullDescriptionEn = "The Camelizer shows Amazon product price history and allows creating price drop alerts. Uses CamelCamelCamel data.",
+            DisableImpact = "Pas d'historique des prix Amazon intégré.",
+            DisableImpactEn = "No integrated Amazon price history.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Très utile pour les achats Amazon.",
+            RecommendationEn = "Very useful for Amazon shopping.",
+            Tags = "camelizer,amazon,prix,price,history,shopping",
+            LastUpdated = DateTime.Now
+        });
+
+        // Video Download
+        Save(new KnowledgeEntry
+        {
+            Name = "Video Downloader PLUS",
+            Aliases = "njgehaondchbmjmajphnhlojfnbfokng",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Télécharge des vidéos depuis de nombreux sites.",
+            ShortDescriptionEn = "Downloads videos from many websites.",
+            FullDescription = "Video Downloader PLUS détecte et permet de télécharger les vidéos intégrées sur les pages web. Supporte de nombreux formats et résolutions.",
+            FullDescriptionEn = "Video Downloader PLUS detects and allows downloading embedded videos on web pages. Supports many formats and resolutions.",
+            DisableImpact = "Pas de téléchargement de vidéos depuis le navigateur.",
+            DisableImpactEn = "No video downloading from browser.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour sauvegarder des vidéos. Respectez les droits d'auteur.",
+            RecommendationEn = "Useful for saving videos. Respect copyright.",
+            Tags = "video,download,telechargement,mp4",
+            LastUpdated = DateTime.Now
+        });
+
+        // AI Writing
+        Save(new KnowledgeEntry
+        {
+            Name = "Wordtune",
+            Aliases = "nllcnknpjnininklegdoijpljgdjkijc",
+            Publisher = "AI21 Labs",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Assistant d'écriture IA pour reformuler et améliorer le texte.",
+            ShortDescriptionEn = "AI writing assistant to rephrase and improve text.",
+            FullDescription = "Wordtune utilise l'IA pour suggérer des reformulations, corrections et améliorations de votre texte en temps réel. Supporte l'anglais principalement.",
+            FullDescriptionEn = "Wordtune uses AI to suggest rephrasing, corrections and improvements to your text in real-time. Primarily supports English.",
+            DisableImpact = "Pas d'assistance IA pour l'écriture.",
+            DisableImpactEn = "No AI writing assistance.",
+            PerformanceImpact = "Modéré. Envoie le texte aux serveurs.",
+            PerformanceImpactEn = "Moderate. Sends text to servers.",
+            Recommendation = "Utile pour améliorer l'écriture en anglais.",
+            RecommendationEn = "Useful for improving English writing.",
+            Tags = "wordtune,ia,ai,ecriture,writing,reformulation",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "ReaderGPT",
+            Aliases = "ohgodjgnfedgikkgcjdkomkadbfedcjd",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Résumé de pages web avec ChatGPT.",
+            ShortDescriptionEn = "Web page summarization with ChatGPT.",
+            FullDescription = "ReaderGPT utilise ChatGPT pour générer des résumés de pages web et articles. Permet de gagner du temps en obtenant l'essentiel d'un texte long.",
+            FullDescriptionEn = "ReaderGPT uses ChatGPT to generate summaries of web pages and articles. Saves time by getting the essence of long text.",
+            DisableImpact = "Pas de résumés automatiques.",
+            DisableImpactEn = "No automatic summaries.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Utile pour la lecture rapide d'articles.",
+            RecommendationEn = "Useful for quick article reading.",
+            Tags = "readergpt,chatgpt,ia,ai,resume,summary",
+            LastUpdated = DateTime.Now
+        });
+
+        // Ad Blockers (additional)
+        Save(new KnowledgeEntry
+        {
+            Name = "AdGuard AdBlocker",
+            Aliases = "bgnkhhnnamicmpeenaelnjfhikgbkllg",
+            Publisher = "AdGuard Software Ltd",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloqueur de publicités efficace avec protection anti-tracking.",
+            ShortDescriptionEn = "Efficient ad blocker with anti-tracking protection.",
+            FullDescription = "AdGuard bloque les publicités, les pop-ups, les bannières et les vidéos publicitaires. Inclut également une protection contre le phishing et les malwares.",
+            FullDescriptionEn = "AdGuard blocks ads, pop-ups, banners and video ads. Also includes protection against phishing and malware.",
+            DisableImpact = "Les publicités ne seront plus bloquées.",
+            DisableImpactEn = "Ads will no longer be blocked.",
+            PerformanceImpact = "Modéré. Peut améliorer la navigation en bloquant les pubs.",
+            PerformanceImpactEn = "Moderate. Can improve browsing by blocking ads.",
+            Recommendation = "Bonne alternative à uBlock Origin.",
+            RecommendationEn = "Good alternative to uBlock Origin.",
+            Tags = "adguard,adblock,publicite,securite",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "AdGuard Browser Assistant",
+            Aliases = "fbohpolgemkbfphodcfgnpjcmedcjhpn",
+            Publisher = "AdGuard Software Ltd",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Compagnon pour l'application AdGuard desktop.",
+            ShortDescriptionEn = "Companion for AdGuard desktop application.",
+            FullDescription = "Cette extension permet de contrôler l'application AdGuard desktop depuis le navigateur. Affiche les statistiques de blocage et permet de gérer les filtres.",
+            FullDescriptionEn = "This extension allows controlling the AdGuard desktop application from the browser. Shows blocking statistics and allows managing filters.",
+            DisableImpact = "Pas de contrôle navigateur pour AdGuard desktop.",
+            DisableImpactEn = "No browser control for AdGuard desktop.",
+            PerformanceImpact = "Très faible.",
+            PerformanceImpactEn = "Very low.",
+            Recommendation = "Utile uniquement si vous avez AdGuard desktop.",
+            RecommendationEn = "Only useful if you have AdGuard desktop.",
+            Tags = "adguard,assistant,desktop",
+            LastUpdated = DateTime.Now
+        });
+
+        // Scripting
+        Save(new KnowledgeEntry
+        {
+            Name = "Tampermonkey",
+            Aliases = "dhdgffkkebhmkfjojejmpbldmpobfkfo",
+            Publisher = "Jan Biniok",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Gestionnaire de scripts utilisateur (userscripts).",
+            ShortDescriptionEn = "Userscript manager.",
+            FullDescription = "Tampermonkey permet d'installer et gérer des scripts utilisateur qui modifient le comportement des sites web. Compatible avec Greasemonkey/Violentmonkey scripts.",
+            FullDescriptionEn = "Tampermonkey allows installing and managing userscripts that modify website behavior. Compatible with Greasemonkey/Violentmonkey scripts.",
+            DisableImpact = "Les scripts utilisateur ne s'exécuteront plus.",
+            DisableImpactEn = "Userscripts will no longer run.",
+            PerformanceImpact = "Dépend des scripts installés.",
+            PerformanceImpactEn = "Depends on installed scripts.",
+            Recommendation = "Puissant mais attention aux scripts de sources inconnues.",
+            RecommendationEn = "Powerful but beware of scripts from unknown sources.",
+            Tags = "tampermonkey,userscript,greasemonkey,script",
+            LastUpdated = DateTime.Now
+        });
+
+        // Google
+        Save(new KnowledgeEntry
+        {
+            Name = "Google Docs Offline",
+            Aliases = "ghbmnnjooekpmoecnnnilnnbdlolhkhi",
+            Publisher = "Google",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Permet d'utiliser Google Docs sans connexion internet.",
+            ShortDescriptionEn = "Allows using Google Docs without internet connection.",
+            FullDescription = "Cette extension permet de créer, modifier et consulter vos documents Google Docs, Sheets et Slides même sans connexion internet. Les modifications sont synchronisées automatiquement.",
+            FullDescriptionEn = "This extension allows creating, editing and viewing Google Docs, Sheets and Slides even without internet connection. Changes sync automatically.",
+            DisableImpact = "Google Docs ne fonctionnera qu'en ligne.",
+            DisableImpactEn = "Google Docs will only work online.",
+            PerformanceImpact = "Utilise de l'espace disque pour le cache.",
+            PerformanceImpactEn = "Uses disk space for cache.",
+            Recommendation = "Utile si vous utilisez souvent Google Docs hors ligne.",
+            RecommendationEn = "Useful if you often use Google Docs offline.",
+            Tags = "google,docs,offline,hors ligne",
+            LastUpdated = DateTime.Now
+        });
+
+        // AI (additional)
+        Save(new KnowledgeEntry
+        {
+            Name = "Superpower ChatGPT",
+            Aliases = "amhmeenmapldpjdedekalnfifgnpfnkc",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Fonctionnalités avancées pour ChatGPT.",
+            ShortDescriptionEn = "Advanced features for ChatGPT.",
+            FullDescription = "Superpower ChatGPT ajoute des fonctionnalités à l'interface ChatGPT : historique de conversations, export, prompts favoris, raccourcis clavier et plus.",
+            FullDescriptionEn = "Superpower ChatGPT adds features to ChatGPT interface: conversation history, export, favorite prompts, keyboard shortcuts and more.",
+            DisableImpact = "ChatGPT fonctionnera normalement sans les extras.",
+            DisableImpactEn = "ChatGPT will work normally without extras.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Très utile pour les utilisateurs intensifs de ChatGPT.",
+            RecommendationEn = "Very useful for heavy ChatGPT users.",
+            Tags = "chatgpt,superpower,ia,ai,productivite",
+            LastUpdated = DateTime.Now
+        });
+
+        // Themes
+        Save(new KnowledgeEntry
+        {
+            Name = "Dracula Theme",
+            Aliases = "gfapcejdoghpoidkfodoiiffaaibpaem",
+            Publisher = "Dracula Theme",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Thème sombre Dracula pour Chrome.",
+            ShortDescriptionEn = "Dracula dark theme for Chrome.",
+            FullDescription = "Le thème Dracula applique une palette de couleurs sombres au navigateur Chrome. Populaire chez les développeurs pour réduire la fatigue oculaire.",
+            FullDescriptionEn = "Dracula theme applies a dark color palette to Chrome browser. Popular among developers to reduce eye strain.",
+            DisableImpact = "Le navigateur reviendra au thème par défaut.",
+            DisableImpactEn = "Browser will return to default theme.",
+            PerformanceImpact = "Aucun.",
+            PerformanceImpactEn = "None.",
+            Recommendation = "Thème esthétique, choix personnel.",
+            RecommendationEn = "Aesthetic theme, personal choice.",
+            Tags = "dracula,theme,dark,sombre",
+            LastUpdated = DateTime.Now
+        });
+
+        // Tab Management (additional)
+        Save(new KnowledgeEntry
+        {
+            Name = "Auto Tab Discard",
+            Aliases = "jhnleheckmknfcgijgkadoemagpecfol",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Suspend automatiquement les onglets inactifs pour économiser la RAM.",
+            ShortDescriptionEn = "Automatically suspends inactive tabs to save RAM.",
+            FullDescription = "Auto Tab Discard suspend les onglets que vous n'utilisez pas pour libérer de la mémoire. Les onglets se rechargent quand vous y accédez à nouveau.",
+            FullDescriptionEn = "Auto Tab Discard suspends tabs you're not using to free memory. Tabs reload when you access them again.",
+            DisableImpact = "Plus d'économie automatique de mémoire.",
+            DisableImpactEn = "No more automatic memory saving.",
+            PerformanceImpact = "Négatif - améliore les performances.",
+            PerformanceImpactEn = "Negative - improves performance.",
+            Recommendation = "Très utile si vous ouvrez beaucoup d'onglets.",
+            RecommendationEn = "Very useful if you open many tabs.",
+            Tags = "tab,discard,suspend,memoire,ram,performance",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Mute Tab Shortcuts",
+            Aliases = "opcjanmpjbdbdpnjfjbboacibokblbhl",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Raccourcis clavier pour couper le son des onglets.",
+            ShortDescriptionEn = "Keyboard shortcuts to mute tabs.",
+            FullDescription = "Cette extension ajoute des raccourcis clavier pour rapidement couper ou rétablir le son d'un onglet sans avoir à cliquer sur l'icône.",
+            FullDescriptionEn = "This extension adds keyboard shortcuts to quickly mute or unmute a tab without clicking the icon.",
+            DisableImpact = "Gestion du son via clic uniquement.",
+            DisableImpactEn = "Sound management via click only.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Pratique pour les utilisateurs de raccourcis.",
+            RecommendationEn = "Handy for shortcut users.",
+            Tags = "mute,tab,shortcut,raccourci,son",
+            LastUpdated = DateTime.Now
+        });
+
+        // Video
+        Save(new KnowledgeEntry
+        {
+            Name = "Video Autoplay Blocker",
+            Aliases = "khhablkjeghmeinlfgecddpgcopnljpm",
+            Publisher = "Robert Sulkowski",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Bloque la lecture automatique des vidéos.",
+            ShortDescriptionEn = "Blocks automatic video playback.",
+            FullDescription = "Cette extension empêche les vidéos de se lancer automatiquement sur les sites web, vous permettant de choisir quand regarder une vidéo.",
+            FullDescriptionEn = "This extension prevents videos from playing automatically on websites, letting you choose when to watch a video.",
+            DisableImpact = "Les vidéos se lanceront automatiquement.",
+            DisableImpactEn = "Videos will play automatically.",
+            PerformanceImpact = "Peut améliorer les performances en évitant les vidéos.",
+            PerformanceImpactEn = "Can improve performance by avoiding videos.",
+            Recommendation = "Utile pour économiser la bande passante.",
+            RecommendationEn = "Useful for saving bandwidth.",
+            Tags = "video,autoplay,blocker,automatique",
+            LastUpdated = DateTime.Now
+        });
+
+        // Utilities
+        Save(new KnowledgeEntry
+        {
+            Name = "ColorPick Eyedropper",
+            Aliases = "ohcpnigalekghcmgcdcenkpelffpdolg",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Pipette pour récupérer les couleurs des pages web.",
+            ShortDescriptionEn = "Eyedropper to pick colors from web pages.",
+            FullDescription = "ColorPick Eyedropper permet de sélectionner n'importe quelle couleur sur une page web et d'obtenir son code hexadécimal, RGB ou HSL.",
+            FullDescriptionEn = "ColorPick Eyedropper allows selecting any color on a web page and getting its hexadecimal, RGB or HSL code.",
+            DisableImpact = "Pas de pipette de couleurs.",
+            DisableImpactEn = "No color picker.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Indispensable pour les designers et développeurs.",
+            RecommendationEn = "Essential for designers and developers.",
+            Tags = "color,couleur,eyedropper,pipette,design",
+            LastUpdated = DateTime.Now
+        });
+
+        Save(new KnowledgeEntry
+        {
+            Name = "Bookmarks clean up",
+            Aliases = "oncbjlgldmiagjophlhobkogeladjijl",
+            Publisher = "nicksoftware.net",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Nettoie les favoris en doublon ou cassés.",
+            ShortDescriptionEn = "Cleans duplicate or broken bookmarks.",
+            FullDescription = "Cette extension analyse vos favoris et identifie les liens cassés, les doublons et les dossiers vides pour vous aider à les nettoyer.",
+            FullDescriptionEn = "This extension analyzes your bookmarks and identifies broken links, duplicates and empty folders to help you clean them up.",
+            DisableImpact = "Nettoyage manuel des favoris nécessaire.",
+            DisableImpactEn = "Manual bookmark cleanup required.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile périodiquement pour maintenir les favoris.",
+            RecommendationEn = "Useful periodically to maintain bookmarks.",
+            Tags = "bookmarks,favoris,clean,nettoyer,doublon",
+            LastUpdated = DateTime.Now
+        });
+
+        // Download Managers
+        Save(new KnowledgeEntry
+        {
+            Name = "IDM Integration Module",
+            Aliases = "llbjbkhnmlidjebalopleeepgdfgcpec",
+            Publisher = "Tonec Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Intégration d'Internet Download Manager dans le navigateur.",
+            ShortDescriptionEn = "Internet Download Manager browser integration.",
+            FullDescription = "Cette extension intègre Internet Download Manager (IDM) au navigateur pour capturer les téléchargements de fichiers et vidéos. Elle ajoute un bouton de téléchargement sur les vidéos et intercepte les téléchargements.",
+            FullDescriptionEn = "This extension integrates Internet Download Manager (IDM) with the browser to capture file and video downloads. It adds a download button on videos and intercepts downloads.",
+            DisableImpact = "IDM ne capturera plus les téléchargements du navigateur.",
+            DisableImpactEn = "IDM will no longer capture browser downloads.",
+            PerformanceImpact = "Faible.",
+            PerformanceImpactEn = "Low.",
+            Recommendation = "Nécessaire si vous utilisez IDM pour les téléchargements.",
+            RecommendationEn = "Required if you use IDM for downloads.",
+            Tags = "idm,download,telechargement,internet download manager",
+            LastUpdated = DateTime.Now
+        });
+
+        // NAS & Storage
+        Save(new KnowledgeEntry
+        {
+            Name = "Synology Image Assistant",
+            Aliases = "llplnibcahdpinjkofckooolpbcpilnn",
+            Publisher = "Synology Inc.",
+            Category = KnowledgeCategory.Browser,
+            SafetyLevel = SafetyLevel.Safe,
+            ShortDescription = "Télécharge des images web vers un NAS Synology.",
+            ShortDescriptionEn = "Downloads web images to Synology NAS.",
+            FullDescription = "Cette extension permet de télécharger facilement des images depuis le web directement vers votre NAS Synology. Elle s'intègre au menu contextuel pour un téléchargement rapide.",
+            FullDescriptionEn = "This extension allows easily downloading images from the web directly to your Synology NAS. It integrates with the context menu for quick downloading.",
+            DisableImpact = "Téléchargement manuel des images vers le NAS nécessaire.",
+            DisableImpactEn = "Manual image download to NAS required.",
+            PerformanceImpact = "Négligeable.",
+            PerformanceImpactEn = "Negligible.",
+            Recommendation = "Utile si vous possédez un NAS Synology.",
+            RecommendationEn = "Useful if you own a Synology NAS.",
+            Tags = "synology,nas,image,telechargement,stockage",
             LastUpdated = DateTime.Now
         });
     }

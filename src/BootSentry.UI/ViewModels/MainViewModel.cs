@@ -160,17 +160,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Look up knowledge info for the selected entry
         if (value != null)
         {
+            // Try TargetPath first, then SourcePath (for extensions, the path contains the extension ID)
             var entry = _knowledgeService.FindEntry(
                 value.DisplayName,
-                value.TargetPath,
+                value.TargetPath ?? value.SourcePath,
                 value.Publisher);
 
-            // Debug: Show in status bar
-            if (entry != null)
+            // If not found and SourcePath is different, try with SourcePath
+            if (entry == null && !string.IsNullOrEmpty(value.SourcePath) && value.SourcePath != value.TargetPath)
             {
-                var lang = Resources.Strings.CurrentLanguage;
-                var hasEn = !string.IsNullOrEmpty(entry.ShortDescriptionEn);
-                StatusMessage = $"[DEBUG] Lang={lang}, HasEn={hasEn}";
+                entry = _knowledgeService.FindEntry(
+                    value.DisplayName,
+                    value.SourcePath,
+                    value.Publisher);
             }
 
             KnowledgeInfo = entry != null ? new LocalizedKnowledgeEntry(entry) : null;
@@ -179,6 +181,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             KnowledgeInfo = null;
         }
+
+        // Notify commands that their CanExecute state may have changed
+        EnableSelectedCommand.NotifyCanExecuteChanged();
+        DisableSelectedCommand.NotifyCanExecuteChanged();
+        OpenInRegeditCommand.NotifyCanExecuteChanged();
+        OpenInServicesCommand.NotifyCanExecuteChanged();
+        OpenInTaskSchedulerCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnSearchTextChanged(string value)
@@ -578,7 +587,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasMultipleSelection));
     }
 
-    [RelayCommand]
+    private bool CanDisableSelected() =>
+        SelectedEntry != null &&
+        SelectedEntry.Status == EntryStatus.Enabled &&
+        !SelectedEntry.IsProtected &&
+        _actionExecutor.CanPerformAction(SelectedEntry, ActionType.Disable);
+
+    [RelayCommand(CanExecute = nameof(CanDisableSelected))]
     private async Task DisableSelectedAsync()
     {
         if (SelectedEntry == null)
@@ -624,6 +639,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             UpdateCounts();
             StatusMessage = Strings.Format("NotifDisabled", SelectedEntry.DisplayName);
             _toastService.ShowSuccess(StatusMessage);
+            // Update command states after status change
+            EnableSelectedCommand.NotifyCanExecuteChanged();
+            DisableSelectedCommand.NotifyCanExecuteChanged();
         }
         else
         {
@@ -636,7 +654,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
+    private bool CanEnableSelected() =>
+        SelectedEntry != null &&
+        SelectedEntry.Status == EntryStatus.Disabled &&
+        _actionExecutor.CanPerformAction(SelectedEntry, ActionType.Enable);
+
+    [RelayCommand(CanExecute = nameof(CanEnableSelected))]
     private async Task EnableSelectedAsync()
     {
         if (SelectedEntry == null)
@@ -672,6 +695,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             UpdateCounts();
             StatusMessage = Strings.Format("NotifEnabled", SelectedEntry.DisplayName);
             _toastService.ShowSuccess(StatusMessage);
+            // Update command states after status change
+            EnableSelectedCommand.NotifyCanExecuteChanged();
+            DisableSelectedCommand.NotifyCanExecuteChanged();
         }
         else
         {
@@ -974,24 +1000,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
+    private bool CanOpenInRegedit() =>
+        SelectedEntry != null &&
+        SelectedEntry.SourcePath != null &&
+        SelectedEntry.SourcePath.StartsWith("HK", StringComparison.OrdinalIgnoreCase);
+
+    [RelayCommand(CanExecute = nameof(CanOpenInRegedit))]
     private void OpenInRegedit()
     {
-        // Silently return if no entry selected
-        if (SelectedEntry == null)
+        if (SelectedEntry?.SourcePath == null)
             return;
-
-        // Check if it's a registry entry
-        if (SelectedEntry.SourcePath == null ||
-            !SelectedEntry.SourcePath.StartsWith("HK", StringComparison.OrdinalIgnoreCase))
-        {
-            MessageBox.Show(
-                Strings.Get("ErrorNotARegistryKey"),
-                Strings.Get("ErrorActionImpossible"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
 
         try
         {
@@ -1019,23 +1037,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
+    private bool CanOpenInServices() =>
+        SelectedEntry != null &&
+        SelectedEntry.Type == EntryType.Service;
+
+    [RelayCommand(CanExecute = nameof(CanOpenInServices))]
     private void OpenInServices()
     {
-        // Silently return if no entry selected
         if (SelectedEntry == null)
             return;
-
-        // Show message only if entry is selected but wrong type
-        if (SelectedEntry.Type != EntryType.Service)
-        {
-            MessageBox.Show(
-                Strings.Get("ErrorNotAService"),
-                Strings.Get("ErrorActionImpossible"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
 
         try
         {
@@ -1053,23 +1063,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
+    private bool CanOpenInTaskScheduler() =>
+        SelectedEntry != null &&
+        SelectedEntry.Type == EntryType.ScheduledTask;
+
+    [RelayCommand(CanExecute = nameof(CanOpenInTaskScheduler))]
     private void OpenInTaskScheduler()
     {
-        // Silently return if no entry selected
         if (SelectedEntry == null)
             return;
-
-        // Show message only if entry is selected but wrong type
-        if (SelectedEntry.Type != EntryType.ScheduledTask)
-        {
-            MessageBox.Show(
-                Strings.Get("ErrorNotATask"),
-                Strings.Get("ErrorActionImpossible"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
 
         try
         {
