@@ -416,17 +416,54 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
     private RiskLevel DetermineExtensionRisk(JsonElement manifest, string extensionId)
     {
-        // Known safe extension IDs (from Chrome Web Store)
+        // Known safe extension IDs (from Chrome/Edge/Brave Web Stores)
         var knownSafeExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            // Google extensions
             "nmmhkkegccagdldgiimedpiccmgmieda", // Google Wallet
             "aapbdbdomjkkjkaonfhkkikfgjllcleb", // Google Translate
             "ghbmnnjooekpmoecnnnilnnbdlolhkhi", // Google Docs Offline
+            "lpcaedmchfhocbbapmcbpinfpgnhiddi", // Google Keep
+
+            // Ad blockers
             "cjpalhdlnbpafiamejdnhcphjbkeiagm", // uBlock Origin
             "cfhdojbkjhnklbpkdaibdccddilifddb", // Adblock Plus
             "gighmmpiobklfepjocnamgkkbiglidom", // AdBlock
+            "epcnnfbjfcgphgdmggkamkmgojdagdnn", // uBlock Origin Lite
+            "bgnkhhnnamicmpeenaelnjfhikgbkllg", // AdGuard
+
+            // Password managers
             "hdokiejnpimakedhajhdlcegeplioahd", // LastPass
             "nkbihfbeogaeaoehlefnkodbefgpgknn", // MetaMask
+            "oboonakemofpalcgghocfoadofidjkkk", // KeePassXC
+            "fdjamakpfbbddfjaooikfcpapjohcfmg", // Dashlane
+            "naepdomgkenhinolocfifgehidddafch", // Bitwarden
+            "eiaeiblijfjekdanodkjadfinkhbfgcd", // Proton Pass
+            "aomjjhallfgjeglblehebfpbcfeobpgk", // 1Password
+
+            // Privacy & Security
+            "pkehgijcmpdhfbdbbnkijodmdjhbjlgp", // Privacy Badger
+            "gcbommkclmclpchllfjekcdonpmejbdp", // HTTPS Everywhere
+            "cmedhionkhpnakcndndgjdbohmhepckk", // Decentraleyes
+            "fhcgjolkccmbidfldomjliifgaodjagh", // Cookie AutoDelete
+
+            // Productivity
+            "efaidnbmnnnibpcajpcglclefindmkaj", // Adobe Acrobat
+            "pioclpoplcdbaefihamjohnefbikjilc", // Evernote Web Clipper
+            "nplieblnkhgboloddbbabmhbdakmekkh", // Grammarly
+            "kbfnbcaeplbcioakkpcpgfkobkghlhen", // Grammarly (alt)
+            "chphlpgkkbolifaimnlloiipkdnihall", // OneNote Web Clipper
+            "ophjlpahpchlmihnnnihgmmeilfjmjjc", // OneTab
+
+            // YouTube enhancements
+            "mnjggcdmjocbbbhaepdhchncahnbgone", // SponsorBlock
+            "gebbhagfogifgggkldgodflihgfeippi", // Return YouTube Dislike
+
+            // Developer tools
+            "fmkadmapgofadopljbjfkapdkoienihi", // React Developer Tools
+            "nhdogjmejiglipccpnnnanhbledajbpd", // Vue.js devtools
+            "lmhkpmbekcpmknklioeibfkpmmfibljd", // Redux DevTools
+            "bhlhnicpbhignbdhedgjhgdocnmhomnp", // ColorZilla
         };
 
         if (knownSafeExtensions.Contains(extensionId))
