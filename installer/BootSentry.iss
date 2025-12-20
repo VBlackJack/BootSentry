@@ -1,64 +1,54 @@
-; BootSentry Installer Script
-; Inno Setup 6.x
-
 #define MyAppName "BootSentry"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Julien Bombled"
 #define MyAppURL "https://github.com/VBlackJack/BootSentry"
-#define MyAppExeName "BootSentry.exe"
+#define MyAppExeName "BootSentry.UI.exe"
 
 [Setup]
-AppId={{B00T-S3NT-RY01-0000-000000000000}
+; NOTE: The value of AppId uniquely identifies this application.
+AppId={{A3B4C5D6-E7F8-9012-3456-7890ABCDEF12}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
-AppSupportURL={#MyAppURL}/issues
-AppUpdatesURL={#MyAppURL}/releases
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
-LicenseFile=..\LICENSE
+DisableProgramGroupPage=yes
+; Remove the following line to run in administrative install mode (install for all users.)
+PrivilegesRequired=admin
 OutputDir=..\releases
-OutputBaseFilename=BootSentry-{#MyAppVersion}-setup-win-x64
+OutputBaseFilename=BootSentry_Setup_v{#MyAppVersion}
 SetupIconFile=..\src\BootSentry.UI\Resources\app.ico
-Compression=lzma2/ultra64
+Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x64compatible
-ArchitecturesAllowed=x64compatible
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
-UninstallDisplayIcon={app}\{#MyAppExeName}
-UninstallDisplayName={#MyAppName}
-VersionInfoVersion={#MyAppVersion}
-VersionInfoCompany={#MyAppPublisher}
-VersionInfoProductName={#MyAppName}
-VersionInfoProductVersion={#MyAppVersion}
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
-Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-Source: "..\src\BootSentry.UI\bin\Release\net8.0-windows\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; Main Executable (Single File Publish)
+Source: "..\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; Native dependencies and other files in the publish folder
+Source: "..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[Dirs]
+; Ensure Log and Backup folders exist in CommonAppData
+Name: "{commonappdata}\BootSentry\Logs"; Permissions: users-modify
+Name: "{commonappdata}\BootSentry\Backups"; Permissions: users-modify
 
 [Code]
-function InitializeSetup(): Boolean;
-begin
-  Result := True;
-end;
+// Optional: Add custom logic here if needed
