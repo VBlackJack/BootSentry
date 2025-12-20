@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Wpf.Ui.Controls;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Models;
+using BootSentry.UI.Enums;
 using BootSentry.UI.Services;
 using BootSentry.UI.ViewModels;
 
@@ -151,14 +152,13 @@ public partial class MainWindow : FluentWindow
 
         if (tabControl.SelectedItem is TabItem selectedTab && selectedTab.Tag is string tag)
         {
-            vm.SelectedCategory = tag switch
+            vm.SelectedTab = tag switch
             {
-                "Startup" => EntryCategory.Startup,
-                "Tasks" => EntryCategory.Tasks,
-                "Services" => EntryCategory.Services,
-                "System" => EntryCategory.System,
-                "Extensions" => EntryCategory.Extensions,
-                _ => null
+                "Applications" => NavigationTab.Applications,
+                "Browsers" => NavigationTab.Browsers,
+                "System" => NavigationTab.System,
+                "Advanced" => NavigationTab.Advanced,
+                _ => NavigationTab.Applications
             };
         }
     }

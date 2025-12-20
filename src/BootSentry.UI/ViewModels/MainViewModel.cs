@@ -19,6 +19,7 @@ using BootSentry.Knowledge.Services;
 using BootSentry.Security;
 using BootSentry.Security.Services;
 using BootSentry.UI.Controls;
+using BootSentry.UI.Enums;
 using BootSentry.UI.Models;
 using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
@@ -88,7 +89,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private string _selectedStatusFilter = "Tous";
 
     [ObservableProperty]
-    private EntryCategory? _selectedCategory;
+    private NavigationTab _selectedTab = NavigationTab.Applications;
 
     public string[] TypeFilters { get; } = ["Tous", "Registre", "Dossier Démarrage", "Tâches", "Services", "Drivers", "Expert"];
     public string[] StatusFilters { get; } = ["Tous", "Actives", "Désactivées", "Suspectes"];
@@ -126,12 +127,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public bool HasSuspiciousEntries => SuspiciousCount > 0;
     public bool HasNoVisibleEntries => VisibleEntriesCount == 0 && TotalEntriesCount > 0;
 
-    // Category counts for tab headers
-    public int StartupCount => Entries.Count(e => e.Category == EntryCategory.Startup && ShouldShowInNonExpertMode(e));
-    public int TasksCount => Entries.Count(e => e.Category == EntryCategory.Tasks && ShouldShowInNonExpertMode(e));
-    public int ServicesCount => Entries.Count(e => e.Category == EntryCategory.Services && ShouldShowInNonExpertMode(e));
-    public int SystemCount => Entries.Count(e => e.Category == EntryCategory.System);
-    public int ExtensionsCount => Entries.Count(e => e.Category == EntryCategory.Extensions);
+    // Navigation tab counts (grouped by user intention)
+    public int ApplicationsCount => Entries.Count(e =>
+        (e.Category == EntryCategory.Startup || e.Category == EntryCategory.Tasks) &&
+        ShouldShowInNonExpertMode(e));
+
+    public int BrowsersCount => Entries.Count(e =>
+        (e.Category == EntryCategory.Extensions || e.Type == EntryType.BHO) &&
+        ShouldShowInNonExpertMode(e));
+
+    public int SystemTabCount => Entries.Count(e =>
+        (e.Type == EntryType.Service || e.Type == EntryType.Driver || e.Type == EntryType.PrintMonitor) &&
+        ShouldShowInNonExpertMode(e));
+
+    public int AdvancedCount => Entries.Count(e =>
+        e.Type is EntryType.Winlogon or EntryType.AppInitDlls or EntryType.IFEO or
+        EntryType.ShellExtension or EntryType.SessionManager or EntryType.WinsockLSP);
 
     private bool ShouldShowInNonExpertMode(StartupEntry entry)
     {
@@ -252,11 +263,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasNoVisibleEntries));
     }
 
-    partial void OnSelectedCategoryChanged(EntryCategory? value)
+    partial void OnSelectedTabChanged(NavigationTab value)
     {
         // Sort Extensions by DisplayName to group by browser
         _entriesView.SortDescriptions.Clear();
-        if (value == EntryCategory.Extensions)
+        if (value == NavigationTab.Browsers)
         {
             _entriesView.SortDescriptions.Add(new System.ComponentModel.SortDescription(
                 nameof(StartupEntry.DisplayName), System.ComponentModel.ListSortDirection.Ascending));
@@ -285,9 +296,25 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (obj is not StartupEntry entry)
             return false;
 
-        // Filter by category (tab) if one is selected
-        if (SelectedCategory.HasValue && entry.Category != SelectedCategory.Value)
-            return false;
+        // Filter by navigation tab (grouped by user intention)
+        bool matchesTab = SelectedTab switch
+        {
+            NavigationTab.Applications =>
+                entry.Category == EntryCategory.Startup || entry.Category == EntryCategory.Tasks,
+
+            NavigationTab.Browsers =>
+                entry.Category == EntryCategory.Extensions || entry.Type == EntryType.BHO,
+
+            NavigationTab.System =>
+                entry.Type is EntryType.Service or EntryType.Driver or EntryType.PrintMonitor,
+
+            NavigationTab.Advanced =>
+                entry.Type is EntryType.Winlogon or EntryType.AppInitDlls or EntryType.IFEO or
+                EntryType.ShellExtension or EntryType.SessionManager or EntryType.WinsockLSP,
+
+            _ => true
+        };
+        if (!matchesTab) return false;
 
         // In non-expert mode, hide Microsoft entries and critical items
         if (!IsExpertMode)
@@ -299,12 +326,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             if (entry.IsProtected)
                 return false;
 
-            // Hide System category in non-expert mode (Extensions are now visible to all)
-            if (entry.Category == EntryCategory.System)
-                return false;
-
-            // Hide drivers in non-expert mode
-            if (entry.Type == EntryType.Driver)
+            // Advanced tab is only visible in Expert mode (handled in XAML)
+            // But also filter here as a safety measure
+            if (SelectedTab == NavigationTab.Advanced)
                 return false;
         }
 
@@ -318,7 +342,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 return false;
         }
 
-        // Apply type filter (for sub-filtering within category)
+        // Apply type filter (for sub-filtering within tab)
         if (SelectedTypeFilter != "Tous")
         {
             var matchesType = SelectedTypeFilter switch
@@ -581,12 +605,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(SuspiciousCount));
         OnPropertyChanged(nameof(HasSuspiciousEntries));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
-        // Category counts for tabs
-        OnPropertyChanged(nameof(StartupCount));
-        OnPropertyChanged(nameof(TasksCount));
-        OnPropertyChanged(nameof(ServicesCount));
-        OnPropertyChanged(nameof(SystemCount));
-        OnPropertyChanged(nameof(ExtensionsCount));
+        // Navigation tab counts
+        OnPropertyChanged(nameof(ApplicationsCount));
+        OnPropertyChanged(nameof(BrowsersCount));
+        OnPropertyChanged(nameof(SystemTabCount));
+        OnPropertyChanged(nameof(AdvancedCount));
     }
 
     [RelayCommand]

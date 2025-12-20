@@ -46,17 +46,29 @@ public static class Strings
             ["Expert"] = "Expert",
             ["Entries"] = "entrées",
 
-            // Tabs
+            // Tabs (simplified navigation)
+            ["TabApplications"] = "Mes Applications",
+            ["TabBrowsers"] = "Navigateurs",
+            ["TabSystem"] = "Système & Pilotes",
+            ["TabAdvanced"] = "Sécurité Avancée",
+
+            // Legacy tabs (kept for compatibility)
             ["TabStartup"] = "Démarrage",
             ["TabTasks"] = "Tâches",
             ["TabServices"] = "Services",
-            ["TabSystem"] = "Système",
             ["TabExtensions"] = "Extensions",
 
             // Empty state
             ["NoResultsFound"] = "Aucun résultat trouvé",
             ["NoResultsHint"] = "Modifiez vos critères de recherche ou de filtrage",
             ["ResetFilters"] = "Réinitialiser les filtres",
+            ["EmptyStateAllClean"] = "Tout est propre !",
+            ["EmptyStateAllCleanHint"] = "Aucune entrée de démarrage ne correspond à vos filtres actuels.",
+            ["EmptyStateMicrosoftHidden"] = "(Les services Microsoft sont masqués)",
+
+            // Winlogon Repair action
+            ["ActionRepair"] = "Réparer",
+            ["TooltipRepairWinlogon"] = "Réinitialiser à la valeur par défaut de Windows",
 
             // Entry List
             ["ColumnName"] = "Nom",
@@ -429,17 +441,29 @@ public static class Strings
             ["Expert"] = "Expert",
             ["Entries"] = "entries",
 
-            // Tabs
+            // Tabs (simplified navigation)
+            ["TabApplications"] = "My Applications",
+            ["TabBrowsers"] = "Web Browsers",
+            ["TabSystem"] = "System & Drivers",
+            ["TabAdvanced"] = "Advanced Security",
+
+            // Legacy tabs (kept for compatibility)
             ["TabStartup"] = "Startup",
             ["TabTasks"] = "Tasks",
             ["TabServices"] = "Services",
-            ["TabSystem"] = "System",
             ["TabExtensions"] = "Extensions",
 
             // Empty state
             ["NoResultsFound"] = "No results found",
             ["NoResultsHint"] = "Modify your search or filter criteria",
             ["ResetFilters"] = "Reset filters",
+            ["EmptyStateAllClean"] = "All clean!",
+            ["EmptyStateAllCleanHint"] = "No startup entries match your current filters.",
+            ["EmptyStateMicrosoftHidden"] = "(Microsoft services are hidden)",
+
+            // Winlogon Repair action
+            ["ActionRepair"] = "Repair",
+            ["TooltipRepairWinlogon"] = "Reset to Windows default value",
 
             // Entry List
             ["ColumnName"] = "Name",

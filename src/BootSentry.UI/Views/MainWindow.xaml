@@ -209,16 +209,41 @@
                             <TextBlock Text="{res:Localize ActionDisable}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                    <!-- Delete/Repair Button - Shows Repair for Winlogon entries -->
                     <Button Command="{Binding DeleteSelectedCommand}"
-                            Style="{StaticResource ToolbarButton}" Background="{DynamicResource ErrorBrush}"
-                            ToolTip="{res:Localize TooltipDelete}" MinHeight="36"
+                            MinHeight="36"
                             Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}"
                             AutomationProperties.Name="{res:Localize ActionDelete}"
                             AutomationProperties.HelpText="{res:Localize ActionDeleteHelp}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="{res:Localize ActionDelete}" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+                                <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                                <Setter Property="ToolTip" Value="{res:Localize TooltipDelete}"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{res:Localize ActionDelete}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <!-- Show Repair for Winlogon entries -->
+                                    <DataTrigger Binding="{Binding SelectedEntry.Type}" Value="Winlogon">
+                                        <Setter Property="Background" Value="{DynamicResource InfoBrush}"/>
+                                        <Setter Property="ToolTip" Value="{res:Localize TooltipRepairWinlogon}"/>
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                    <TextBlock Text="{res:Localize ActionRepair}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                     </Button>
                     <Separator Margin="8,4"/>
                     <Button Command="{Binding OpenFileLocationCommand}"
@@ -296,7 +321,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Category Tabs -->
+                    <!-- Navigation Tabs (Simplified by user intention) -->
                     <TabControl x:Name="CategoryTabs" Grid.Row="0"
                                 SelectionChanged="CategoryTabs_SelectionChanged"
                                 Background="Transparent" BorderThickness="0"
@@ -329,52 +354,46 @@
                                 </Setter>
                             </Style>
                         </TabControl.Resources>
-                        <TabItem Tag="Startup">
+                        <!-- Applications: Startup programs + Scheduled Tasks -->
+                        <TabItem Tag="Applications">
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="{res:Localize TabStartup}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding StartupCount, StringFormat=' ({0})'}"
+                                    <TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{res:Localize TabApplications}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ApplicationsCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
                             </TabItem.Header>
                         </TabItem>
-                        <TabItem Tag="Tasks">
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="{res:Localize TabTasks}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TasksCount, StringFormat=' ({0})'}"
-                                               VerticalAlignment="Center" Opacity="0.7"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-                        <TabItem Tag="Services">
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE912;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="{res:Localize TabServices}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding ServicesCount, StringFormat=' ({0})'}"
-                                               VerticalAlignment="Center" Opacity="0.7"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-                        <TabItem Tag="System" Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE770;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="{res:Localize TabSystem}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding SystemCount, StringFormat=' ({0})'}"
-                                               VerticalAlignment="Center" Opacity="0.7"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-                        <TabItem Tag="Extensions">
+                        <!-- Browsers: Extensions + BHOs -->
+                        <TabItem Tag="Browsers">
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="{res:Localize TabExtensions}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding ExtensionsCount, StringFormat=' ({0})'}"
+                                    <TextBlock Text="{res:Localize TabBrowsers}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding BrowsersCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <!-- System: Services + Drivers + Print Monitors -->
+                        <TabItem Tag="System">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE912;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{res:Localize TabSystem}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SystemTabCount, StringFormat=' ({0})'}"
+                                               VerticalAlignment="Center" Opacity="0.7"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <!-- Advanced: Winlogon, AppInit, IFEO, etc. (Expert Mode only) -->
+                        <TabItem Tag="Advanced" Visibility="{Binding IsExpertMode, Converter={StaticResource BoolToVisibility}}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{res:Localize TabAdvanced}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding AdvancedCount, StringFormat=' ({0})'}"
                                                VerticalAlignment="Center" Opacity="0.7"/>
                                 </StackPanel>
                             </TabItem.Header>
@@ -388,22 +407,39 @@
                                                   Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
                                                   Margin="8"/>
 
-                        <!-- No Results Message -->
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    Visibility="{Binding HasNoVisibleEntries, Converter={StaticResource BoolToVisibility}}"
-                                    Margin="0,40">
-                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                            <TextBlock Text="{res:Localize NoResultsFound}" FontSize="16" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center" Margin="0,16,0,8"/>
-                            <TextBlock Text="{res:Localize NoResultsHint}"
-                                       Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center"/>
-                            <Button Content="{res:Localize ResetFilters}"
-                                    Command="{Binding ResetFiltersCommand}"
-                                    Visibility="{Binding CanResetFilters, Converter={StaticResource BoolToVisibility}}"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Margin="0,16,0,0"
-                                    HorizontalAlignment="Center"/>
-                        </StackPanel>
+                        <!-- Empty State - Friendly message when list is empty -->
+                        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding HasNoVisibleEntries, Converter={StaticResource BoolToVisibility}}"
+                                Background="{DynamicResource PanelBackground}"
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="40,32" Margin="20">
+                            <StackPanel HorizontalAlignment="Center">
+                                <!-- Success icon (checkmark in circle) -->
+                                <Border Width="80" Height="80" CornerRadius="40"
+                                        Background="{DynamicResource SuccessBrush}" Opacity="0.15"
+                                        HorizontalAlignment="Center" Margin="0,0,0,16">
+                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="40"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{res:Localize EmptyStateAllClean}" FontSize="20" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WindowForeground}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBlock Text="{res:Localize EmptyStateAllCleanHint}" FontSize="13"
+                                           Foreground="{DynamicResource MutedForeground}" HorizontalAlignment="Center"
+                                           TextWrapping="Wrap" MaxWidth="300" TextAlignment="Center"/>
+                                <!-- Microsoft filter hint -->
+                                <TextBlock Text="{res:Localize EmptyStateMicrosoftHidden}" FontSize="11"
+                                           Foreground="{DynamicResource DisabledForeground}" HorizontalAlignment="Center"
+                                           Margin="0,8,0,0" FontStyle="Italic"
+                                           Visibility="{Binding HideMicrosoftEntries, Converter={StaticResource BoolToVisibility}}"/>
+                                <Button Content="{res:Localize ResetFilters}"
+                                        Command="{Binding ResetFiltersCommand}"
+                                        Visibility="{Binding CanResetFilters, Converter={StaticResource BoolToVisibility}}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="0,20,0,0"
+                                        HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
                         <DataGrid x:Name="EntriesGrid"
                           ItemsSource="{Binding FilteredEntries}"
                           SelectedItem="{Binding SelectedEntry}"
