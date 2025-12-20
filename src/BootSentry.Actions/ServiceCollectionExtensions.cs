@@ -25,6 +25,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IActionStrategy, ServiceActionStrategy>();
         services.AddSingleton<IActionStrategy, IFEOActionStrategy>();
         services.AddSingleton<IActionStrategy, BrowserExtensionActionStrategy>();
+        services.AddSingleton<IActionStrategy, AppInitActionStrategy>();
+        services.AddSingleton<IActionStrategy, WinlogonActionStrategy>();
 
         // Register executor
         services.AddSingleton<ActionExecutor>();
