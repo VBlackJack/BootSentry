@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
+using BootSentry.Core.Parsing;
 
 namespace BootSentry.Actions.Strategies;
 
@@ -71,44 +72,58 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
         try
         {
+            _logger.LogInformation("Removing DLL {DllPath} from AppInit_DLLs at {Path}", dllPath, registryPath);
+
+            // Pre-check key existence before creating transaction to avoid pending manifests on early failures.
+            using (var preCheckKey = Registry.LocalMachine.OpenSubKey(registryPath, writable: false))
+            {
+                if (preCheckKey == null)
+                {
+                    return ActionResult.Fail("Registry key not found or access denied", "ERR_KEY_NOT_FOUND");
+                }
+            }
+
             // Create backup transaction BEFORE making changes
             var transaction = await _transactionManager.CreateTransactionAsync(entry, actionType, cancellationToken);
 
-            _logger.LogInformation("Removing DLL {DllPath} from AppInit_DLLs at {Path}", dllPath, registryPath);
-
-            using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
-            if (key == null)
+            try
             {
-                return ActionResult.Fail("Registry key not found or access denied", "ERR_KEY_NOT_FOUND");
+                using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
+                if (key == null)
+                    throw new InvalidOperationException("Registry key not found or access denied");
+
+                // Read current value
+                var currentValue = key.GetValue("AppInit_DLLs")?.ToString() ?? "";
+
+                // Parse into list
+                var dlls = ParseDllList(currentValue);
+
+                // Find and remove the DLL (case-insensitive and quote-tolerant comparison)
+                var originalCount = dlls.Count;
+                dlls.RemoveAll(d => AppInitDllParser.AreEquivalent(d, dllPath));
+
+                if (dlls.Count == originalCount)
+                {
+                    _logger.LogWarning("DLL {DllPath} not found in AppInit_DLLs list", dllPath);
+                }
+
+                // Write back safely (quote paths with spaces)
+                var newValue = AppInitDllParser.Serialize(dlls);
+                key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
+
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                entry.Status = EntryStatus.Disabled;
+                _logger.LogInformation("Successfully removed DLL from AppInit_DLLs. New value: '{Value}'", newValue);
+
+                return ActionResult.Ok(entry, transaction.Id);
             }
-
-            // Read current value
-            var currentValue = key.GetValue("AppInit_DLLs")?.ToString() ?? "";
-
-            // Parse into list
-            var dlls = ParseDllList(currentValue);
-
-            // Find and remove the DLL (case-insensitive comparison)
-            var originalCount = dlls.Count;
-            dlls.RemoveAll(d => string.Equals(d, dllPath, StringComparison.OrdinalIgnoreCase));
-
-            if (dlls.Count == originalCount)
+            catch
             {
-                // DLL not found, might already be removed
-                _logger.LogWarning("DLL {DllPath} not found in AppInit_DLLs list", dllPath);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
             }
-
-            // Write back
-            var newValue = string.Join(" ", dlls);
-            key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
-
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-            entry.Status = EntryStatus.Disabled;
-            _logger.LogInformation("Successfully removed DLL from AppInit_DLLs. New value: '{Value}'", newValue);
-
-            return ActionResult.Ok(entry, transaction.Id);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -143,46 +158,61 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
         try
         {
+            _logger.LogInformation("Adding DLL {DllPath} to AppInit_DLLs at {Path}", dllPath, registryPath);
+
+            // Pre-check key existence before creating transaction to avoid pending manifests on early failures.
+            using (var preCheckKey = Registry.LocalMachine.OpenSubKey(registryPath, writable: false))
+            {
+                if (preCheckKey == null)
+                {
+                    return ActionResult.Fail("Registry key not found or access denied", "ERR_KEY_NOT_FOUND");
+                }
+            }
+
             // Create backup transaction BEFORE making changes
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
 
-            _logger.LogInformation("Adding DLL {DllPath} to AppInit_DLLs at {Path}", dllPath, registryPath);
-
-            using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
-            if (key == null)
+            try
             {
-                return ActionResult.Fail("Registry key not found or access denied", "ERR_KEY_NOT_FOUND");
-            }
+                using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
+                if (key == null)
+                    throw new InvalidOperationException("Registry key not found or access denied");
 
-            // Read current value
-            var currentValue = key.GetValue("AppInit_DLLs")?.ToString() ?? "";
+                // Read current value
+                var currentValue = key.GetValue("AppInit_DLLs")?.ToString() ?? "";
 
-            // Parse into list
-            var dlls = ParseDllList(currentValue);
+                // Parse into list
+                var dlls = ParseDllList(currentValue);
 
-            // Check if already present
-            if (dlls.Any(d => string.Equals(d, dllPath, StringComparison.OrdinalIgnoreCase)))
-            {
-                _logger.LogInformation("DLL {DllPath} already in AppInit_DLLs list", dllPath);
+                // Check if already present
+                if (dlls.Any(d => AppInitDllParser.AreEquivalent(d, dllPath)))
+                {
+                    _logger.LogInformation("DLL {DllPath} already in AppInit_DLLs list", dllPath);
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                    entry.Status = EntryStatus.Enabled;
+                    return ActionResult.Ok(entry, transaction.Id);
+                }
+
+                // Add the DLL
+                dlls.Add(dllPath);
+
+                // Write back safely (quote paths with spaces)
+                var newValue = AppInitDllParser.Serialize(dlls);
+                key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
+
+                // Commit transaction
                 await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
                 entry.Status = EntryStatus.Enabled;
+                _logger.LogInformation("Successfully added DLL to AppInit_DLLs. New value: '{Value}'", newValue);
+
                 return ActionResult.Ok(entry, transaction.Id);
             }
-
-            // Add the DLL
-            dlls.Add(dllPath);
-
-            // Write back
-            var newValue = string.Join(" ", dlls);
-            key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
-
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-            entry.Status = EntryStatus.Enabled;
-            _logger.LogInformation("Successfully added DLL to AppInit_DLLs. New value: '{Value}'", newValue);
-
-            return ActionResult.Ok(entry, transaction.Id);
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -218,15 +248,13 @@ public sealed class AppInitActionStrategy : IActionStrategy
     /// Parses the AppInit_DLLs value into a list of DLL paths.
     /// Handles space, comma, and semicolon separators.
     /// </summary>
-    internal static List<string> ParseDllList(string value)
+    internal static List<string> ParseDllList(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return new List<string>();
+        return AppInitDllParser.Parse(value);
+    }
 
-        return value
-            .Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(d => d.Trim())
-            .Where(d => !string.IsNullOrEmpty(d))
-            .ToList();
+    internal static string SerializeDllList(IEnumerable<string> values)
+    {
+        return AppInitDllParser.Serialize(values);
     }
 }

@@ -41,58 +41,73 @@ public sealed class RegistryActionStrategy : IActionStrategy
 
         try
         {
-            // Create backup transaction
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
-
-            // Parse the source path to get hive and key
-            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
-
-            // Read the current value
-            using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
-            using var sourceKey = baseKey.OpenSubKey(keyPath, writable: true);
-
-            if (sourceKey == null)
-            {
-                return ActionResult.Fail($"Registry key not found: {entry.SourcePath}", "ERR_KEY_NOT_FOUND");
-            }
-
             if (entry.SourceName == null)
             {
                 return ActionResult.Fail("Entry has no source name", "ERR_NO_SOURCE_NAME");
             }
 
-            var value = sourceKey.GetValue(entry.SourceName);
-            if (value == null)
+            // Parse the source path to get hive and key
+            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
+
+            // Pre-check key/value before creating transaction to avoid pending manifests on early failures.
+            object value;
+            RegistryValueKind valueKind;
+            using (var precheckBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default))
+            using (var precheckSourceKey = precheckBaseKey.OpenSubKey(keyPath, writable: false))
             {
-                return ActionResult.Fail($"Registry value not found: {entry.SourceName}", "ERR_VALUE_NOT_FOUND");
+                if (precheckSourceKey == null)
+                {
+                    return ActionResult.Fail($"Registry key not found: {entry.SourcePath}", "ERR_KEY_NOT_FOUND");
+                }
+
+                value = precheckSourceKey.GetValue(entry.SourceName)!;
+                if (value == null)
+                {
+                    return ActionResult.Fail($"Registry value not found: {entry.SourceName}", "ERR_VALUE_NOT_FOUND");
+                }
+
+                valueKind = precheckSourceKey.GetValueKind(entry.SourceName);
             }
 
-            var valueKind = sourceKey.GetValueKind(entry.SourceName);
+            // Create backup transaction
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
 
-            // Create disabled key path (mirror structure)
-            var disabledKeyPath = $"{DisabledKeyPath}\\{keyPath}";
-            using var disabledBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
-            using var disabledKey = disabledBaseKey.CreateSubKey(disabledKeyPath, writable: true);
-
-            if (disabledKey == null)
+            try
             {
-                return ActionResult.Fail("Failed to create disabled key", "ERR_CREATE_KEY_FAILED");
+                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+                using var sourceKey = baseKey.OpenSubKey(keyPath, writable: true);
+
+                if (sourceKey == null)
+                    throw new InvalidOperationException($"Registry key not found: {entry.SourcePath}");
+
+                // Create disabled key path (mirror structure)
+                var disabledKeyPath = $"{DisabledKeyPath}\\{keyPath}";
+                using var disabledBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+                using var disabledKey = disabledBaseKey.CreateSubKey(disabledKeyPath, writable: true);
+
+                if (disabledKey == null)
+                    throw new InvalidOperationException("Failed to create disabled key");
+
+                // Move value to disabled key
+                disabledKey.SetValue(entry.SourceName, value, valueKind);
+
+                // Delete from original key
+                sourceKey.DeleteValue(entry.SourceName, throwOnMissingValue: false);
+
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                _logger.LogInformation("Disabled registry entry: {Name}", entry.DisplayName);
+
+                // Update entry status
+                entry.Status = EntryStatus.Disabled;
+                return ActionResult.Ok(entry, transaction.Id);
             }
-
-            // Move value to disabled key
-            disabledKey.SetValue(entry.SourceName, value, valueKind);
-
-            // Delete from original key
-            sourceKey.DeleteValue(entry.SourceName);
-
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-            _logger.LogInformation("Disabled registry entry: {Name}", entry.DisplayName);
-
-            // Update entry status
-            entry.Status = EntryStatus.Disabled;
-            return ActionResult.Ok(entry, transaction.Id);
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -177,28 +192,49 @@ public sealed class RegistryActionStrategy : IActionStrategy
 
         try
         {
+            if (entry.SourceName == null)
+            {
+                return ActionResult.Fail("Entry has no source name", "ERR_NO_SOURCE_NAME");
+            }
+
+            var sourceName = entry.SourceName;
+
+            // Pre-check key/value before creating transaction to avoid pending manifests on early failures.
+            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
+            using (var precheckBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default))
+            using (var precheckKey = precheckBaseKey.OpenSubKey(keyPath, writable: false))
+            {
+                if (precheckKey == null || precheckKey.GetValue(sourceName) == null)
+                {
+                    return ActionResult.Fail("Registry key/value not found", "ERR_NOT_FOUND");
+                }
+            }
+
             // Create backup transaction first
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
 
-            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
-
-            using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
-            using var key = baseKey.OpenSubKey(keyPath, writable: true);
-
-            if (key == null || entry.SourceName == null)
+            try
             {
-                return ActionResult.Fail("Registry key/value not found", "ERR_NOT_FOUND");
+                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+                using var key = baseKey.OpenSubKey(keyPath, writable: true);
+
+                if (key == null)
+                    throw new InvalidOperationException("Registry key not found");
+
+                // Delete the value
+                key.DeleteValue(sourceName, throwOnMissingValue: false);
+
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                _logger.LogInformation("Deleted registry entry: {Name}", entry.DisplayName);
+                return ActionResult.Ok(transactionId: transaction.Id);
             }
-
-            // Delete the value
-            key.DeleteValue(entry.SourceName, throwOnMissingValue: false);
-
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-            _logger.LogInformation("Deleted registry entry: {Name}", entry.DisplayName);
-
-            return ActionResult.Ok(transactionId: transaction.Id);
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {

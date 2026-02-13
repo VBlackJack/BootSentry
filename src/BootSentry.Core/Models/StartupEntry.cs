@@ -161,6 +161,11 @@ public class StartupEntry : INotifyPropertyChanged
     public string? ServiceStartType { get; set; }
 
     /// <summary>
+    /// For services: previous start type before disable (used for in-session re-enable).
+    /// </summary>
+    public string? PreviousServiceStartType { get; set; }
+
+    /// <summary>
     /// For services: the account the service runs under.
     /// </summary>
     public string? ServiceAccount { get; set; }

@@ -90,47 +90,65 @@ public sealed class WinlogonActionStrategy : IActionStrategy
 
         try
         {
+            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
+
+            // Pre-check key existence before creating transaction to avoid pending manifests.
+            using (var precheckBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default))
+            using (var precheckKey = precheckBaseKey.OpenSubKey(keyPath, writable: false))
+            {
+                if (precheckKey == null)
+                {
+                    return ActionResult.Fail($"Registry key not found: {entry.SourcePath}", "ERR_KEY_NOT_FOUND");
+                }
+            }
+
             // Create backup transaction first
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
 
-            var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
-
-            using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
-            using var key = baseKey.OpenSubKey(keyPath, writable: true);
-
-            if (key == null)
+            try
             {
-                return ActionResult.Fail($"Registry key not found: {entry.SourcePath}", "ERR_KEY_NOT_FOUND");
+                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+                using var key = baseKey.OpenSubKey(keyPath, writable: true);
+
+                if (key == null)
+                {
+                    throw new InvalidOperationException($"Registry key not found: {entry.SourcePath}");
+                }
+
+                // Check if this is a critical value that needs reset instead of delete
+                if (DefaultValues.TryGetValue(entry.SourceName, out var defaultValue))
+                {
+                    // Reset to Windows default instead of deleting
+                    _logger.LogInformation(
+                        "Resetting critical Winlogon value '{ValueName}' to default: {DefaultValue}",
+                        entry.SourceName, defaultValue);
+
+                    key.SetValue(entry.SourceName, defaultValue, RegistryValueKind.String);
+
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                    _logger.LogInformation("Successfully reset Winlogon entry: {Name}", entry.DisplayName);
+
+                    return ActionResult.Ok(transactionId: transaction.Id);
+                }
+                else
+                {
+                    // For non-critical values (GinaDLL, AppSetup, etc.), actually delete
+                    _logger.LogInformation("Deleting Winlogon value: {ValueName}", entry.SourceName);
+
+                    key.DeleteValue(entry.SourceName, throwOnMissingValue: false);
+
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                    _logger.LogInformation("Successfully deleted Winlogon entry: {Name}", entry.DisplayName);
+
+                    return ActionResult.Ok(transactionId: transaction.Id);
+                }
             }
-
-            // Check if this is a critical value that needs reset instead of delete
-            if (DefaultValues.TryGetValue(entry.SourceName, out var defaultValue))
+            catch
             {
-                // Reset to Windows default instead of deleting
-                _logger.LogInformation(
-                    "Resetting critical Winlogon value '{ValueName}' to default: {DefaultValue}",
-                    entry.SourceName, defaultValue);
-
-                key.SetValue(entry.SourceName, defaultValue, RegistryValueKind.String);
-
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-                _logger.LogInformation("Successfully reset Winlogon entry: {Name}", entry.DisplayName);
-
-                return ActionResult.Ok(transactionId: transaction.Id);
-            }
-            else
-            {
-                // For non-critical values (GinaDLL, AppSetup, etc.), actually delete
-                _logger.LogInformation("Deleting Winlogon value: {ValueName}", entry.SourceName);
-
-                key.DeleteValue(entry.SourceName, throwOnMissingValue: false);
-
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-                _logger.LogInformation("Successfully deleted Winlogon entry: {Name}", entry.DisplayName);
-
-                return ActionResult.Ok(transactionId: transaction.Id);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
             }
         }
         catch (UnauthorizedAccessException ex)

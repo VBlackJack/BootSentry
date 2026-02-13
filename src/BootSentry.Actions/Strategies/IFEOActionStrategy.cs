@@ -49,20 +49,23 @@ public sealed class IFEOActionStrategy : IActionStrategy
             if (string.IsNullOrEmpty(appName))
                 return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
 
+            // Pre-check source key/value before creating transaction to avoid pending manifests.
+            string debuggerValue;
+            using (var sourceKey = Registry.LocalMachine.OpenSubKey($@"{IFEOPath}\{appName}", false))
+            {
+                if (sourceKey == null)
+                    return ActionResult.Fail("IFEO key not found", "ERR_KEY_NOT_FOUND");
+
+                debuggerValue = sourceKey.GetValue("Debugger") as string ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(debuggerValue))
+                    return ActionResult.Fail("Debugger value not found", "ERR_VALUE_NOT_FOUND");
+            }
+
             // Start transaction
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
 
             try
             {
-                // Read current value
-                using var sourceKey = Registry.LocalMachine.OpenSubKey($@"{IFEOPath}\{appName}", false);
-                if (sourceKey == null)
-                    return ActionResult.Fail("IFEO key not found", "ERR_KEY_NOT_FOUND");
-
-                var debuggerValue = sourceKey.GetValue("Debugger") as string;
-                if (string.IsNullOrEmpty(debuggerValue))
-                    return ActionResult.Fail("Debugger value not found", "ERR_VALUE_NOT_FOUND");
-
                 // Create disabled key
                 using var disabledRoot = Registry.LocalMachine.CreateSubKey(DisabledIFEOPath);
                 using var disabledKey = disabledRoot.CreateSubKey(appName);
@@ -116,19 +119,22 @@ public sealed class IFEOActionStrategy : IActionStrategy
             if (string.IsNullOrEmpty(appName))
                 return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
 
+            // Pre-check backup value before creating transaction to avoid pending manifests.
+            string debuggerValue;
+            using (var disabledKey = Registry.LocalMachine.OpenSubKey($@"{DisabledIFEOPath}\{appName}", false))
+            {
+                if (disabledKey == null)
+                    return ActionResult.Fail("Backup not found", "ERR_BACKUP_NOT_FOUND");
+
+                debuggerValue = disabledKey.GetValue("Debugger") as string ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(debuggerValue))
+                    return ActionResult.Fail("Debugger value not found in backup", "ERR_VALUE_NOT_FOUND");
+            }
+
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
 
             try
             {
-                // Read from disabled location
-                using var disabledKey = Registry.LocalMachine.OpenSubKey($@"{DisabledIFEOPath}\{appName}", false);
-                if (disabledKey == null)
-                    return ActionResult.Fail("Backup not found", "ERR_BACKUP_NOT_FOUND");
-
-                var debuggerValue = disabledKey.GetValue("Debugger") as string;
-                if (string.IsNullOrEmpty(debuggerValue))
-                    return ActionResult.Fail("Debugger value not found in backup", "ERR_VALUE_NOT_FOUND");
-
                 // Restore to source
                 using var sourceKey = Registry.LocalMachine.CreateSubKey($@"{IFEOPath}\{appName}");
                 sourceKey.SetValue("Debugger", debuggerValue);
@@ -171,6 +177,16 @@ public sealed class IFEOActionStrategy : IActionStrategy
             var appName = ExtractAppName(entry.SourcePath);
             if (string.IsNullOrEmpty(appName))
                 return ActionResult.Fail("Unable to extract application name from source path", "ERR_INVALID_SOURCE");
+
+            // Pre-check source value before creating transaction to avoid pending manifests.
+            using (var precheckKey = Registry.LocalMachine.OpenSubKey($@"{IFEOPath}\{appName}", false))
+            {
+                if (precheckKey == null)
+                    return ActionResult.Fail("IFEO key not found", "ERR_KEY_NOT_FOUND");
+
+                if (precheckKey.GetValue("Debugger") is not string debugger || string.IsNullOrWhiteSpace(debugger))
+                    return ActionResult.Fail("Debugger value not found", "ERR_VALUE_NOT_FOUND");
+            }
 
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
 

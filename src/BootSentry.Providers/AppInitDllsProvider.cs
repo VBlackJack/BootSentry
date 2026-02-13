@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
+using BootSentry.Core.Parsing;
 
 namespace BootSentry.Providers;
 
@@ -68,8 +69,8 @@ public sealed class AppInitDllsProvider : IStartupProvider
             var appInitDlls = key.GetValue("AppInit_DLLs")?.ToString();
             if (string.IsNullOrWhiteSpace(appInitDlls)) return;
 
-            // AppInit_DLLs can contain multiple DLLs separated by space or comma
-            var dlls = appInitDlls.Split(new[] { ' ', ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            // Parse using a quote-aware parser to avoid breaking paths with spaces.
+            var dlls = AppInitDllParser.Parse(appInitDlls);
 
             foreach (var dll in dlls)
             {

@@ -149,18 +149,20 @@ public sealed class BrowserExtensionActionStrategy : IActionStrategy
         {
             var sourcePath = entry.SourcePath.ToLowerInvariant();
 
+            if (sourcePath.Contains("brave"))
+                return "Brave";
+            if (sourcePath.Contains("opera gx"))
+                return "Opera GX";
+            if (sourcePath.Contains("opera"))
+                return "Opera";
+            if (sourcePath.Contains("vivaldi"))
+                return "Vivaldi";
             if (sourcePath.Contains("chrome"))
                 return "Chrome";
             if (sourcePath.Contains("edge"))
                 return "Edge";
             if (sourcePath.Contains("firefox") || sourcePath.Contains("mozilla"))
                 return "Firefox";
-            if (sourcePath.Contains("brave"))
-                return "Chrome"; // Brave uses Chrome policies
-            if (sourcePath.Contains("opera"))
-                return "Chrome"; // Opera uses Chrome policies
-            if (sourcePath.Contains("vivaldi"))
-                return "Chrome"; // Vivaldi uses Chrome policies
         }
 
         return null;
@@ -178,10 +180,10 @@ public sealed class BrowserExtensionActionStrategy : IActionStrategy
             "chrome" => "Chrome",
             "edge" => "Edge",
             "firefox" => "Firefox",
-            "brave" => "Chrome",      // Brave uses Chrome policies
-            "opera" => "Chrome",      // Opera uses Chrome policies
-            "opera gx" => "Chrome",   // Opera GX uses Chrome policies
-            "vivaldi" => "Chrome",    // Vivaldi uses Chrome policies
+            "brave" => "Brave",
+            "opera" => "Opera",
+            "opera gx" => "Opera GX",
+            "vivaldi" => "Vivaldi",
             _ => null
         };
     }

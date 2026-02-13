@@ -15,6 +15,9 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
     // Chromium-based browsers blocklist paths
     private const string ChromeBlocklistPath = @"SOFTWARE\Policies\Google\Chrome\ExtensionInstallBlocklist";
     private const string EdgeBlocklistPath = @"SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallBlocklist";
+    private const string BraveBlocklistPath = @"SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallBlocklist";
+    private const string OperaBlocklistPath = @"SOFTWARE\Policies\Opera Software\Opera\ExtensionInstallBlocklist";
+    private const string VivaldiBlocklistPath = @"SOFTWARE\Policies\Vivaldi\ExtensionInstallBlocklist";
 
     // Firefox extensions policy path
     private const string FirefoxExtensionsPath = @"SOFTWARE\Policies\Mozilla\Firefox\Extensions";
@@ -42,6 +45,19 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
                 case "edge":
                 case "microsoft edge":
                     ToggleChromiumExtension(extensionId, EdgeBlocklistPath, shouldEnable);
+                    break;
+
+                case "brave":
+                    ToggleChromiumExtension(extensionId, BraveBlocklistPath, shouldEnable);
+                    break;
+
+                case "opera":
+                case "opera gx":
+                    ToggleChromiumExtension(extensionId, OperaBlocklistPath, shouldEnable);
+                    break;
+
+                case "vivaldi":
+                    ToggleChromiumExtension(extensionId, VivaldiBlocklistPath, shouldEnable);
                     break;
 
                 case "firefox":
@@ -80,6 +96,9 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
             {
                 "chrome" or "google chrome" => IsChromiumExtensionBlocked(extensionId, ChromeBlocklistPath),
                 "edge" or "microsoft edge" => IsChromiumExtensionBlocked(extensionId, EdgeBlocklistPath),
+                "brave" => IsChromiumExtensionBlocked(extensionId, BraveBlocklistPath),
+                "opera" or "opera gx" => IsChromiumExtensionBlocked(extensionId, OperaBlocklistPath),
+                "vivaldi" => IsChromiumExtensionBlocked(extensionId, VivaldiBlocklistPath),
                 "firefox" or "mozilla firefox" => IsFirefoxExtensionBlocked(extensionId),
                 _ => false
             };

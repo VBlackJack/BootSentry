@@ -53,23 +53,37 @@ public sealed class ServiceActionStrategy : IActionStrategy
 
         try
         {
+            // Get current start type for backup
+            var currentStartConfig = GetServiceStartConfiguration(serviceName);
+            if (currentStartConfig == null)
+            {
+                return ActionResult.Fail($"Service not found: {serviceName}", "ERR_SERVICE_NOT_FOUND");
+            }
+
             // Create backup transaction (stores original start type)
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
 
-            // Get current start type for backup
-            var currentStartType = GetServiceStartType(serviceName);
+            try
+            {
+                // Change start type to Disabled
+                SetServiceStartConfiguration(serviceName, ServiceStartMode.Disabled);
 
-            // Change start type to Disabled
-            SetServiceStartType(serviceName, ServiceStartMode.Disabled);
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
 
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                var previousStartType = ToDisplayStartType(currentStartConfig.Value);
+                _logger.LogInformation("Disabled service: {Name} (was {StartType})", entry.DisplayName, previousStartType);
 
-            _logger.LogInformation("Disabled service: {Name} (was {StartType})", entry.DisplayName, currentStartType);
-
-            entry.Status = EntryStatus.Disabled;
-            entry.ServiceStartType = "Disabled";
-            return ActionResult.Ok(entry, transaction.Id);
+                entry.PreviousServiceStartType = previousStartType;
+                entry.Status = EntryStatus.Disabled;
+                entry.ServiceStartType = "Disabled";
+                return ActionResult.Ok(entry, transaction.Id);
+            }
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -98,13 +112,18 @@ public sealed class ServiceActionStrategy : IActionStrategy
 
         try
         {
-            // Set start type to Automatic
-            SetServiceStartType(serviceName, ServiceStartMode.Automatic);
+            var targetStartType = entry.PreviousServiceStartType ?? "Automatic";
+            var targetConfig = ParseStartConfiguration(targetStartType);
 
-            _logger.LogInformation("Enabled service: {Name}", entry.DisplayName);
+            // Restore previous start type when available.
+            SetServiceStartConfiguration(serviceName, targetConfig.Mode, targetConfig.IsDelayedAutomatic);
+
+            var appliedStartType = ToDisplayStartType(targetConfig);
+            _logger.LogInformation("Enabled service: {Name} (start type: {StartType})", entry.DisplayName, appliedStartType);
 
             entry.Status = EntryStatus.Enabled;
-            entry.ServiceStartType = "Automatic";
+            entry.ServiceStartType = appliedStartType;
+            entry.PreviousServiceStartType = null;
             return ActionResult.Ok(entry);
         }
         catch (UnauthorizedAccessException ex)
@@ -127,7 +146,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
             "ERR_NOT_SUPPORTED"));
     }
 
-    private static ServiceStartMode? GetServiceStartType(string serviceName)
+    private static ServiceStartConfiguration? GetServiceStartConfiguration(string serviceName)
     {
         try
         {
@@ -139,7 +158,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
             if (start == null)
                 return null;
 
-            return Convert.ToInt32(start) switch
+            var startMode = Convert.ToInt32(start) switch
             {
                 0 => ServiceStartMode.Boot,
                 1 => ServiceStartMode.System,
@@ -148,6 +167,18 @@ public sealed class ServiceActionStrategy : IActionStrategy
                 4 => ServiceStartMode.Disabled,
                 _ => null
             };
+
+            if (startMode == null)
+                return null;
+
+            var isDelayed = false;
+            if (startMode == ServiceStartMode.Automatic)
+            {
+                var delayed = key.GetValue("DelayedAutostart");
+                isDelayed = delayed != null && Convert.ToInt32(delayed) == 1;
+            }
+
+            return new ServiceStartConfiguration(startMode.Value, isDelayed);
         }
         catch
         {
@@ -155,7 +186,10 @@ public sealed class ServiceActionStrategy : IActionStrategy
         }
     }
 
-    private static void SetServiceStartType(string serviceName, ServiceStartMode startMode)
+    private static void SetServiceStartConfiguration(
+        string serviceName,
+        ServiceStartMode startMode,
+        bool delayedAutomatic = false)
     {
         using var key = Registry.LocalMachine.OpenSubKey(
             $@"SYSTEM\CurrentControlSet\Services\{serviceName}",
@@ -177,5 +211,48 @@ public sealed class ServiceActionStrategy : IActionStrategy
         };
 
         key.SetValue("Start", startValue, RegistryValueKind.DWord);
+
+        if (startMode == ServiceStartMode.Automatic)
+        {
+            key.SetValue("DelayedAutostart", delayedAutomatic ? 1 : 0, RegistryValueKind.DWord);
+        }
+        else if (key.GetValueNames().Contains("DelayedAutostart", StringComparer.OrdinalIgnoreCase))
+        {
+            key.DeleteValue("DelayedAutostart", false);
+        }
     }
+
+    private static ServiceStartConfiguration ParseStartConfiguration(string value)
+    {
+        if (value.Equals("Automatic (Delayed)", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: true);
+
+        if (value.Equals("Automatic", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: false);
+
+        if (value.Equals("Manual", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.Manual, isDelayedAutomatic: false);
+
+        if (value.Equals("Disabled", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.Disabled, isDelayedAutomatic: false);
+
+        if (value.Equals("Boot", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.Boot, isDelayedAutomatic: false);
+
+        if (value.Equals("System", StringComparison.OrdinalIgnoreCase))
+            return new ServiceStartConfiguration(ServiceStartMode.System, isDelayedAutomatic: false);
+
+        return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: false);
+    }
+
+    private static string ToDisplayStartType(ServiceStartConfiguration configuration)
+    {
+        if (configuration.Mode == ServiceStartMode.Automatic && configuration.IsDelayedAutomatic)
+            return "Automatic (Delayed)";
+
+        return configuration.Mode.ToString();
+    }
+
+    private readonly record struct ServiceStartConfiguration(ServiceStartMode Mode, bool IsDelayedAutomatic);
 }

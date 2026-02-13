@@ -99,6 +99,13 @@ public sealed class TransactionManager : ITransactionManager
             return ActionResult.Fail("This transaction cannot be restored", "ERR_CANNOT_RESTORE");
         }
 
+        if (manifest.Status != TransactionStatus.Committed)
+        {
+            return ActionResult.Fail(
+                $"Transaction is not in a restorable state: {manifest.Status}",
+                "ERR_INVALID_TRANSACTION_STATE");
+        }
+
         _logger.LogInformation("Rolling back transaction: {Id}", transactionId);
 
         try
@@ -167,21 +174,23 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.RegistryRunOnce:
             case EntryType.Winlogon:
             case EntryType.AppInitDlls:
+            case EntryType.IFEO:
                 // Backup registry value
-                if (!string.IsNullOrEmpty(entry.CommandLineRaw))
+                if (!string.IsNullOrWhiteSpace(entry.SourceName))
                 {
                     var (hive, path) = ParseRegistryPath(entry.SourcePath);
                     using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
                     using var key = baseKey.OpenSubKey(path);
 
-                    if (key != null && entry.SourceName != null)
+                    if (key != null)
                     {
-                        var value = key.GetValue(entry.SourceName);
-                        var valueKind = key.GetValueKind(entry.SourceName);
-
-                        var backupPath = await _storage.BackupRegistryValueAsync(
-                            transactionId, entry.SourcePath, entry.SourceName, value!, valueKind, cancellationToken);
-                        payloadFiles.Add(backupPath);
+                        await BackupRegistryValueIfPresentAsync(
+                            payloadFiles,
+                            transactionId,
+                            key,
+                            entry.SourcePath,
+                            entry.SourceName,
+                            cancellationToken);
                     }
                 }
                 break;
@@ -201,9 +210,36 @@ public sealed class TransactionManager : ITransactionManager
                 break;
 
             case EntryType.ScheduledTask:
+                // Task state restore is handled by action strategy.
+                break;
+
             case EntryType.Service:
-                // For tasks and services, we store the state in the manifest
-                // (enabled/disabled status will be stored in manifest.OriginalValue)
+                if (!string.IsNullOrWhiteSpace(entry.SourceName))
+                {
+                    var serviceRegistryPath = $@"HKLM\SYSTEM\CurrentControlSet\Services\{entry.SourceName}";
+                    using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{entry.SourceName}");
+
+                    if (serviceKey != null)
+                    {
+                        // Start is always required for service state restore.
+                        await BackupRegistryValueIfPresentAsync(
+                            payloadFiles,
+                            transactionId,
+                            serviceKey,
+                            serviceRegistryPath,
+                            "Start",
+                            cancellationToken);
+
+                        // DelayedAutostart is optional but needed to restore "Automatic (Delayed)".
+                        await BackupRegistryValueIfPresentAsync(
+                            payloadFiles,
+                            transactionId,
+                            serviceKey,
+                            serviceRegistryPath,
+                            "DelayedAutostart",
+                            cancellationToken);
+                    }
+                }
                 break;
         }
 
@@ -218,7 +254,9 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.RegistryRunOnce:
             case EntryType.Winlogon:
             case EntryType.AppInitDlls:
-                await RestoreRegistryValueAsync(manifest, cancellationToken);
+            case EntryType.IFEO:
+            case EntryType.Service:
+                await RestoreRegistryValuesAsync(manifest, cancellationToken);
                 break;
 
             case EntryType.StartupFolder:
@@ -228,41 +266,40 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.ScheduledTask:
                 // Handled by action strategy
                 break;
-
-            case EntryType.Service:
-                // Handled by action strategy
-                break;
         }
     }
 
-    private async Task RestoreRegistryValueAsync(TransactionManifest manifest, CancellationToken cancellationToken)
+    private async Task RestoreRegistryValuesAsync(TransactionManifest manifest, CancellationToken cancellationToken)
     {
         if (manifest.PayloadFiles.Count == 0)
         {
             throw new InvalidOperationException("No backup data found for registry restore");
         }
 
-        var backupFile = manifest.PayloadFiles[0];
-        var json = await File.ReadAllTextAsync(backupFile, cancellationToken);
-        var backupData = JsonSerializer.Deserialize<JsonElement>(json);
-
-        var keyPath = backupData.GetProperty("keyPath").GetString()!;
-        var valueName = backupData.GetProperty("valueName").GetString()!;
-        var value = backupData.GetProperty("value").GetString();
-        var valueKindStr = backupData.GetProperty("valueKind").GetString()!;
-        var valueKind = Enum.Parse<RegistryValueKind>(valueKindStr);
-
-        var (hive, path) = ParseRegistryPath(keyPath);
-        using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
-        using var key = baseKey.OpenSubKey(path, writable: true);
-
-        if (key == null)
+        foreach (var backupFile in manifest.PayloadFiles)
         {
-            throw new InvalidOperationException($"Registry key not found: {keyPath}");
-        }
+            var json = await File.ReadAllTextAsync(backupFile, cancellationToken);
+            var backupData = JsonSerializer.Deserialize<JsonElement>(json);
 
-        key.SetValue(valueName, value!, valueKind);
-        _logger.LogInformation("Restored registry value: {Key}\\{Value}", keyPath, valueName);
+            var keyPath = backupData.GetProperty("keyPath").GetString()!;
+            var valueName = backupData.GetProperty("valueName").GetString()!;
+            var value = backupData.GetProperty("value").GetString();
+            var valueKindStr = backupData.GetProperty("valueKind").GetString()!;
+            var valueKind = Enum.Parse<RegistryValueKind>(valueKindStr);
+
+            var (hive, path) = ParseRegistryPath(keyPath);
+            using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+            using var key = baseKey.OpenSubKey(path, writable: true)
+                ?? baseKey.CreateSubKey(path, writable: true);
+
+            if (key == null)
+            {
+                throw new InvalidOperationException($"Registry key not found: {keyPath}");
+            }
+
+            key.SetValue(valueName, ConvertBackupValue(value, valueKind), valueKind);
+            _logger.LogInformation("Restored registry value: {Key}\\{Value}", keyPath, valueName);
+        }
     }
 
     private async Task RestoreStartupFileAsync(TransactionManifest manifest, CancellationToken cancellationToken)
@@ -350,8 +387,43 @@ public sealed class TransactionManager : ITransactionManager
             EntryDisplayName = manifest.EntryDisplayName,
             EntrySnapshotBefore = snapshotEntry,
             PayloadPaths = manifest.PayloadFiles,
-            CanRestore = manifest.CanRestore && manifest.Status != TransactionStatus.RolledBack,
+            CanRestore = manifest.CanRestore && manifest.Status == TransactionStatus.Committed,
             Notes = manifest.Notes
+        };
+    }
+
+    private async Task BackupRegistryValueIfPresentAsync(
+        ICollection<string> payloadFiles,
+        string transactionId,
+        RegistryKey key,
+        string keyPath,
+        string valueName,
+        CancellationToken cancellationToken)
+    {
+        if (!key.GetValueNames().Contains(valueName, StringComparer.OrdinalIgnoreCase))
+            return;
+
+        var value = key.GetValue(valueName);
+        var valueKind = key.GetValueKind(valueName);
+
+        var backupPath = await _storage.BackupRegistryValueAsync(
+            transactionId,
+            keyPath,
+            valueName,
+            value ?? string.Empty,
+            valueKind,
+            cancellationToken);
+
+        payloadFiles.Add(backupPath);
+    }
+
+    private static object ConvertBackupValue(string? value, RegistryValueKind valueKind)
+    {
+        return valueKind switch
+        {
+            RegistryValueKind.DWord => int.TryParse(value, out var dwordValue) ? dwordValue : 0,
+            RegistryValueKind.QWord => long.TryParse(value, out var qwordValue) ? qwordValue : 0L,
+            _ => value ?? string.Empty
         };
     }
 }

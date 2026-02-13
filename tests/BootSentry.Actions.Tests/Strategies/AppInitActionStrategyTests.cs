@@ -97,6 +97,29 @@ public class AppInitActionStrategyTests
     }
 
     [Fact]
+    public void ParseDllList_WithQuotedPathsContainingSpaces_PreservesEachPath()
+    {
+        var input = "\"C:\\Program Files\\Vendor A\\A.dll\" \"C:\\Program Files\\Vendor B\\B.dll\"";
+
+        var result = AppInitActionStrategy.ParseDllList(input);
+
+        result.Should().HaveCount(2);
+        result[0].Should().Be(@"C:\Program Files\Vendor A\A.dll");
+        result[1].Should().Be(@"C:\Program Files\Vendor B\B.dll");
+    }
+
+    [Fact]
+    public void ParseDllList_WithSingleUnquotedPathContainingSpaces_DoesNotSplitPath()
+    {
+        var input = @"C:\Program Files\Vendor A\A.dll";
+
+        var result = AppInitActionStrategy.ParseDllList(input);
+
+        result.Should().HaveCount(1);
+        result[0].Should().Be(input);
+    }
+
+    [Fact]
     public void ParseDllList_WithEmptyString_ReturnsEmptyList()
     {
         var result = AppInitActionStrategy.ParseDllList("");
@@ -160,6 +183,20 @@ public class AppInitActionStrategyTests
         var result = string.Join(" ", dlls);
 
         result.Should().Be("A.dll C.dll");
+    }
+
+    [Fact]
+    public void SerializeDllList_WithPathsContainingSpaces_AddsQuotes()
+    {
+        var input = new[]
+        {
+            @"C:\Program Files\Vendor A\A.dll",
+            @"C:\Tools\B.dll"
+        };
+
+        var result = AppInitActionStrategy.SerializeDllList(input);
+
+        result.Should().Be("\"C:\\Program Files\\Vendor A\\A.dll\" C:\\Tools\\B.dll");
     }
 
     #endregion

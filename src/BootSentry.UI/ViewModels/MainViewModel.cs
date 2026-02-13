@@ -1574,8 +1574,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            // Get the latest transaction
-            var transactions = await _transactionManager.GetTransactionsAsync(limit: 1);
+            // Find the latest transaction that is actually restorable.
+            var transactions = await _transactionManager.GetTransactionsAsync(limit: 100);
             var lastTransaction = transactions.FirstOrDefault(t => t.CanRestore);
 
             if (lastTransaction == null)

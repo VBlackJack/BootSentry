@@ -155,6 +155,7 @@ public sealed class ServiceProvider : IStartupProvider
             Status = startType == "Disabled" ? EntryStatus.Disabled : EntryStatus.Enabled,
             ServiceImagePath = imagePath,
             ServiceStartType = startType,
+            PreviousServiceStartType = startType,
             ServiceAccount = serviceAccount,
             IsProtected = isProtected || isMicrosoftService,
             ProtectionReason = isProtected ? "Service système critique" : (isMicrosoftService ? "Service Microsoft" : null)
