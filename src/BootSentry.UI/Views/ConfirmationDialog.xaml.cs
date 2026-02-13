@@ -182,18 +182,25 @@ public partial class ConfirmationDialog : Window
 
     private async void CloseWithResult(bool result)
     {
-        if (_isClosing) return;
-        _isClosing = true;
-
-        DialogResult = result;
-
-        if (!ThemeService.ShouldReduceMotion)
+        try
         {
-            var storyboard = (Storyboard)Resources["HideAnimation"];
-            storyboard.Begin(this);
-            await Task.Delay(150);
-        }
+            if (_isClosing) return;
+            _isClosing = true;
 
-        Close();
+            DialogResult = result;
+
+            if (!ThemeService.ShouldReduceMotion)
+            {
+                var storyboard = (Storyboard)Resources["HideAnimation"];
+                storyboard.Begin(this);
+                await Task.Delay(150);
+            }
+
+            Close();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in CloseWithResult: {ex}");
+        }
     }
 }

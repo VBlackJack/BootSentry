@@ -62,7 +62,7 @@ public sealed class IFEOActionStrategy : IActionStrategy
             }
 
             // Start transaction
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -84,14 +84,14 @@ public sealed class IFEOActionStrategy : IActionStrategy
                 }
 
                 entry.Status = EntryStatus.Disabled;
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Disabled IFEO entry for {App}", appName);
                 return ActionResult.Ok(entry, transaction.Id);
             }
             catch (Exception)
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
@@ -131,7 +131,7 @@ public sealed class IFEOActionStrategy : IActionStrategy
                     return ActionResult.Fail("Debugger value not found in backup", "ERR_VALUE_NOT_FOUND");
             }
 
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -143,14 +143,14 @@ public sealed class IFEOActionStrategy : IActionStrategy
                 Registry.LocalMachine.DeleteSubKey($@"{DisabledIFEOPath}\{appName}", false);
 
                 entry.Status = EntryStatus.Enabled;
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Enabled IFEO entry for {App}", appName);
                 return ActionResult.Ok(entry, transaction.Id);
             }
             catch (Exception)
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
@@ -188,7 +188,7 @@ public sealed class IFEOActionStrategy : IActionStrategy
                     return ActionResult.Fail("Debugger value not found", "ERR_VALUE_NOT_FOUND");
             }
 
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -205,14 +205,14 @@ public sealed class IFEOActionStrategy : IActionStrategy
                     }
                 }
 
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Deleted IFEO entry for {App}", appName);
                 return ActionResult.Ok(transactionId: transaction.Id);
             }
             catch (Exception)
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using BootSentry.Core;
 using BootSentry.Core.Services;
 using BootSentry.UI.Resources;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,7 @@ public class TrayIconService : IDisposable
 
         _notifyIcon = new NotifyIcon
         {
-            Text = "BootSentry",
+            Text = Constants.AppName,
             Visible = false,
             ContextMenuStrip = CreateContextMenu()
         };

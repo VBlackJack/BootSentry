@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using BootSentry.Core;
 using BootSentry.Core.Interfaces;
 
 namespace BootSentry.Security;
@@ -8,7 +9,7 @@ namespace BootSentry.Security;
 /// </summary>
 public sealed class HashCalculator : IHashCalculator
 {
-    private const int BufferSize = 1024 * 1024; // 1 MB buffer
+    private const int BufferSize = Constants.Security.HashBufferSize;
 
     /// <inheritdoc/>
     public async Task<string> CalculateSha256Async(string filePath, CancellationToken cancellationToken = default)
@@ -24,7 +25,7 @@ public sealed class HashCalculator : IHashCalculator
             BufferSize,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken);
+        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
@@ -42,7 +43,7 @@ public sealed class HashCalculator : IHashCalculator
             BufferSize,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-        var hash = await MD5.HashDataAsync(stream, cancellationToken);
+        var hash = await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

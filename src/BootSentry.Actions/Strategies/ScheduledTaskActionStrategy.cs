@@ -74,7 +74,7 @@ public sealed class ScheduledTaskActionStrategy : IActionStrategy
                 _logger.LogError(ex, "Error disabling scheduled task");
                 return ActionResult.Fail(ex.Message, "ERR_DISABLE_FAILED");
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
@@ -121,7 +121,7 @@ public sealed class ScheduledTaskActionStrategy : IActionStrategy
                 _logger.LogError(ex, "Error enabling scheduled task");
                 return ActionResult.Fail(ex.Message, "ERR_ENABLE_FAILED");
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<ActionResult> DeleteAsync(StartupEntry entry, CancellationToken cancellationToken = default)

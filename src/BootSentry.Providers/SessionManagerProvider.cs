@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Providers;
@@ -48,7 +49,7 @@ public sealed class SessionManagerProvider : IStartupProvider
         {
             cancellationToken.ThrowIfCancellationRequested();
             ScanBootExecute(entries);
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} Session Manager entries", entries.Count);
         return entries;
@@ -111,7 +112,7 @@ public sealed class SessionManagerProvider : IStartupProvider
             Status = EntryStatus.Enabled,
             RiskLevel = isSafe ? RiskLevel.Safe : RiskLevel.Critical,
             IsProtected = true,
-            ProtectionReason = "Entrée système critique - modification risquée"
+            ProtectionReason = Localize.Get("ProviderSessionCritical")
         };
 
         if (fileExists)
@@ -133,7 +134,7 @@ public sealed class SessionManagerProvider : IStartupProvider
 
         if (!isSafe)
         {
-            entry.Notes = "BootExecute non standard détecté - vérifiez cette entrée";
+            entry.Notes = Localize.Get("ProviderSessionNonStandard");
         }
 
         return entry;

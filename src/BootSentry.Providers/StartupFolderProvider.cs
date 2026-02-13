@@ -39,7 +39,7 @@ public sealed class StartupFolderProvider : IStartupProvider
         var userStartup = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
         if (Directory.Exists(userStartup))
         {
-            var userEntries = await ScanFolderAsync(userStartup, EntryScope.User, cancellationToken);
+            var userEntries = await ScanFolderAsync(userStartup, EntryScope.User, cancellationToken).ConfigureAwait(false);
             entries.AddRange(userEntries);
         }
 
@@ -47,7 +47,7 @@ public sealed class StartupFolderProvider : IStartupProvider
         var commonStartup = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup);
         if (Directory.Exists(commonStartup))
         {
-            var commonEntries = await ScanFolderAsync(commonStartup, EntryScope.Machine, cancellationToken);
+            var commonEntries = await ScanFolderAsync(commonStartup, EntryScope.Machine, cancellationToken).ConfigureAwait(false);
             entries.AddRange(commonEntries);
         }
 
@@ -72,7 +72,7 @@ public sealed class StartupFolderProvider : IStartupProvider
 
                 try
                 {
-                    var entry = await CreateEntryFromFileAsync(filePath, folderPath, scope, cancellationToken);
+                    var entry = await CreateEntryFromFileAsync(filePath, folderPath, scope, cancellationToken).ConfigureAwait(false);
                     if (entry != null)
                         entries.Add(entry);
                 }
@@ -153,7 +153,7 @@ public sealed class StartupFolderProvider : IStartupProvider
         // Get file metadata if target exists
         if (fileExists && targetPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;
@@ -270,7 +270,7 @@ public sealed class StartupFolderProvider : IStartupProvider
             // Check signature if verifier is available
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
 
                 if (!string.IsNullOrEmpty(sigInfo.SignerName))

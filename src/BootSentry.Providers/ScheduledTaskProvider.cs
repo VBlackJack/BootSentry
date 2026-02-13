@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32.TaskScheduler;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 using BootSentry.Core.Parsing;
 using Task = System.Threading.Tasks.Task;
@@ -56,7 +57,7 @@ public sealed class ScheduledTaskProvider : IStartupProvider
             {
                 _logger.LogError(ex, "Error scanning scheduled tasks");
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} scheduled task entries", entries.Count);
         return entries;
@@ -205,15 +206,15 @@ public sealed class ScheduledTaskProvider : IStartupProvider
         {
             var desc = trigger.TriggerType switch
             {
-                TaskTriggerType.Boot => "Au démarrage",
-                TaskTriggerType.Logon => "À l'ouverture de session",
-                TaskTriggerType.SessionStateChange => "Changement de session",
-                TaskTriggerType.Idle => "Au repos",
-                TaskTriggerType.Event => "Sur événement",
-                TaskTriggerType.Time => "Programmé",
-                TaskTriggerType.Daily => "Quotidien",
-                TaskTriggerType.Weekly => "Hebdomadaire",
-                TaskTriggerType.Monthly => "Mensuel",
+                TaskTriggerType.Boot => Localize.Get("TriggerAtStartup"),
+                TaskTriggerType.Logon => Localize.Get("TriggerAtLogon"),
+                TaskTriggerType.SessionStateChange => Localize.Get("TriggerSessionChange"),
+                TaskTriggerType.Idle => Localize.Get("TriggerOnIdle"),
+                TaskTriggerType.Event => Localize.Get("TriggerOnEvent"),
+                TaskTriggerType.Time => Localize.Get("TriggerCustom"),
+                TaskTriggerType.Daily => Localize.Get("TriggerDaily"),
+                TaskTriggerType.Weekly => Localize.Get("TriggerWeekly"),
+                TaskTriggerType.Monthly => Localize.Get("TriggerMonthly"),
                 _ => trigger.TriggerType.ToString()
             };
             descriptions.Add(desc);

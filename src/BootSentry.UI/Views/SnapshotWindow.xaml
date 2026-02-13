@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:BootSentry.UI.Views"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
-        Title="BootSentry Snapshots" Height="700" Width="1000"
+        Title="{res:Localize SnapshotWindowTitle}" Height="700" Width="1000"
         WindowStartupLocation="CenterOwner"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -18,7 +19,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Title="System Snapshots" Grid.Row="0"/>
+        <ui:TitleBar Title="{res:Localize SnapshotTitle}" Grid.Row="0"/>
 
         <local:SnapshotManagerView Grid.Row="1"/>
     </Grid>

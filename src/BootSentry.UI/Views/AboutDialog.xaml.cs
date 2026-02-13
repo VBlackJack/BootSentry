@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using BootSentry.Core;
 using BootSentry.Core.Services;
+using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
 
 namespace BootSentry.UI.Views;
@@ -44,7 +46,7 @@ public partial class AboutDialog : Window
 
     private void LoadInfo()
     {
-        VersionText.Text = $"Version {UpdateChecker.CurrentVersion}";
+        VersionText.Text = Strings.Format("AboutVersion", UpdateChecker.CurrentVersion);
         DotNetVersionText.Text = Environment.Version.ToString();
         OsVersionText.Text = Environment.OSVersion.ToString();
     }
@@ -53,7 +55,7 @@ public partial class AboutDialog : Window
     {
         try
         {
-            Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry")
+            Process.Start(new ProcessStartInfo(Constants.Urls.GitHubRepository)
             {
                 UseShellExecute = true
             });
@@ -68,7 +70,7 @@ public partial class AboutDialog : Window
     {
         try
         {
-            Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry/blob/main/LICENSE")
+            Process.Start(new ProcessStartInfo(Constants.Urls.GitHubLicense)
             {
                 UseShellExecute = true
             });

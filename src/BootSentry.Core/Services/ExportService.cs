@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Core.Services;
@@ -14,7 +15,7 @@ public delegate object? KnowledgeFinder(string? name, string? executable, string
 /// <summary>
 /// Service for exporting startup entries to various formats.
 /// </summary>
-public class ExportService
+public class ExportService : IExportService
 {
     private readonly KnowledgeFinder? _knowledgeFinder;
 
@@ -157,7 +158,7 @@ public class ExportService
             _ => throw new ArgumentException($"Unsupported format: {format}")
         };
 
-        await File.WriteAllTextAsync(filePath, content, Encoding.UTF8, cancellationToken);
+        await File.WriteAllTextAsync(filePath, content, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
     }
 
     private object CreateExportEntry(StartupEntry entry, ExportOptions options)
@@ -255,10 +256,30 @@ public class ExportService
         if (string.IsNullOrEmpty(value))
             return "\"\"";
 
+        value = NeutralizeCsvFormula(value);
+
         // If contains comma, quote, or newline, wrap in quotes and escape existing quotes
         if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
         {
             return $"\"{value.Replace("\"", "\"\"")}\"";
+        }
+
+        return value;
+    }
+
+    private static string NeutralizeCsvFormula(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        var trimmed = value.TrimStart();
+        if (trimmed.Length == 0)
+            return value;
+
+        var first = trimmed[0];
+        if (first is '=' or '+' or '-' or '@')
+        {
+            return $"'{value}";
         }
 
         return value;
@@ -279,11 +300,11 @@ public class ExportService
         {
             // 1. Export entries (anonymized)
             var entriesJson = ExportToJson(entries, new ExportOptions { Anonymize = true, IncludeDetails = true });
-            await File.WriteAllTextAsync(Path.Combine(tempDir, "entries.json"), entriesJson, cancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "entries.json"), entriesJson, cancellationToken).ConfigureAwait(false);
 
             // 2. System information
             var systemInfo = GetSystemInfo();
-            await File.WriteAllTextAsync(Path.Combine(tempDir, "system_info.txt"), systemInfo, cancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "system_info.txt"), systemInfo, cancellationToken).ConfigureAwait(false);
 
             // 3. Copy recent logs
             var logsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BootSentry", "Logs");
@@ -303,7 +324,10 @@ public class ExportService
                         var destPath = Path.Combine(diagLogsDir, Path.GetFileName(logFile));
                         File.Copy(logFile, destPath, overwrite: true);
                     }
-                    catch { }
+                    catch (IOException)
+                    {
+                        // Log file may be locked by the logging framework
+                    }
                 }
             }
 
@@ -326,7 +350,10 @@ public class ExportService
                         var destPath = Path.Combine(diagBackupsDir, $"manifest_{i++}.json");
                         File.Copy(manifest, destPath, overwrite: true);
                     }
-                    catch { }
+                    catch (IOException)
+                    {
+                        // Manifest file may be locked or inaccessible
+                    }
                 }
             }
 
@@ -338,7 +365,10 @@ public class ExportService
                 {
                     File.Copy(settingsFile, Path.Combine(tempDir, "settings.json"), overwrite: true);
                 }
-                catch { }
+                catch (IOException)
+                {
+                    // Settings file may be locked
+                }
             }
 
             // Create ZIP
@@ -354,7 +384,10 @@ public class ExportService
             {
                 Directory.Delete(tempDir, recursive: true);
             }
-            catch { }
+            catch (IOException)
+            {
+                // Temp directory cleanup is best-effort
+            }
         }
     }
 
@@ -383,7 +416,7 @@ public class ExportService
             sb.AppendLine($"Working Set: {process.WorkingSet64 / 1024 / 1024} MB");
             sb.AppendLine($"Private Memory: {process.PrivateMemorySize64 / 1024 / 1024} MB");
         }
-        catch
+        catch (InvalidOperationException)
         {
             sb.AppendLine("(Unable to retrieve memory info)");
         }

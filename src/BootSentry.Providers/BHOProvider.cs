@@ -40,7 +40,7 @@ public sealed class BHOProvider : IStartupProvider
             cancellationToken.ThrowIfCancellationRequested();
             ScanLocation(Registry.LocalMachine, BHOPath, EntryScope.Machine, entries, cancellationToken);
             ScanLocation(Registry.CurrentUser, BHOPath, EntryScope.User, entries, cancellationToken);
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} BHO entries", entries.Count);
         return entries;

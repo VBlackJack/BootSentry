@@ -1,14 +1,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using BootSentry.Actions;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Helpers;
 using BootSentry.Core.Interfaces;
@@ -58,6 +57,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly VirusTotalService _virusTotalService;
     private readonly ToastService _toastService;
     private readonly SettingsService _settingsService;
+    private readonly IDialogService _dialogService;
+    private readonly IProcessLauncher _processLauncher;
+    private readonly IClipboardService _clipboardService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     // Smart Background Scan
@@ -190,6 +192,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ToastService toastService,
         SettingsService settingsService,
         VirusTotalService virusTotalService,
+        IDialogService dialogService,
+        IProcessLauncher processLauncher,
+        IClipboardService clipboardService,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -203,6 +208,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _toastService = toastService;
         _settingsService = settingsService;
         _virusTotalService = virusTotalService;
+        _dialogService = dialogService;
+        _processLauncher = processLauncher;
+        _clipboardService = clipboardService;
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;
@@ -748,24 +756,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (SelectedEntry.IsProtected)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Format("ProtectedEntryMessage", SelectedEntry.ProtectionReason),
-                Strings.Get("ErrorActionImpossible"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorActionImpossible"));
             return;
         }
 
         // Check if admin is required
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Disable) && !IsAdmin)
         {
-            var result = MessageBox.Show(
+            if (_dialogService.Confirm(
                 Strings.Get("AdminRequiredMessage"),
-                Strings.Get("AdminRequiredTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                Strings.Get("AdminRequiredTitle")))
             {
                 if (UacHelper.RestartAsAdmin())
                 {
@@ -800,11 +802,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         else
         {
             StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 actionResult.ErrorMessage,
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -822,13 +822,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Check if admin is required
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Enable) && !IsAdmin)
         {
-            var result = MessageBox.Show(
+            if (_dialogService.Confirm(
                 Strings.Get("AdminRequiredMessage"),
-                Strings.Get("AdminRequiredTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                Strings.Get("AdminRequiredTitle")))
             {
                 if (UacHelper.RestartAsAdmin())
                 {
@@ -863,11 +859,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         else
         {
             StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 actionResult.ErrorMessage,
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -879,11 +873,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (SelectedEntry.IsProtected)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Format("ProtectedEntryMessage", SelectedEntry.ProtectionReason),
-                Strings.Get("ErrorActionImpossible"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorActionImpossible"));
             return;
         }
 
@@ -895,13 +887,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Check if admin is required
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Delete) && !IsAdmin)
         {
-            var result = MessageBox.Show(
+            if (_dialogService.Confirm(
                 Strings.Get("AdminRequiredMessage"),
-                Strings.Get("AdminRequiredTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                Strings.Get("AdminRequiredTitle")))
             {
                 if (UacHelper.RestartAsAdmin())
                 {
@@ -931,11 +919,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         else
         {
             StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 actionResult.ErrorMessage,
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -948,21 +934,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var entriesToEnable = _selectedEntries.Where(e => e.Status == EntryStatus.Disabled).ToList();
         if (entriesToEnable.Count == 0)
         {
-            MessageBox.Show(
+            _dialogService.ShowInfo(
                 Strings.Get("NoDisabledEntrySelected"),
-                Strings.Get("InfoTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                Strings.Get("InfoTitle"));
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!_dialogService.Confirm(
             Strings.Format("ConfirmEnableBatchMessage", entriesToEnable.Count),
-            Strings.Get("ConfirmEnableBatchTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.Yes)
+            Strings.Get("ConfirmEnableBatchTitle")))
             return;
 
         _logger.LogInformation("Batch enabling {Count} entries", entriesToEnable.Count);
@@ -999,11 +979,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
             {
                 StatusMessage = Strings.Format("StatusBatchEnabledWithFailures", successCount, failCount);
-                MessageBox.Show(
+                _dialogService.ShowWarning(
                     Strings.Format("BatchEnableResultMessage", successCount, failCount),
-                    Strings.Get("BatchResultTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    Strings.Get("BatchResultTitle"));
             }
         }
         finally
@@ -1022,21 +1000,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var entriesToDisable = _selectedEntries.Where(e => e.Status == EntryStatus.Enabled && !e.IsProtected).ToList();
         if (entriesToDisable.Count == 0)
         {
-            MessageBox.Show(
+            _dialogService.ShowInfo(
                 Strings.Get("NoEnabledEntrySelected"),
-                Strings.Get("InfoTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                Strings.Get("InfoTitle"));
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!_dialogService.Confirm(
             Strings.Format("ConfirmDisableBatchMessage", entriesToDisable.Count),
-            Strings.Get("ConfirmDisableBatchTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.Yes)
+            Strings.Get("ConfirmDisableBatchTitle")))
             return;
 
         _logger.LogInformation("Batch disabling {Count} entries", entriesToDisable.Count);
@@ -1073,11 +1045,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
             {
                 StatusMessage = Strings.Format("StatusBatchDisabledWithFailures", successCount, failCount);
-                MessageBox.Show(
+                _dialogService.ShowWarning(
                     Strings.Format("BatchDisableResultMessage", successCount, failCount),
-                    Strings.Get("BatchResultTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    Strings.Get("BatchResultTitle"));
             }
         }
         finally
@@ -1100,30 +1070,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 if (File.Exists(SelectedEntry.TargetPath))
                 {
-                    Process.Start("explorer.exe", $"/select,\"{SelectedEntry.TargetPath}\"");
+                    _processLauncher.OpenFolderAndSelectFile(SelectedEntry.TargetPath);
                 }
                 else
                 {
-                    Process.Start("explorer.exe", directory);
+                    _processLauncher.OpenFolder(directory);
                 }
             }
             else
             {
-                MessageBox.Show(
+                _dialogService.ShowInfo(
                     Strings.Get("FolderNotFound"),
-                    Strings.Get("InfoTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    Strings.Get("InfoTitle"));
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening file location");
-            MessageBox.Show(
+            _dialogService.ShowError(
                 Strings.Format("ErrorOpenLocation", ex.Message),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1132,12 +1098,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (SelectedEntry?.TargetPath != null)
         {
-            Clipboard.SetText(SelectedEntry.TargetPath);
+            _clipboardService.SetText(SelectedEntry.TargetPath);
             StatusMessage = Strings.Get("NotifCopied");
         }
         else if (SelectedEntry?.CommandLineRaw != null)
         {
-            Clipboard.SetText(SelectedEntry.CommandLineRaw);
+            _clipboardService.SetText(SelectedEntry.CommandLineRaw);
             StatusMessage = Strings.Get("NotifCopied");
         }
     }
@@ -1149,11 +1115,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return;
 
         var query = Uri.EscapeDataString($"{SelectedEntry.DisplayName} {SelectedEntry.Publisher ?? ""}");
-        var url = $"https://www.google.com/search?q={query}";
+        var url = $"{Constants.Urls.WebSearchBase}{query}";
 
         try
         {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            _processLauncher.OpenUrl(url);
         }
         catch (Exception ex)
         {
@@ -1184,17 +1150,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 @"Software\Microsoft\Windows\CurrentVersion\Applets\Regedit");
             key?.SetValue("LastKey", regPath);
 
-            Process.Start(new ProcessStartInfo("regedit.exe") { UseShellExecute = true });
+            _processLauncher.StartShellExecute("regedit.exe");
             StatusMessage = Strings.Get("StatusRegeditOpened");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening regedit");
-            MessageBox.Show(
+            _dialogService.ShowError(
                 Strings.Format("ErrorOpeningRegedit", ex.Message),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1210,17 +1174,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            Process.Start(new ProcessStartInfo("services.msc") { UseShellExecute = true });
+            _processLauncher.StartShellExecute("services.msc");
             StatusMessage = Strings.Get("StatusServicesOpened");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening services.msc");
-            MessageBox.Show(
+            _dialogService.ShowError(
                 $"{Strings.Get("ErrorOpeningServices")}: {ex.Message}",
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1236,17 +1198,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            Process.Start(new ProcessStartInfo("taskschd.msc") { UseShellExecute = true });
+            _processLauncher.StartShellExecute("taskschd.msc");
             StatusMessage = Strings.Get("StatusTaskSchedulerOpened");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening task scheduler");
-            MessageBox.Show(
+            _dialogService.ShowError(
                 $"{Strings.Get("ErrorOpeningTaskScheduler")}: {ex.Message}",
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1255,11 +1215,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Get("ErrorHashFileMissing"),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorTitle"));
             return;
         }
 
@@ -1273,24 +1231,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(SelectedEntry));
 
             // Copy to clipboard and show result
-            Clipboard.SetText(hash);
+            _clipboardService.SetText(hash);
             StatusMessage = Strings.Format("StatusHashCalculated", hash[..16]);
 
-            MessageBox.Show(
+            _dialogService.ShowInfo(
                 Strings.Format("HashCalculatedMessage", hash),
-                Strings.Get("HashCalculatedTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                Strings.Get("HashCalculatedTitle"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calculating hash");
             StatusMessage = Strings.Format("ErrorHashCalculation", ex.Message);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 Strings.Format("ErrorHashCalculationWithDetails", ex.Message),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1301,13 +1255,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         
         if (!_virusTotalService.IsConfigured)
         {
-             var result = MessageBox.Show(
-                "L'intégration VirusTotal n'est pas configurée. Voulez-vous ouvrir les paramètres pour saisir votre clé API (gratuite) ?",
-                "Configuration requise",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Information);
-                
-             if (result == MessageBoxResult.Yes)
+             if (_dialogService.Confirm(
+                Strings.Get("VTNotConfiguredMessage"),
+                Strings.Get("VTConfigRequiredTitle")))
              {
                  OpenSettings();
              }
@@ -1322,14 +1272,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            StatusMessage = "Interrogation de VirusTotal...";
+            StatusMessage = Strings.Get("VTQuerying");
             IsLoading = true;
             var report = await _virusTotalService.GetFileReportAsync(SelectedEntry.Sha256);
             
             if (report == null)
             {
-                StatusMessage = "Fichier inconnu de VirusTotal.";
-                _toastService.ShowWarning("Fichier inconnu : Ce fichier n'a jamais été analysé par VirusTotal.");
+                StatusMessage = Strings.Get("VTUnknownFile");
+                _toastService.ShowWarning(Strings.Get("VTUnknownFileToast"));
                 return;
             }
             
@@ -1340,26 +1290,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 var score = $"{stats.Malicious}/{total}";
                 
                 SelectedEntry.VirusTotalScore = score;
-                SelectedEntry.VirusTotalLink = $"https://www.virustotal.com/gui/file/{SelectedEntry.Sha256}";
+                SelectedEntry.VirusTotalLink = $"{Constants.Urls.VirusTotalGui}{SelectedEntry.Sha256}";
                 OnPropertyChanged(nameof(SelectedEntry));
                 
-                StatusMessage = $"VirusTotal: {score} détections";
+                StatusMessage = Strings.Format("VTDetections", score);
                 
                 if (stats.Malicious > 0)
                 {
-                    _toastService.ShowWarning($"Menace détectée : VirusTotal signale {stats.Malicious} détections !");
+                    _toastService.ShowWarning(Strings.Format("VTThreatDetected", stats.Malicious));
                     SelectedEntry.RiskLevel = RiskLevel.Critical;
                 }
                 else
                 {
-                    _toastService.ShowSuccess("Fichier sain : Aucune détection sur VirusTotal.");
+                    _toastService.ShowSuccess(Strings.Get("VTFileClean"));
                 }
             }
         }
         catch (Exception ex)
         {
-            StatusMessage = "Erreur VirusTotal";
-            _toastService.ShowError($"Erreur VirusTotal: {ex.Message}");
+            StatusMessage = Strings.Get("VTError");
+            _toastService.ShowError(Strings.Format("VTErrorDetail", ex.Message));
         }
         finally
         {
@@ -1372,21 +1322,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Get("ErrorScanFileMissing"),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorTitle"));
             return;
         }
 
         if (_malwareScanner == null)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Get("ScanNotAvailable"),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorTitle"));
             return;
         }
 
@@ -1413,11 +1359,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     _entriesView.Refresh();
                     UpdateCounts();
 
-                    MessageBox.Show(
+                    _dialogService.ShowWarning(
                         Strings.Format("MalwareDetectedDetailedMessage", SelectedEntry.TargetPath),
-                        Strings.Get("MalwareDetectedTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                        Strings.Get("MalwareDetectedTitle"));
                     break;
 
                 case ScanResult.Blocked:
@@ -1434,11 +1378,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
                 case ScanResult.NoAntivirusProvider:
                     StatusMessage = Strings.Get("ScanResultNoAntivirusProvider");
-                    MessageBox.Show(
+                    _dialogService.ShowInfo(
                         Strings.Get("ScanNoAntivirusProviderMessage"),
-                        Strings.Get("ScanNoAntivirusProviderTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        Strings.Get("ScanNoAntivirusProviderTitle"));
                     break;
 
                 case ScanResult.Error:
@@ -1452,11 +1394,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _logger.LogError(ex, "Error during malware scan");
             StatusMessage = Strings.Format("ErrorScanStatus", ex.Message);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 Strings.Format("ErrorScanMessageWithDetails", ex.Message),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1494,11 +1434,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (_malwareScanner == null)
         {
-            MessageBox.Show(
+            _dialogService.ShowWarning(
                 Strings.Get("ScanNotAvailable"),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                Strings.Get("ErrorTitle"));
             return;
         }
 
@@ -1509,21 +1447,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (entriesToScan.Count == 0)
         {
-            MessageBox.Show(
+            _dialogService.ShowInfo(
                 Strings.Get("ScanGlobalNoFiles"),
-                Strings.Get("ScanGlobalTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                Strings.Get("ScanGlobalTitle"));
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!_dialogService.Confirm(
             Strings.Format("ScanGlobalConfirm", entriesToScan.Count),
-            Strings.Get("ScanGlobalTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.Yes)
+            Strings.Get("ScanGlobalTitle")))
             return;
 
         IsScanning = true;
@@ -1602,11 +1534,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 ? Strings.Format("ScanGlobalStatusThreats", threats)
                 : Strings.Format("ScanGlobalStatusClean", clean);
 
-            MessageBox.Show(
-                message,
-                threats > 0 ? Strings.Get("ScanGlobalThreatsTitle") : Strings.Get("ScanComplete"),
-                MessageBoxButton.OK,
-                threats > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            if (threats > 0)
+            {
+                _dialogService.ShowWarning(
+                    message,
+                    Strings.Get("ScanGlobalThreatsTitle"));
+            }
+            else
+            {
+                _dialogService.ShowInfo(
+                    message,
+                    Strings.Get("ScanComplete"));
+            }
 
             _logger.LogInformation("Global scan completed: {Scanned} scanned, {Clean} clean, {Threats} threats, {Errors} errors",
                 scanned, clean, threats, errors);
@@ -1630,21 +1569,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ExportJsonAsync()
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "JSON Files (*.json)|*.json",
-            DefaultExt = ".json",
-            FileName = $"BootSentry_Export_{DateTime.Now:yyyyMMdd_HHmmss}"
-        };
+        var filePath = _dialogService.ShowSaveFileDialog(
+            "JSON Files (*.json)|*.json",
+            ".json",
+            $"BootSentry_Export_{DateTime.Now:yyyyMMdd_HHmmss}");
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
                 StatusMessage = Strings.Get("StatusExporting");
                 var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
-                await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Json, options);
-                StatusMessage = Strings.Format("StatusExportComplete", dialog.FileName);
+                await _exportService.ExportToFileAsync(Entries, filePath, ExportFormat.Json, options);
+                StatusMessage = Strings.Format("StatusExportComplete", filePath);
             }
             catch (Exception ex)
             {
@@ -1657,21 +1594,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ExportCsvAsync()
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "CSV Files (*.csv)|*.csv",
-            DefaultExt = ".csv",
-            FileName = $"BootSentry_Export_{DateTime.Now:yyyyMMdd_HHmmss}"
-        };
+        var filePath = _dialogService.ShowSaveFileDialog(
+            "CSV Files (*.csv)|*.csv",
+            ".csv",
+            $"BootSentry_Export_{DateTime.Now:yyyyMMdd_HHmmss}");
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
                 StatusMessage = Strings.Get("StatusExporting");
                 var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
-                await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Csv, options);
-                StatusMessage = Strings.Format("StatusExportComplete", dialog.FileName);
+                await _exportService.ExportToFileAsync(Entries, filePath, ExportFormat.Csv, options);
+                StatusMessage = Strings.Format("StatusExportComplete", filePath);
             }
             catch (Exception ex)
             {
@@ -1744,21 +1679,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             if (lastTransaction == null)
             {
-                MessageBox.Show(
+                _dialogService.ShowInfo(
                     Strings.Get("UndoNoActionMessage"),
-                    Strings.Get("UndoNoActionTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    Strings.Get("UndoNoActionTitle"));
                 return;
             }
 
-            var confirmResult = MessageBox.Show(
+            if (!_dialogService.Confirm(
                 Strings.Format("UndoConfirmMessage", lastTransaction.ActionType, lastTransaction.EntryDisplayName),
-                Strings.Get("UndoConfirmTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirmResult != MessageBoxResult.Yes)
+                Strings.Get("UndoConfirmTitle")))
                 return;
 
             _logger.LogInformation("Undoing transaction: {Id}", lastTransaction.Id);
@@ -1776,22 +1705,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
             {
                 StatusMessage = Strings.Format("StatusError", result.ErrorMessage);
-                MessageBox.Show(
+                _dialogService.ShowError(
                     result.ErrorMessage,
-                    Strings.Get("UndoErrorTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    Strings.Get("UndoErrorTitle"));
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error undoing last action");
             StatusMessage = Strings.Format("StatusError", ex.Message);
-            MessageBox.Show(
+            _dialogService.ShowError(
                 Strings.Format("UndoErrorMessage", ex.Message),
-                Strings.Get("ErrorTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Strings.Get("ErrorTitle"));
         }
     }
 
@@ -1805,13 +1730,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowDocumentation()
     {
-        Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry#documentation") { UseShellExecute = true });
+        _processLauncher.OpenUrl(Constants.Urls.GitHubDocumentation);
     }
 
     [RelayCommand]
     private void GoToGitHub()
     {
-        Process.Start(new ProcessStartInfo("https://github.com/VBlackJack/BootSentry") { UseShellExecute = true });
+        _processLauncher.OpenUrl(Constants.Urls.GitHubRepository);
     }
 
     [RelayCommand]
@@ -1825,24 +1750,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             if (update != null)
             {
-                var result = MessageBox.Show(
+                if (_dialogService.Confirm(
                     Strings.Format("UpdateMessage", update.LatestVersion),
-                    Strings.Get("UpdateAvailable"),
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.Yes)
+                    Strings.Get("UpdateAvailable")))
                 {
-                    Process.Start(new ProcessStartInfo(update.ReleaseUrl) { UseShellExecute = true });
+                    _processLauncher.OpenUrl(update.ReleaseUrl);
                 }
             }
             else
             {
-                MessageBox.Show(
+                _dialogService.ShowInfo(
                     Strings.Get("UpdateUpToDate"),
-                    Strings.Get("InfoTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    Strings.Get("InfoTitle"));
             }
 
             StatusMessage = Strings.Get("StatusReady");
@@ -1867,41 +1786,33 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ExportDiagnosticsAsync()
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "ZIP Files (*.zip)|*.zip",
-            DefaultExt = ".zip",
-            FileName = $"BootSentry_Diagnostics_{DateTime.Now:yyyyMMdd_HHmmss}"
-        };
+        var filePath = _dialogService.ShowSaveFileDialog(
+            "ZIP Files (*.zip)|*.zip",
+            ".zip",
+            $"BootSentry_Diagnostics_{DateTime.Now:yyyyMMdd_HHmmss}");
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
                 StatusMessage = Strings.Get("StatusDiagnosticsCreating");
-                await _exportService.ExportDiagnosticsZipAsync(Entries, dialog.FileName);
-                StatusMessage = Strings.Format("StatusDiagnosticsExported", dialog.FileName);
+                await _exportService.ExportDiagnosticsZipAsync(Entries, filePath);
+                StatusMessage = Strings.Format("StatusDiagnosticsExported", filePath);
 
-                var result = MessageBox.Show(
-                    Strings.Format("DiagnosticsCreatedOpenPrompt", dialog.FileName),
-                    Strings.Get("DiagnosticsCreatedTitle"),
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.Yes)
+                if (_dialogService.Confirm(
+                    Strings.Format("DiagnosticsCreatedOpenPrompt", filePath),
+                    Strings.Get("DiagnosticsCreatedTitle")))
                 {
-                    Process.Start("explorer.exe", $"/select,\"{dialog.FileName}\"");
+                    _processLauncher.OpenFolderAndSelectFile(filePath);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error exporting diagnostics");
                 StatusMessage = Strings.Format("StatusExportError", ex.Message);
-                MessageBox.Show(
+                _dialogService.ShowError(
                     Strings.Format("ErrorExportWithDetails", ex.Message),
-                    Strings.Get("ErrorTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    Strings.Get("ErrorTitle"));
             }
         }
     }

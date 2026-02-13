@@ -73,9 +73,9 @@ public sealed class ActionExecutor
 
         return action switch
         {
-            ActionType.Disable => await strategy.DisableAsync(entry, cancellationToken),
-            ActionType.Enable => await strategy.EnableAsync(entry, cancellationToken),
-            ActionType.Delete => await strategy.DeleteAsync(entry, cancellationToken),
+            ActionType.Disable => await strategy.DisableAsync(entry, cancellationToken).ConfigureAwait(false),
+            ActionType.Enable => await strategy.EnableAsync(entry, cancellationToken).ConfigureAwait(false),
+            ActionType.Delete => await strategy.DeleteAsync(entry, cancellationToken).ConfigureAwait(false),
             _ => ActionResult.Fail($"Unknown action type: {action}", "ERR_UNKNOWN_ACTION")
         };
     }

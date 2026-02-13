@@ -68,7 +68,7 @@
                 <MenuItem Header="{res:Localize MenuExpertMode}" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"/>
                 <Separator/>
                 <MenuItem Header="{res:Localize MenuHistory}" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"/>
-                <MenuItem Header="Snapshots..." Command="{Binding OpenSnapshotsCommand}"/>
+                <MenuItem Header="{res:Localize MenuSnapshots}" Command="{Binding OpenSnapshotsCommand}"/>
             </MenuItem>
             <MenuItem Header="{res:Localize MenuActions}">
                 <MenuItem Header="{res:Localize ActionEnable}" Command="{Binding EnableSelectedCommand}"/>
@@ -585,8 +585,8 @@
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{res:Localize ColumnName}" Binding="{Binding DisplayName}" Width="*" MinWidth="150"/>
-                        <DataGridTextColumn Header="{res:Localize ColumnType}" Binding="{Binding Type}" Width="110"/>
-                        <DataGridTextColumn Header="{res:Localize ColumnScope}" Binding="{Binding Scope}" Width="80"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnType}" Binding="{Binding Type, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryType}" Width="110"/>
+                        <DataGridTextColumn Header="{res:Localize ColumnScope}" Binding="{Binding Scope, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryScope}" Width="80"/>
                         <DataGridTextColumn Header="{res:Localize ColumnPublisher}" Binding="{Binding Publisher}" Width="150" MinWidth="100"/>
                         <DataGridTemplateColumn Header="{res:Localize ColumnSignature}" Width="90" MinWidth="80"
                                             SortMemberPath="SignatureStatus" CanUserSort="True">
@@ -594,7 +594,7 @@
                                 <DataTemplate>
                                     <Border Background="{Binding SignatureStatus, Converter={StaticResource SignatureToColor}}"
                                             CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding SignatureStatus}" FontSize="11" Foreground="White"/>
+                                        <TextBlock Text="{Binding SignatureStatus, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=SignatureStatus}" FontSize="11" Foreground="White"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -605,7 +605,7 @@
                                 <DataTemplate>
                                     <Border Background="{Binding Status, Converter={StaticResource StatusToColor}}"
                                             CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding Status}" FontSize="11" Foreground="White"/>
+                                        <TextBlock Text="{Binding Status, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryStatus}" FontSize="11" Foreground="White"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -798,10 +798,10 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Text="{res:Localize DetailType}" FontWeight="SemiBold" Margin="0,4"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.Type}" Margin="0,4" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntry.Type, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryType}" Margin="0,4" TextWrapping="Wrap"/>
 
                                 <TextBlock Grid.Row="1" Text="{res:Localize DetailScope}" FontWeight="SemiBold" Margin="0,4"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.Scope}" Margin="0,4"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntry.Scope, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryScope}" Margin="0,4"/>
 
                                 <TextBlock Grid.Row="2" Text="{res:Localize DetailSource}" FontWeight="SemiBold" Margin="0,4"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntry.SourcePath}"
@@ -815,10 +815,10 @@
                                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedEntry.Publisher}" Margin="0,4" TextWrapping="Wrap"/>
 
                                 <TextBlock Grid.Row="5" Text="{res:Localize DetailSignature}" FontWeight="SemiBold" Margin="0,4"/>
-                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEntry.SignatureStatus}" Margin="0,4"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedEntry.SignatureStatus, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=SignatureStatus}" Margin="0,4"/>
 
                                 <TextBlock Grid.Row="6" Text="{res:Localize DetailStatus}" FontWeight="SemiBold" Margin="0,4"/>
-                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEntry.Status}" Margin="0,4"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedEntry.Status, Converter={StaticResource EnumToLocalizedString}, ConverterParameter=EntryStatus}" Margin="0,4"/>
 
                                 <TextBlock Grid.Row="7" Text="{res:Localize DetailScanAV}" FontWeight="SemiBold" Margin="0,4"
                                            Visibility="{Binding SelectedEntry.MalwareScanResult, Converter={StaticResource NotNullToVisibility}}"/>
@@ -860,10 +860,10 @@
                                                FontSize="10" Foreground="{DynamicResource DisabledForeground}" VerticalAlignment="Center"/>
                                 </StackPanel>
 
-                                <TextBlock Grid.Row="8" Text="VirusTotal" FontWeight="SemiBold" Margin="0,4"/>
+                                <TextBlock Grid.Row="8" Text="{res:Localize DetailVirusTotal}" FontWeight="SemiBold" Margin="0,4"/>
                                 <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
                                     <Button Command="{Binding DataContext.AnalyzeWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            Content="Check Cloud" Padding="8,2" FontSize="11" Height="24"
+                                            Content="{res:Localize DetailCheckCloud}" Padding="8,2" FontSize="11" Height="24"
                                             Background="{DynamicResource InfoBrush}" BorderThickness="0"
                                             Visibility="{Binding SelectedEntry.VirusTotalScore, Converter={StaticResource NullToVisibility}}"/>
                                     

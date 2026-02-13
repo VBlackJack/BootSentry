@@ -65,7 +65,7 @@ public sealed class RegistryRunProvider : IStartupProvider
                     location.Scope,
                     location.View,
                     isDisabled: false,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 entries.AddRange(locationEntries);
 
@@ -77,7 +77,7 @@ public sealed class RegistryRunProvider : IStartupProvider
                     location.Scope,
                     location.View,
                     isDisabled: true,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 entries.AddRange(disabledEntries);
             }
@@ -87,8 +87,15 @@ public sealed class RegistryRunProvider : IStartupProvider
             }
         }
 
-        _logger.LogInformation("Found {Count} registry Run entries", entries.Count);
-        return entries;
+        // Deduplicate: if an entry exists both active and disabled (e.g. app re-registered
+        // itself after being disabled), keep the active one.
+        var deduplicated = entries
+            .GroupBy(e => e.Id)
+            .Select(g => g.FirstOrDefault(e => e.Status == EntryStatus.Enabled) ?? g.First())
+            .ToList();
+
+        _logger.LogInformation("Found {Count} registry Run entries", deduplicated.Count);
+        return deduplicated;
     }
 
     private async Task<List<StartupEntry>> ScanRegistryKeyAsync(
@@ -133,7 +140,7 @@ public sealed class RegistryRunProvider : IStartupProvider
                     view == RegistryView.Registry32 ? "32" : "64",
                     originalPath.Contains("RunOnce", StringComparison.OrdinalIgnoreCase),
                     isDisabled,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
                 entries.Add(entry);
             }
@@ -183,7 +190,7 @@ public sealed class RegistryRunProvider : IStartupProvider
         // Get file metadata if target exists
         if (fileExists && targetPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken).ConfigureAwait(false);
         }
 
         // Check for suspicious command lines
@@ -214,7 +221,7 @@ public sealed class RegistryRunProvider : IStartupProvider
             // Check signature if verifier is available
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
 
                 if (!string.IsNullOrEmpty(sigInfo.SignerName))

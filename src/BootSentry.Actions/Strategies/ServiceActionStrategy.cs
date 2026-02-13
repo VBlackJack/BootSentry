@@ -61,7 +61,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
             }
 
             // Create backup transaction (stores original start type)
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -69,7 +69,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
                 SetServiceStartConfiguration(serviceName, ServiceStartMode.Disabled);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 var previousStartType = ToDisplayStartType(currentStartConfig.Value);
                 _logger.LogInformation("Disabled service: {Name} (was {StartType})", entry.DisplayName, previousStartType);
@@ -81,7 +81,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

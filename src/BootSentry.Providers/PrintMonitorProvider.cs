@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Providers;
@@ -39,7 +40,7 @@ public sealed class PrintMonitorProvider : IStartupProvider
         {
             cancellationToken.ThrowIfCancellationRequested();
             ScanMonitors(entries, cancellationToken);
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} print monitor entries", entries.Count);
         return entries;
@@ -141,7 +142,7 @@ public sealed class PrintMonitorProvider : IStartupProvider
                 {
                     entry.RiskLevel = RiskLevel.Safe;
                     entry.IsProtected = true;
-                    entry.ProtectionReason = "Composant système Microsoft";
+                    entry.ProtectionReason = Localize.Get("ProviderPrintMonitorMicrosoft");
                 }
             }
             catch
@@ -154,13 +155,13 @@ public sealed class PrintMonitorProvider : IStartupProvider
         if (!entry.IsProtected && entry.RiskLevel == RiskLevel.Unknown)
         {
             entry.RiskLevel = RiskLevel.Suspicious;
-            entry.Notes = "Print monitor tiers - vérifiez l'éditeur";
+            entry.Notes = Localize.Get("ProviderPrintMonitorThirdParty");
         }
 
         if (!entry.FileExists && entry.RiskLevel != RiskLevel.Safe)
         {
             entry.RiskLevel = RiskLevel.Suspicious;
-            entry.Notes = "Fichier DLL introuvable";
+            entry.Notes = Localize.Get("ProviderPrintMonitorDllMissing");
         }
 
         return entry;

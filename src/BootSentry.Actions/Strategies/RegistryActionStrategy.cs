@@ -58,7 +58,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
                     return ActionResult.Fail($"Registry key not found: {entry.SourcePath}", "ERR_KEY_NOT_FOUND");
                 }
 
-                value = precheckSourceKey.GetValue(entry.SourceName)!;
+                value = precheckSourceKey.GetValue(entry.SourceName);
                 if (value == null)
                 {
                     return ActionResult.Fail($"Registry value not found: {entry.SourceName}", "ERR_VALUE_NOT_FOUND");
@@ -68,7 +68,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
             }
 
             // Create backup transaction
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -93,7 +93,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
                 sourceKey.DeleteValue(entry.SourceName, throwOnMissingValue: false);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Disabled registry entry: {Name}", entry.DisplayName);
 
@@ -103,7 +103,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
@@ -209,7 +209,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
             }
 
             // Create backup transaction first
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -223,14 +223,14 @@ public sealed class RegistryActionStrategy : IActionStrategy
                 key.DeleteValue(sourceName, throwOnMissingValue: false);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Deleted registry entry: {Name}", entry.DisplayName);
                 return ActionResult.Ok(transactionId: transaction.Id);
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

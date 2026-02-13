@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 using BootSentry.Core.Parsing;
 
@@ -18,11 +20,13 @@ public sealed class WinlogonProvider : IStartupProvider
     private readonly ISignatureVerifier? _signatureVerifier;
 
     // Expected default values for Winlogon entries
-    private static readonly Dictionary<string, string> ExpectedValues = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Shell"] = "explorer.exe",
-        ["Userinit"] = @"C:\Windows\system32\userinit.exe,",
-    };
+    private static Dictionary<string, string>? _expectedValues;
+    private static Dictionary<string, string> ExpectedValues =>
+        _expectedValues ??= new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Shell"] = Constants.Paths.DefaultShell,
+            ["Userinit"] = Constants.Paths.DefaultUserInitPath,
+        };
 
     private static readonly (string ValueName, bool IsCritical)[] WinlogonValues =
     [
@@ -51,10 +55,10 @@ public sealed class WinlogonProvider : IStartupProvider
         var entries = new List<StartupEntry>();
 
         // Scan HKLM Winlogon
-        await ScanWinlogonKeyAsync(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
+        await ScanWinlogonKeyAsync(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken).ConfigureAwait(false);
 
         // Scan HKCU Winlogon (less common but possible)
-        await ScanWinlogonKeyAsync(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken);
+        await ScanWinlogonKeyAsync(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", entries, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} Winlogon entries", entries.Count);
         return entries;
@@ -82,7 +86,7 @@ public sealed class WinlogonProvider : IStartupProvider
                     if (string.IsNullOrWhiteSpace(value))
                         continue;
 
-                    var entry = await CreateEntryAsync(fullPath, valueName, value, scope, isCritical, cancellationToken);
+                    var entry = await CreateEntryAsync(fullPath, valueName, value, scope, isCritical, cancellationToken).ConfigureAwait(false);
                     entries.Add(entry);
                 }
                 catch (OperationCanceledException)
@@ -138,20 +142,20 @@ public sealed class WinlogonProvider : IStartupProvider
             FileExists = fileExists,
             Status = EntryStatus.Enabled,
             IsProtected = isCritical && isDefaultValue,
-            ProtectionReason = isCritical && isDefaultValue ? "Valeur système par défaut" : null
+            ProtectionReason = isCritical && isDefaultValue ? Localize.Get("ProviderWinlogonDefaultValue") : null
         };
 
         // Determine risk level
         if (isDefaultValue)
         {
             entry.RiskLevel = RiskLevel.Safe;
-            entry.Notes = "Valeur par défaut Windows";
+            entry.Notes = Localize.Get("ProviderWinlogonDefaultWindows");
         }
         else if (isCritical)
         {
             // Modified critical value - potentially suspicious
             entry.RiskLevel = RiskLevel.Suspicious;
-            entry.Notes = "Valeur critique modifiée - vérification recommandée";
+            entry.Notes = Localize.Get("ProviderWinlogonCriticalModified");
         }
         else
         {
@@ -161,7 +165,7 @@ public sealed class WinlogonProvider : IStartupProvider
         // Get file metadata if target exists
         if (fileExists && targetPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;
@@ -187,9 +191,9 @@ public sealed class WinlogonProvider : IStartupProvider
             // Use Signature Verifier if available
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
-                
+
                 // If signed, use the signer name as publisher (more trustworthy)
                 if (sigInfo.Status != SignatureStatus.Unsigned && !string.IsNullOrEmpty(sigInfo.SignerName))
                 {

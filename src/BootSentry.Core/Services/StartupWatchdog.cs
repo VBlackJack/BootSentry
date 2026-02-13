@@ -94,7 +94,10 @@ public class StartupWatchdog : IDisposable
                 watcher.EnableRaisingEvents = false;
                 watcher.Dispose();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to dispose folder watcher");
+            }
         }
         _folderWatchers.Clear();
 
@@ -105,7 +108,10 @@ public class StartupWatchdog : IDisposable
                 watcher.Stop();
                 watcher.Dispose();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to dispose registry watcher");
+            }
         }
         _registryWatchers.Clear();
 

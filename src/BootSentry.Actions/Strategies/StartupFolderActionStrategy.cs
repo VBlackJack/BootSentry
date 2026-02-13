@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
@@ -16,9 +17,9 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
 
     private static readonly string QuarantinePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-        "BootSentry",
-        "Quarantine",
-        "StartupFolder");
+        Constants.AppName,
+        Constants.Directories.Quarantine,
+        Constants.Directories.StartupFolder);
 
     public StartupFolderActionStrategy(ILogger<StartupFolderActionStrategy> logger, ITransactionManager transactionManager)
     {
@@ -59,7 +60,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
         try
         {
             // Create backup transaction
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -82,7 +83,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
                 File.Move(sourcePath, destPath);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Disabled startup folder entry: {Name} (moved to {Dest})", entry.DisplayName, destPath);
 
@@ -91,7 +92,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
@@ -180,7 +181,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
         try
         {
             // Create backup transaction first
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -188,7 +189,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
                 File.Delete(sourcePath);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 _logger.LogInformation("Deleted startup folder entry: {Name}", entry.DisplayName);
 
@@ -196,7 +197,7 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

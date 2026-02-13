@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using BootSentry.Core.Enums;
@@ -138,7 +139,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Chrome",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Google", "Chrome", "User Data"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(chromeEntries);
 
             // Scan Edge extensions
@@ -146,7 +147,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Edge",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Microsoft", "Edge", "User Data"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(edgeEntries);
 
             // Scan Brave extensions
@@ -154,7 +155,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Brave",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "BraveSoftware", "Brave-Browser", "User Data"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(braveEntries);
 
             // Scan Opera extensions
@@ -162,7 +163,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Opera",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "Opera Software", "Opera Stable"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(operaEntries);
 
             // Scan Opera GX extensions
@@ -170,7 +171,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Opera GX",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "Opera Software", "Opera GX Stable"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(operaGxEntries);
 
             // Scan Vivaldi extensions
@@ -178,11 +179,11 @@ public sealed class BrowserExtensionProvider : IStartupProvider
                 "Vivaldi",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Vivaldi", "User Data"),
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             entries.AddRange(vivaldiEntries);
 
             // Scan Firefox extensions
-            var firefoxEntries = await ScanFirefoxExtensionsAsync(cancellationToken);
+            var firefoxEntries = await ScanFirefoxExtensionsAsync(cancellationToken).ConfigureAwait(false);
             entries.AddRange(firefoxEntries);
 
             _logger.LogInformation("Found {Count} browser extensions", entries.Count);
@@ -238,7 +239,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
                     try
                     {
-                        var entry = await ParseChromiumExtensionAsync(extDir, browserName, profileName, cancellationToken);
+                        var entry = await ParseChromiumExtensionAsync(extDir, browserName, profileName, cancellationToken).ConfigureAwait(false);
                         if (entry != null)
                             entries.Add(entry);
                     }
@@ -268,13 +269,22 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         if (versionDirs.Length == 0)
             return null;
 
-        var latestVersion = versionDirs.OrderByDescending(v => v).First();
+        var latestVersion = SelectLatestVersionDirectory(versionDirs);
         var manifestPath = Path.Combine(latestVersion, "manifest.json");
 
         if (!File.Exists(manifestPath))
             return null;
 
-        var manifestContent = await File.ReadAllTextAsync(manifestPath, cancellationToken);
+        // Guard against oversized manifests to prevent memory exhaustion
+        var manifestFileInfo = new FileInfo(manifestPath);
+        if (manifestFileInfo.Length > 1_048_576) // 1 MB max for a manifest
+        {
+            _logger.LogWarning("Extension manifest too large ({Size} bytes), skipping: {Path}",
+                manifestFileInfo.Length, manifestPath);
+            return null;
+        }
+
+        var manifestContent = await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false);
         using var doc = JsonDocument.Parse(manifestContent);
         var root = doc.RootElement;
 
@@ -330,7 +340,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
         return new StartupEntry
         {
-            Id = $"BrowserExt_{browserName}_{extensionId}",
+            Id = StartupEntry.GenerateId(EntryType.BrowserExtension, EntryScope.User, extensionPath, extensionId),
             DisplayName = $"[{browserName}] {name}",
             Type = EntryType.BrowserExtension,
             Scope = EntryScope.User,
@@ -534,14 +544,14 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
                 try
                 {
-                    var content = await File.ReadAllTextAsync(extensionsJsonPath, cancellationToken);
+                    var content = await File.ReadAllTextAsync(extensionsJsonPath, cancellationToken).ConfigureAwait(false);
                     using var doc = JsonDocument.Parse(content);
 
                     if (doc.RootElement.TryGetProperty("addons", out var addons))
                     {
                         foreach (var addon in addons.EnumerateArray())
                         {
-                            var entry = ParseFirefoxAddon(addon, profileName);
+                            var entry = ParseFirefoxAddon(addon, profileName, profileDir);
                             if (entry != null)
                                 entries.Add(entry);
                         }
@@ -561,7 +571,7 @@ public sealed class BrowserExtensionProvider : IStartupProvider
         return entries;
     }
 
-    private StartupEntry? ParseFirefoxAddon(JsonElement addon, string profileName)
+    private StartupEntry? ParseFirefoxAddon(JsonElement addon, string profileName, string profileDirectory)
     {
         var id = GetJsonString(addon, "id");
         var name = GetJsonString(addon, "name") ?? id ?? "Unknown";
@@ -587,11 +597,11 @@ public sealed class BrowserExtensionProvider : IStartupProvider
 
         return new StartupEntry
         {
-            Id = $"BrowserExt_Firefox_{id}",
+            Id = StartupEntry.GenerateId(EntryType.BrowserExtension, EntryScope.User, profileDirectory, id),
             DisplayName = $"[Firefox] {name}",
             Type = EntryType.BrowserExtension,
             Scope = EntryScope.User,
-            SourcePath = "Firefox Extensions",
+            SourcePath = profileDirectory,
             SourceName = id,
             Publisher = creator ?? "Unknown",
             Description = string.IsNullOrWhiteSpace(description) ? null : description,
@@ -603,6 +613,46 @@ public sealed class BrowserExtensionProvider : IStartupProvider
             RiskLevel = RiskLevel.Unknown,
             SignatureStatus = SignatureStatus.Unknown
         };
+    }
+
+    private static string SelectLatestVersionDirectory(IEnumerable<string> versionDirectories)
+    {
+        return versionDirectories
+            .Select(path => new
+            {
+                Path = path,
+                Folder = Path.GetFileName(path),
+                Version = ParseVersionFolderName(Path.GetFileName(path))
+            })
+            .OrderByDescending(x => x.Version)
+            .ThenByDescending(x => x.Folder, StringComparer.OrdinalIgnoreCase)
+            .First()
+            .Path;
+    }
+
+    private static Version ParseVersionFolderName(string? folderName)
+    {
+        if (string.IsNullOrWhiteSpace(folderName))
+            return new Version(0, 0, 0, 0);
+
+        var normalized = folderName.Replace('_', '.');
+        var versionBuilder = new StringBuilder();
+
+        foreach (var ch in normalized)
+        {
+            if (char.IsDigit(ch) || ch == '.')
+            {
+                versionBuilder.Append(ch);
+                continue;
+            }
+
+            break;
+        }
+
+        var candidate = versionBuilder.ToString().Trim('.');
+        return Version.TryParse(candidate, out var parsed)
+            ? parsed
+            : new Version(0, 0, 0, 0);
     }
 
     private static string? GetJsonString(JsonElement element, string propertyName)

@@ -67,7 +67,7 @@ public partial class SnapshotViewModel : ObservableObject
     private async Task CreateSnapshotAsync()
     {
         // In a real app, show a dialog to get name/description
-        var name = $"Snapshot {DateTime.Now:g}";
+        var name = Strings.Format("SnapshotAutoName", DateTime.Now);
         var description = Strings.Get("SnapshotManualDescription");
 
         IsLoading = true;

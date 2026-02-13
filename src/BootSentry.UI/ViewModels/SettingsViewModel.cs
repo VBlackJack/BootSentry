@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using BootSentry.Core.Interfaces;
 using BootSentry.Core.Services.Integrations;
 using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
@@ -17,10 +18,12 @@ public partial class SettingsViewModel : ObservableObject
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
     private readonly VirusTotalService _virusTotalService;
+    private readonly IDialogService _dialogService;
+    private readonly IProcessLauncher _processLauncher;
     private bool _isInitializing = true;
 
     // Design-time constructor
-    public SettingsViewModel() : this(null!, null!, null!, null!) { }
+    public SettingsViewModel() : this(null!, null!, null!, null!, null!, null!) { }
 
     [ObservableProperty]
     private string _selectedLanguage = "fr";
@@ -61,12 +64,16 @@ public partial class SettingsViewModel : ObservableObject
         ILogger<SettingsViewModel> logger,
         SettingsService settingsService,
         ThemeService themeService,
-        VirusTotalService virusTotalService)
+        VirusTotalService virusTotalService,
+        IDialogService dialogService,
+        IProcessLauncher processLauncher)
     {
         _logger = logger;
         _settingsService = settingsService;
         _themeService = themeService;
         _virusTotalService = virusTotalService;
+        _dialogService = dialogService;
+        _processLauncher = processLauncher;
 
         UpdateThemeList();
         LoadSettings();
@@ -119,13 +126,9 @@ public partial class SettingsViewModel : ObservableObject
 
         if (previousLanguage != value)
         {
-            var result = System.Windows.MessageBox.Show(
+            if (_dialogService.Confirm(
                 Strings.Get("SettingsLanguageRestartPrompt"),
-                Strings.Get("SettingsLanguageChangeTitle"),
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
-
-            if (result == System.Windows.MessageBoxResult.Yes)
+                Strings.Get("SettingsLanguageChangeTitle")))
             {
                 RestartApplication();
             }
@@ -137,12 +140,12 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    private static void RestartApplication()
+    private void RestartApplication()
     {
         var exePath = Environment.ProcessPath;
         if (exePath != null)
         {
-            System.Diagnostics.Process.Start(exePath);
+            _processLauncher.OpenFile(exePath);
             System.Windows.Application.Current.Shutdown();
         }
     }

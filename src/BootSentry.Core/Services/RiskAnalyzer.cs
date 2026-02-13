@@ -20,80 +20,22 @@ public class RiskAnalyzer : IRiskService
     /// <summary>
     /// List of known trusted publishers.
     /// </summary>
-    private static readonly HashSet<string> TrustedPublishers = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Microsoft Corporation",
-        "Microsoft Windows",
-        "Google LLC",
-        "Google Inc.",
-        "Mozilla Corporation",
-        "Adobe Inc.",
-        "Adobe Systems Incorporated",
-        "Intel Corporation",
-        "Intel(R) Corporation",
-        "NVIDIA Corporation",
-        "Advanced Micro Devices, Inc.",
-        "AMD",
-        "Oracle Corporation",
-        "Apple Inc.",
-        "Valve Corporation",
-        "Realtek Semiconductor Corp.",
-        "Logitech",
-        "Synaptics Incorporated",
-        "Dell Inc.",
-        "HP Inc.",
-        "Lenovo",
-        "ASUS",
-        "Zoom Video Communications, Inc.",
-        "Slack Technologies, Inc.",
-        "Dropbox, Inc.",
-        "Spotify AB",
-        "Discord Inc.",
-        "GitHub, Inc.",
-        "JetBrains s.r.o.",
-        "Docker Inc",
-        "VMware, Inc.",
-        "Citrix Systems, Inc."
-    };
+    private static readonly HashSet<string> TrustedPublishers = Constants.Security.TrustedPublishers;
 
     /// <summary>
     /// Suspicious file locations.
     /// </summary>
-    private static readonly string[] SuspiciousLocations =
-    {
-        @"\temp\",
-        @"\tmp\",
-        @"\appdata\local\temp",
-        @"\downloads\",
-        @"\desktop\",
-        @"\public\",
-        @"$recycle.bin"
-    };
+    private static readonly string[] SuspiciousLocations = Constants.Paths.SuspiciousLocations;
 
     /// <summary>
     /// System-mimicking filenames often used by malware.
     /// </summary>
-    private static readonly string[] MimickedSystemFiles =
-    {
-        "svchost.exe",
-        "csrss.exe",
-        "smss.exe",
-        "lsass.exe",
-        "services.exe",
-        "winlogon.exe",
-        "explorer.exe",
-        "taskmgr.exe",
-        "spoolsv.exe"
-    };
+    private static readonly string[] MimickedSystemFiles = Constants.Security.MimickedSystemFiles;
 
     /// <summary>
     /// Valid system paths for mimicked files.
     /// </summary>
-    private static readonly string[] ValidSystemPaths =
-    {
-        @"\windows\system32\",
-        @"\windows\syswow64\"
-    };
+    private static readonly string[] ValidSystemPaths = Constants.Paths.ValidSystemPaths;
 
     /// <summary>
     /// Analyzes a startup entry and returns a risk assessment.
@@ -227,21 +169,21 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "Signature",
                 Description = "Signed with a valid trust chain",
-                Score = -30,
+                Score = Constants.Security.RiskScores.SignedTrusted,
                 Type = RiskFactorType.Positive
             },
             SignatureStatus.SignedUntrusted => new RiskFactor
             {
                 Name = "Signature",
                 Description = "Signed but certificate not trusted",
-                Score = 20,
+                Score = Constants.Security.RiskScores.SignedUntrusted,
                 Type = RiskFactorType.Warning
             },
             SignatureStatus.Unsigned => new RiskFactor
             {
                 Name = "Signature",
                 Description = "Unsigned file",
-                Score = 10,
+                Score = Constants.Security.RiskScores.Unsigned,
                 Type = RiskFactorType.Warning
             },
             _ => null
@@ -256,7 +198,7 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "Publisher",
                 Description = "Unknown publisher",
-                Score = 5,
+                Score = Constants.Security.RiskScores.UnknownPublisher,
                 Type = RiskFactorType.Warning
             };
         }
@@ -267,7 +209,7 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "Publisher",
                 Description = $"Trusted publisher: {entry.Publisher}",
-                Score = -20,
+                Score = Constants.Security.RiskScores.TrustedPublisher,
                 Type = RiskFactorType.Positive
             };
         }
@@ -291,22 +233,20 @@ public class RiskAnalyzer : IRiskService
                 {
                     Name = "Location",
                     Description = $"File in suspicious location ({suspiciousLoc.Trim('\\')})",
-                    Score = 25,
+                    Score = Constants.Security.RiskScores.SuspiciousLocation,
                     Type = RiskFactorType.Negative
                 };
             }
         }
 
         // Standard locations are good
-        if (pathLower.Contains(@"\program files\") ||
-            pathLower.Contains(@"\program files (x86)\") ||
-            pathLower.Contains(@"\windows\"))
+        if (Constants.Paths.TrustedLocations.Any(loc => pathLower.Contains(loc)))
         {
             return new RiskFactor
             {
                 Name = "Location",
                 Description = "File in standard location",
-                Score = -10,
+                Score = Constants.Security.RiskScores.StandardLocation,
                 Type = RiskFactorType.Positive
             };
         }
@@ -340,7 +280,7 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "Command Line",
                 Description = "Command contains suspicious patterns (encoding, download, etc.)",
-                Score = 40,
+                Score = Constants.Security.RiskScores.SuspiciousCommandLine,
                 Type = RiskFactorType.Negative
             };
         }
@@ -356,7 +296,7 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "File",
                 Description = "Target file does not exist",
-                Score = 15,
+                Score = Constants.Security.RiskScores.FileNotFound,
                 Type = RiskFactorType.Warning
             };
         }
@@ -372,14 +312,14 @@ public class RiskAnalyzer : IRiskService
             {
                 Name = "Type",
                 Description = "IFEO entry (Image File Execution Options) - common malware vector",
-                Score = 30,
+                Score = Constants.Security.RiskScores.IFEOEntryType,
                 Type = RiskFactorType.Warning
             },
             EntryType.Winlogon => new RiskFactor
             {
                 Name = "Type",
                 Description = "Winlogon entry - sensitive system area",
-                Score = 20,
+                Score = Constants.Security.RiskScores.WinlogonEntryType,
                 Type = RiskFactorType.Warning
             },
             _ => null
@@ -404,7 +344,7 @@ public class RiskAnalyzer : IRiskService
                 {
                     Name = "Mimicry",
                     Description = $"File '{fileName}' outside its normal system location",
-                    Score = 50,
+                    Score = Constants.Security.RiskScores.NameMimicking,
                     Type = RiskFactorType.Negative
                 };
             }
@@ -417,9 +357,9 @@ public class RiskAnalyzer : IRiskService
     {
         return score switch
         {
-            < -20 => RiskLevel.Safe,
-            < 10 => RiskLevel.Unknown,
-            < 30 => RiskLevel.Suspicious,
+            < Constants.Security.RiskThresholds.Safe => RiskLevel.Safe,
+            < Constants.Security.RiskThresholds.Unknown => RiskLevel.Unknown,
+            < Constants.Security.RiskThresholds.Suspicious => RiskLevel.Suspicious,
             _ => RiskLevel.Critical
         };
     }

@@ -6,6 +6,7 @@ using Moq;
 using Xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using BootSentry.Actions.Strategies;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
@@ -73,7 +74,7 @@ public class WinlogonActionStrategyTests
     public void DefaultValues_ContainsUserinit()
     {
         WinlogonActionStrategy.DefaultValues.Should().ContainKey("Userinit");
-        WinlogonActionStrategy.DefaultValues["Userinit"].Should().Be(@"C:\Windows\system32\userinit.exe,");
+        WinlogonActionStrategy.DefaultValues["Userinit"].Should().Be(Constants.Paths.DefaultUserInitPath);
     }
 
     [Fact]
@@ -120,7 +121,7 @@ public class WinlogonActionStrategyTests
     public void GetDefaultValue_Userinit_ReturnsDefaultWithComma()
     {
         var result = WinlogonActionStrategy.GetDefaultValue("Userinit");
-        result.Should().Be(@"C:\Windows\system32\userinit.exe,");
+        result.Should().Be(Constants.Paths.DefaultUserInitPath);
     }
 
     [Fact]

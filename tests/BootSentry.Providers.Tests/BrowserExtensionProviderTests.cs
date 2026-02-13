@@ -91,8 +91,9 @@ public class BrowserExtensionProviderTests
         foreach (var entry in entries)
         {
             entry.Id.Should().NotBeNullOrEmpty();
-            // Note: IDs may not be unique if same extension exists in multiple profiles
         }
+
+        entries.Select(e => e.Id).Should().OnlyHaveUniqueItems();
     }
 
     [Fact]

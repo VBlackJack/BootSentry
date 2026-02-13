@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 
@@ -13,7 +14,7 @@ public sealed class SignatureVerifier : ISignatureVerifier
     /// <inheritdoc/>
     public async Task<SignatureInfo> VerifyAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => VerifySignature(filePath), cancellationToken);
+        return await Task.Run(() => VerifySignature(filePath), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -185,7 +186,7 @@ public sealed class SignatureVerifier : ISignatureVerifier
         chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
         chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
-        chain.ChainPolicy.UrlRetrievalTimeout = TimeSpan.FromSeconds(3); // Reduced timeout for better responsiveness
+        chain.ChainPolicy.UrlRetrievalTimeout = TimeSpan.FromSeconds(Constants.Timeouts.CertificateChainValidationSeconds);
 
         try
         {

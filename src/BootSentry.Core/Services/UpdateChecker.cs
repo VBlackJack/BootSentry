@@ -18,13 +18,13 @@ public class UpdateChecker : IDisposable
     {
         SharedHttpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromSeconds(30)
+            Timeout = TimeSpan.FromSeconds(Constants.Timeouts.HttpRequestSeconds)
         };
-        SharedHttpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"BootSentry/{CurrentVersion} UpdateCheck");
-        SharedHttpClient.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+        SharedHttpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"{Constants.AppName}/{CurrentVersion} UpdateCheck");
+        SharedHttpClient.DefaultRequestHeaders.Accept.ParseAdd(Constants.GitHub.AcceptHeader);
     }
 
-    public UpdateChecker(string repoOwner = "VBlackJack", string repoName = "BootSentry")
+    public UpdateChecker(string repoOwner = Constants.GitHub.RepoOwner, string repoName = Constants.GitHub.RepoName)
     {
         _repoOwner = repoOwner;
         _repoName = repoName;
@@ -38,7 +38,7 @@ public class UpdateChecker : IDisposable
         get
         {
             var version = Assembly.GetEntryAssembly()?.GetName().Version;
-            return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "1.0.0";
+            return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : Constants.FallbackVersion;
         }
     }
 
@@ -50,8 +50,8 @@ public class UpdateChecker : IDisposable
     {
         try
         {
-            var url = $"https://api.github.com/repos/{_repoOwner}/{_repoName}/releases/latest";
-            var release = await SharedHttpClient.GetFromJsonAsync<GitHubRelease>(url, cancellationToken);
+            var url = $"{Constants.Urls.GitHubApiBase}/repos/{_repoOwner}/{_repoName}/releases/latest";
+            var release = await SharedHttpClient.GetFromJsonAsync<GitHubRelease>(url, cancellationToken).ConfigureAwait(false);
 
             if (release == null || string.IsNullOrEmpty(release.TagName))
                 return null;
@@ -65,7 +65,7 @@ public class UpdateChecker : IDisposable
                 {
                     CurrentVersion = CurrentVersion,
                     LatestVersion = release.TagName.TrimStart('v'),
-                    ReleaseUrl = release.HtmlUrl ?? $"https://github.com/{_repoOwner}/{_repoName}/releases/latest",
+                    ReleaseUrl = release.HtmlUrl ?? $"{Constants.Urls.GitHubRepository}/releases/latest",
                     ReleaseNotes = release.Body,
                     PublishedAt = release.PublishedAt,
                     IsPrerelease = release.Prerelease

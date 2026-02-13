@@ -1,4 +1,6 @@
 using System.Windows;
+using BootSentry.Core;
+using BootSentry.Core.Interfaces;
 using BootSentry.UI.Controls;
 
 namespace BootSentry.UI.Services;
@@ -6,7 +8,7 @@ namespace BootSentry.UI.Services;
 /// <summary>
 /// Service for displaying toast notifications.
 /// </summary>
-public class ToastService
+public class ToastService : IToastService
 {
     private System.Windows.Controls.Panel? _container;
     private readonly Queue<(string message, ToastType type)> _queue = new();
@@ -51,11 +53,11 @@ public class ToastService
         // Adaptive duration based on toast type
         var duration = durationMs ?? type switch
         {
-            ToastType.Info => 2500,
-            ToastType.Success => 3500,
-            ToastType.Warning => 5000,
-            ToastType.Error => 6000,
-            _ => 3000
+            ToastType.Info => Constants.Toast.InfoDurationMs,
+            ToastType.Success => Constants.Toast.SuccessDurationMs,
+            ToastType.Warning => Constants.Toast.WarningDurationMs,
+            ToastType.Error => Constants.Toast.ErrorDurationMs,
+            _ => Constants.Toast.DefaultDurationMs
         };
 
         Application.Current.Dispatcher.Invoke(async () =>

@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models.Integrations;
 using Microsoft.Extensions.Logging;
 
@@ -8,13 +9,13 @@ namespace BootSentry.Core.Services.Integrations;
 /// <summary>
 /// Service to interact with VirusTotal API v3.
 /// </summary>
-public class VirusTotalService : IDisposable
+public class VirusTotalService : IVirusTotalService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<VirusTotalService> _logger;
     private string? _apiKey;
 
-    private const string BaseUrl = "https://www.virustotal.com/api/v3/";
+    private const string BaseUrl = Constants.Urls.VirusTotalApi;
 
     public VirusTotalService(ILogger<VirusTotalService> logger)
     {
@@ -50,7 +51,7 @@ public class VirusTotalService : IDisposable
 
         try
         {
-            var response = await _httpClient.GetAsync($"files/{hash}", cancellationToken);
+            var response = await _httpClient.GetAsync($"files/{hash}", cancellationToken).ConfigureAwait(false);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -75,7 +76,7 @@ public class VirusTotalService : IDisposable
 
             response.EnsureSuccessStatusCode();
 
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var vtResponse = JsonSerializer.Deserialize<VirusTotalResponse>(json);
 
             return vtResponse?.Data;

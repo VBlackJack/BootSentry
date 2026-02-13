@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using BootSentry.Core.Interfaces;
 using BootSentry.Knowledge.Models;
 
 namespace BootSentry.Knowledge.Services;
@@ -6,7 +7,7 @@ namespace BootSentry.Knowledge.Services;
 /// <summary>
 /// Service for querying the knowledge base.
 /// </summary>
-public class KnowledgeService : IDisposable
+public class KnowledgeService : IKnowledgeService
 {
     private readonly SqliteConnection _connection;
     private readonly string _dbPath;
@@ -479,6 +480,13 @@ public class KnowledgeService : IDisposable
             return null;
         }
     }
+
+    /// <summary>
+    /// Explicit interface implementation bridging the strongly-typed FindEntry
+    /// to the untyped IKnowledgeService contract.
+    /// </summary>
+    object? IKnowledgeService.FindEntry(string? name, string? executable, string? publisher)
+        => FindEntry(name, executable, publisher);
 
     public void Dispose()
     {

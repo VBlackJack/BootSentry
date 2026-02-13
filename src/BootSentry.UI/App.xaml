@@ -28,6 +28,7 @@
             <converters:ScanResultToStringConverter x:Key="ScanResultToString"/>
             <converters:SafetyLevelToStringConverter x:Key="SafetyLevelToString"/>
             <converters:NotZeroToVisibilityConverter x:Key="NotZeroToVisibility"/>
+            <converters:EnumToLocalizedStringConverter x:Key="EnumToLocalizedString"/>
 
             <!-- Spacing Scale (8px base) -->
             <system:Double x:Key="SpacingXS">4</system:Double>

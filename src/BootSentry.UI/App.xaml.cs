@@ -5,12 +5,15 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using BootSentry.Actions;
 using BootSentry.Backup;
+using BootSentry.Core;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Services;
 using BootSentry.Core.Services.Integrations;
 using BootSentry.Knowledge.Services;
 using BootSentry.Providers;
 using BootSentry.Security;
+using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
 using BootSentry.UI.ViewModels;
 
@@ -22,7 +25,6 @@ namespace BootSentry.UI;
 public partial class App : Application
 {
     private static Mutex? _mutex;
-    private const string MutexName = @"Global\BootSentryMutex";
 
     public static IServiceProvider Services { get; private set; } = null!;
     
@@ -34,8 +36,8 @@ public partial class App : Application
         if (!AcquireSingleInstance())
         {
             MessageBox.Show(
-                "BootSentry est déjà en cours d'exécution.",
-                "BootSentry",
+                Strings.Get("AppAlreadyRunning"),
+                Constants.AppName,
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             Shutdown();
@@ -45,17 +47,17 @@ public partial class App : Application
         // Ensure log directory exists
         var logDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "BootSentry", "Logs");
+            Constants.AppName, Constants.Directories.Logs);
         Directory.CreateDirectory(logDir);
 
-        var logPath = Path.Combine(logDir, "bootsentry-.log");
+        var logPath = Path.Combine(logDir, Constants.Files.LogFilePattern);
 
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.File(logPath,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 30,
+                retainedFileCountLimit: Constants.Logging.RetainedFileCountLimit,
                 outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
 
@@ -74,6 +76,9 @@ public partial class App : Application
 
         // Initialize localization
         BootSentry.UI.Resources.Strings.CurrentLanguage = settingsService.Settings.Language;
+
+        // Wire up localization resolver for non-UI layers (providers, etc.)
+        Localize.SetResolver(Strings.Get);
 
         // Initialize tray icon service
         var trayService = Services.GetRequiredService<TrayIconService>();
@@ -98,6 +103,9 @@ public partial class App : Application
         var themeService = Services.GetService<ThemeService>();
         themeService?.Dispose();
 
+        if (Services is IDisposable disposable)
+            disposable.Dispose();
+
         Log.CloseAndFlush();
 
         _mutex?.ReleaseMutex();
@@ -108,7 +116,7 @@ public partial class App : Application
 
     private static bool AcquireSingleInstance()
     {
-        _mutex = new Mutex(true, MutexName, out bool createdNew);
+        _mutex = new Mutex(true, Constants.MutexName, out bool createdNew);
         if (!createdNew)
         {
             _mutex.Dispose();
@@ -135,30 +143,37 @@ public partial class App : Application
 
         // UI Services
         services.AddSingleton<SettingsService>();
+        services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<ThemeService>();
         services.AddSingleton<ToastService>();
+        services.AddSingleton<IToastService>(sp => sp.GetRequiredService<ToastService>());
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
 
         // Core services
         services.AddSingleton<IRiskService, RiskAnalyzer>();
         services.AddSingleton<SnapshotManager>();
+        services.AddSingleton<ISnapshotManager>(sp => sp.GetRequiredService<SnapshotManager>());
         services.AddSingleton<StartupWatchdog>();
         services.AddSingleton<TrayIconService>();
-        
+
         // Integrations
-        services.AddSingleton<VirusTotalService>(sp => 
+        services.AddSingleton<VirusTotalService>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<VirusTotalService>>();
             var service = new VirusTotalService(logger);
-            
+
             // Configure API key if available
             var settings = sp.GetRequiredService<SettingsService>();
             if (!string.IsNullOrEmpty(settings.Settings.VirusTotalApiKey))
             {
                 service.SetApiKey(settings.Settings.VirusTotalApiKey);
             }
-            
+
             return service;
         });
+        services.AddSingleton<IVirusTotalService>(sp => sp.GetRequiredService<VirusTotalService>());
 
         // Knowledge base
         services.AddSingleton<KnowledgeService>(sp =>
@@ -167,6 +182,7 @@ public partial class App : Application
             service.SeedIfEmpty();
             return service;
         });
+        services.AddSingleton<IKnowledgeService>(sp => sp.GetRequiredService<KnowledgeService>());
 
         // ExportService (needs KnowledgeService for knowledge matching)
         services.AddSingleton<ExportService>(sp =>
@@ -174,6 +190,7 @@ public partial class App : Application
             var knowledgeService = sp.GetRequiredService<KnowledgeService>();
             return new ExportService((name, exe, pub) => knowledgeService.FindEntry(name, exe, pub));
         });
+        services.AddSingleton<IExportService>(sp => sp.GetRequiredService<ExportService>());
 
         // ViewModels
         services.AddTransient<MainViewModel>();

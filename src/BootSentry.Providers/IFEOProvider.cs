@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Providers;
@@ -37,7 +38,7 @@ public sealed class IFEOProvider : IStartupProvider
         var entries = new List<StartupEntry>();
 
         // Scan HKLM IFEO
-        await ScanIFEOAsync(Registry.LocalMachine, EntryScope.Machine, entries, cancellationToken);
+        await ScanIFEOAsync(Registry.LocalMachine, EntryScope.Machine, entries, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} IFEO entries", entries.Count);
         return entries;
@@ -72,7 +73,7 @@ public sealed class IFEOProvider : IStartupProvider
                     if (!string.IsNullOrEmpty(debugger))
                     {
                         var entry = await CreateEntryFromDebuggerAsync(
-                            subKeyName, debugger, scope, cancellationToken);
+                            subKeyName, debugger, scope, cancellationToken).ConfigureAwait(false);
                         if (entry != null)
                         {
                             entries.Add(entry);
@@ -137,7 +138,7 @@ public sealed class IFEOProvider : IStartupProvider
         // Enrich with file metadata if target exists
         if (fileExists && targetPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;
@@ -199,10 +200,10 @@ public sealed class IFEOProvider : IStartupProvider
     {
         return riskLevel switch
         {
-            RiskLevel.Critical => $"ATTENTION: Debugger IFEO sur {applicationName} - vecteur malware courant!",
-            RiskLevel.Suspicious => $"Debugger IFEO suspect pour {applicationName}",
-            RiskLevel.Safe => $"Debugger légitime pour {applicationName}",
-            _ => $"Debugger IFEO pour {applicationName}"
+            RiskLevel.Critical => Localize.Format("ProviderIFEOWarning", applicationName),
+            RiskLevel.Suspicious => Localize.Format("ProviderIFEOSuspicious", applicationName),
+            RiskLevel.Safe => Localize.Format("ProviderIFEOLegitimate", applicationName),
+            _ => Localize.Format("ProviderIFEOGeneric", applicationName)
         };
     }
 
@@ -223,7 +224,7 @@ public sealed class IFEOProvider : IStartupProvider
 
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
 
                 if (!string.IsNullOrEmpty(sigInfo.SignerName))

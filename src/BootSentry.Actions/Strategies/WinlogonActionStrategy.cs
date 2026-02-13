@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
+using BootSentry.Core;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
@@ -22,11 +23,13 @@ public sealed class WinlogonActionStrategy : IActionStrategy
     /// Default values for critical Winlogon entries.
     /// Deleting these values would cause Windows to fail to boot properly.
     /// </summary>
-    internal static readonly Dictionary<string, string> DefaultValues = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Shell"] = "explorer.exe",
-        ["Userinit"] = @"C:\Windows\system32\userinit.exe,", // Trailing comma is important
-    };
+    private static Dictionary<string, string>? _defaultValues;
+    internal static Dictionary<string, string> DefaultValues =>
+        _defaultValues ??= new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Shell"] = Constants.Paths.DefaultShell,
+            ["Userinit"] = Constants.Paths.DefaultUserInitPath, // Trailing comma is included in the constant
+        };
 
     /// <summary>
     /// Checks if a value name is critical and should be reset instead of deleted.
@@ -103,7 +106,7 @@ public sealed class WinlogonActionStrategy : IActionStrategy
             }
 
             // Create backup transaction first
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -125,7 +128,7 @@ public sealed class WinlogonActionStrategy : IActionStrategy
 
                     key.SetValue(entry.SourceName, defaultValue, RegistryValueKind.String);
 
-                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                     _logger.LogInformation("Successfully reset Winlogon entry: {Name}", entry.DisplayName);
 
@@ -138,7 +141,7 @@ public sealed class WinlogonActionStrategy : IActionStrategy
 
                     key.DeleteValue(entry.SourceName, throwOnMissingValue: false);
 
-                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                     _logger.LogInformation("Successfully deleted Winlogon entry: {Name}", entry.DisplayName);
 
@@ -147,7 +150,7 @@ public sealed class WinlogonActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

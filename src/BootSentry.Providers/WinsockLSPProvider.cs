@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Providers;
@@ -66,7 +67,7 @@ public sealed class WinsockLSPProvider : IStartupProvider
             // Also check Wow6432Node for 32-bit entries
             ScanCatalog($@"Wow6432Node\{WinsockCatalogPath}\{ProtocolCatalogPath}", "Protocol32", entries, cancellationToken);
             ScanCatalog($@"Wow6432Node\{WinsockCatalogPath}\{NamespaceCatalogPath}", "Namespace32", entries, cancellationToken);
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} Winsock LSP entries", entries.Count);
         return entries;
@@ -252,9 +253,9 @@ public sealed class WinsockLSPProvider : IStartupProvider
     {
         return riskLevel switch
         {
-            RiskLevel.Safe => $"LSP Windows standard ({catalogType})",
-            RiskLevel.Suspicious => $"LSP suspect - vecteur malware potentiel ({catalogType})",
-            RiskLevel.Critical => $"LSP critique - analyser immédiatement ({catalogType})",
+            RiskLevel.Safe => $"{Localize.Get("ProviderWinsockStandard")} ({catalogType})",
+            RiskLevel.Suspicious => $"{Localize.Get("ProviderWinsockSuspicious")} ({catalogType})",
+            RiskLevel.Critical => $"{Localize.Get("ProviderWinsockCritical")} ({catalogType})",
             _ => $"Winsock LSP ({catalogType})"
         };
     }

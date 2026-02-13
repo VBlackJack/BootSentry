@@ -51,7 +51,7 @@
                   RowBackground="{DynamicResource PanelBackground}"
                   AlternatingRowBackground="{DynamicResource RowAlternate}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="{res:Localize HistoryDate}" Binding="{Binding Timestamp, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="130"/>
+                <DataGridTextColumn Header="{res:Localize HistoryDate}" Binding="{Binding Timestamp, StringFormat='{}{0:g}'}" Width="130"/>
                 <DataGridTextColumn Header="{res:Localize HistoryAction}" Binding="{Binding ActionType}" Width="80"/>
                 <DataGridTextColumn Header="{res:Localize HistoryEntry}" Binding="{Binding EntryDisplayName}" Width="*"/>
                 <DataGridTextColumn Header="{res:Localize HistoryType}" Binding="{Binding EntryType}" Width="100"/>

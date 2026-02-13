@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
             catch (InvalidOperationException ex)
             {
                 logger.LogWarning(ex, "AMSI is not available on this system. Malware scanning will be disabled.");
-                return null!;
+                return new NullMalwareScanner(logger);
             }
         });
 

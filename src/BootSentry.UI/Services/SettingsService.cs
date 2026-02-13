@@ -1,6 +1,8 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BootSentry.Core;
+using BootSentry.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BootSentry.UI.Services;
@@ -8,7 +10,7 @@ namespace BootSentry.UI.Services;
 /// <summary>
 /// Service for managing application settings.
 /// </summary>
-public class SettingsService
+public class SettingsService : ISettingsService
 {
     private readonly ILogger<SettingsService> _logger;
     private readonly string _settingsPath;
@@ -26,10 +28,10 @@ public class SettingsService
 
         var appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "BootSentry");
+            Constants.AppName);
 
         Directory.CreateDirectory(appDataPath);
-        _settingsPath = Path.Combine(appDataPath, "settings.json");
+        _settingsPath = Path.Combine(appDataPath, Constants.Files.Settings);
         _settings = new AppSettings();
     }
 
@@ -106,7 +108,7 @@ public class SettingsService
         {
             var logsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "BootSentry", "Logs");
+                Constants.AppName, Constants.Directories.Logs);
             if (Directory.Exists(logsPath))
             {
                 Directory.Delete(logsPath, true);
@@ -123,7 +125,7 @@ public class SettingsService
         {
             var backupsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "BootSentry", "Backups");
+                Constants.AppName, Constants.Directories.Backups);
             if (Directory.Exists(backupsPath))
             {
                 Directory.Delete(backupsPath, true);
@@ -140,13 +142,13 @@ public class SettingsService
         {
             var localPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "BootSentry");
+                Constants.AppName);
             if (Directory.Exists(localPath))
             {
                 // Keep settings file, delete others
                 foreach (var file in Directory.GetFiles(localPath))
                 {
-                    if (!file.EndsWith("settings.json"))
+                    if (!file.EndsWith(Constants.Files.Settings))
                     {
                         try
                         {
@@ -179,7 +181,7 @@ public class AppSettings
     /// <summary>
     /// Current language code (fr, en).
     /// </summary>
-    public string Language { get; set; } = "fr";
+    public string Language { get; set; } = Constants.Defaults.Language;
 
     /// <summary>
     /// Theme mode (System, Light, Dark).
@@ -199,7 +201,7 @@ public class AppSettings
     /// <summary>
     /// Days to retain backups (0 = forever).
     /// </summary>
-    public int BackupRetentionDays { get; set; } = 30;
+    public int BackupRetentionDays { get; set; } = Constants.Defaults.BackupRetentionDays;
 
     /// <summary>
     /// Whether to show onboarding on first launch.
@@ -234,7 +236,7 @@ public class AppSettings
     /// <summary>
     /// Whether to hide Microsoft system entries (Services/Drivers) from the list.
     /// </summary>
-    public bool HideMicrosoftEntries { get; set; } = true;
+    public bool HideMicrosoftEntries { get; set; } = Constants.Defaults.HideMicrosoftEntries;
 
     /// <summary>
     /// Whether to enable real-time startup monitoring.
@@ -279,8 +281,8 @@ public class AppSettings
             }
             catch
             {
-                // Fallback for migration: treat as clear text if decryption fails
-                VirusTotalApiKey = value;
+                // Do not accept cleartext fallback for security reasons
+                VirusTotalApiKey = null;
             }
         }
     }

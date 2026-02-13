@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 using BootSentry.Core.Parsing;
 
@@ -48,7 +49,7 @@ public sealed class AppInitDllsProvider : IStartupProvider
                 cancellationToken.ThrowIfCancellationRequested();
                 ScanLocation(location.Path, location.View, entries);
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} AppInit_DLLs entries", entries.Count);
         return entries;
@@ -117,7 +118,7 @@ public sealed class AppInitDllsProvider : IStartupProvider
             RiskLevel = RiskLevel.Critical,
             RegistryView = view,
             IsProtected = false,
-            Notes = "AppInit_DLLs - vecteur de persistence malware courant"
+            Notes = Localize.Get("ProviderAppInitMalwareVector")
         };
 
         if (fileExists)
@@ -135,7 +136,7 @@ public sealed class AppInitDllsProvider : IStartupProvider
                 if (versionInfo.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     entry.RiskLevel = RiskLevel.Suspicious;
-                    entry.Notes = "DLL Microsoft dans AppInit_DLLs - inhabituel";
+                    entry.Notes = Localize.Get("ProviderAppInitMicrosoftUnusual");
                 }
             }
             catch (Exception ex)
@@ -145,7 +146,7 @@ public sealed class AppInitDllsProvider : IStartupProvider
         }
         else
         {
-            entry.Notes = "DLL introuvable - entrée orpheline suspecte";
+            entry.Notes = Localize.Get("ProviderAppInitOrphan");
         }
 
         return entry;

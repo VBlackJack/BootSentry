@@ -22,13 +22,20 @@ public partial class HistoryView : Window
 
     private async void HistoryView_Loaded(object sender, RoutedEventArgs e)
     {
-        // Apply title bar theme
-        var themeService = App.Services.GetRequiredService<ThemeService>();
-        ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
-
-        if (DataContext is HistoryViewModel vm)
+        try
         {
-            await vm.LoadTransactionsCommand.ExecuteAsync(null);
+            // Apply title bar theme
+            var themeService = App.Services.GetRequiredService<ThemeService>();
+            ThemeService.ApplyTitleBarToWindow(this, themeService.IsDarkTheme);
+
+            if (DataContext is HistoryViewModel vm)
+            {
+                await vm.LoadTransactionsCommand.ExecuteAsync(null);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in HistoryView_Loaded: {ex}");
         }
     }
 

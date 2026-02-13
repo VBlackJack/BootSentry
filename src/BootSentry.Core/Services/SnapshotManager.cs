@@ -9,7 +9,7 @@ namespace BootSentry.Core.Services;
 /// <summary>
 /// Manages creating, saving, loading and comparing startup snapshots.
 /// </summary>
-public class SnapshotManager
+public class SnapshotManager : ISnapshotManager
 {
     private readonly ILogger<SnapshotManager> _logger;
     private readonly string _snapshotDirectory;
@@ -27,7 +27,7 @@ public class SnapshotManager
         _logger = logger;
         // Store snapshots in %LocalAppData%\BootSentry\Snapshots
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        _snapshotDirectory = Path.Combine(appData, "BootSentry", "Snapshots");
+        _snapshotDirectory = Path.Combine(appData, Constants.AppName, Constants.Directories.Snapshots);
         
         if (!Directory.Exists(_snapshotDirectory))
         {
@@ -61,7 +61,7 @@ public class SnapshotManager
         try
         {
             await using var stream = File.Create(filePath);
-            await JsonSerializer.SerializeAsync(stream, snapshot, JsonOptions);
+            await JsonSerializer.SerializeAsync(stream, snapshot, JsonOptions).ConfigureAwait(false);
             _logger.LogInformation("Snapshot saved to {Path}", filePath);
         }
         catch (Exception ex)
@@ -84,7 +84,7 @@ public class SnapshotManager
             try
             {
                 await using var stream = File.OpenRead(file);
-                var snapshot = await JsonSerializer.DeserializeAsync<StartupSnapshot>(stream, JsonOptions);
+                var snapshot = await JsonSerializer.DeserializeAsync<StartupSnapshot>(stream, JsonOptions).ConfigureAwait(false);
                 if (snapshot != null)
                 {
                     snapshots.Add(snapshot);
@@ -134,40 +134,66 @@ public class SnapshotManager
     public SnapshotComparisonResult Compare(StartupSnapshot baseSnapshot, StartupSnapshot targetSnapshot)
     {
         var result = new SnapshotComparisonResult(baseSnapshot, targetSnapshot);
-        
-        // Index entries by ID for fast lookup
-        var baseEntries = baseSnapshot.Entries.ToDictionary(e => e.Id);
-        var targetEntries = targetSnapshot.Entries.ToDictionary(e => e.Id);
 
-        // Check for Added (in target but not base)
-        foreach (var entry in targetSnapshot.Entries)
+        // Build maps resilient to duplicate IDs (can happen with profile-based entries in old snapshots).
+        var baseEntries = BuildUniqueEntryMap(baseSnapshot.Entries);
+        var targetEntries = BuildUniqueEntryMap(targetSnapshot.Entries);
+
+        // Check for Added and Modified (in target).
+        foreach (var (key, targetEntry) in targetEntries)
         {
-            if (!baseEntries.ContainsKey(entry.Id))
+            if (!baseEntries.TryGetValue(key, out var baseEntry))
             {
-                result.AddedEntries.Add(entry);
+                result.AddedEntries.Add(targetEntry);
+                continue;
             }
-            else
+
+            var diff = CompareEntries(baseEntry, targetEntry);
+            if (diff != null)
             {
-                // Check for Modifications
-                var baseEntry = baseEntries[entry.Id];
-                var diff = CompareEntries(baseEntry, entry);
-                if (diff != null)
-                {
-                    result.ModifiedEntries.Add(diff);
-                }
+                result.ModifiedEntries.Add(diff);
             }
         }
 
-        // Check for Removed (in base but not target)
-        foreach (var entry in baseSnapshot.Entries)
+        // Check for Removed (in base but not target).
+        foreach (var (key, baseEntry) in baseEntries)
         {
-            if (!targetEntries.ContainsKey(entry.Id))
+            if (!targetEntries.ContainsKey(key))
             {
-                result.RemovedEntries.Add(entry);
+                result.RemovedEntries.Add(baseEntry);
             }
         }
 
         return result;
+    }
+
+    private static Dictionary<string, StartupEntry> BuildUniqueEntryMap(IEnumerable<StartupEntry> entries)
+    {
+        var map = new Dictionary<string, StartupEntry>(StringComparer.Ordinal);
+        var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var entry in entries)
+        {
+            var baseKey = BuildEntryBaseKey(entry);
+            occurrences.TryGetValue(baseKey, out var count);
+            occurrences[baseKey] = count + 1;
+
+            var uniqueKey = $"{baseKey}#{count}";
+            map[uniqueKey] = entry;
+        }
+
+        return map;
+    }
+
+    private static string BuildEntryBaseKey(StartupEntry entry)
+    {
+        return string.Join("|",
+            entry.Id,
+            entry.Type,
+            entry.Scope,
+            entry.SourcePath,
+            entry.SourceName ?? string.Empty,
+            entry.DisplayName);
     }
 
     private EntryDifference? CompareEntries(StartupEntry baseEntry, StartupEntry targetEntry)

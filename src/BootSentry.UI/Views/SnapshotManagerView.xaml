@@ -1,11 +1,12 @@
 <UserControl x:Class="BootSentry.UI.Views.SnapshotManagerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:BootSentry.UI.Views"
              xmlns:vm="clr-namespace:BootSentry.UI.ViewModels"
-             mc:Ignorable="d" 
+             xmlns:res="clr-namespace:BootSentry.UI.Resources"
+             mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="800">
     <Grid Background="{DynamicResource PanelBackground}">
         <Grid.ColumnDefinitions>
@@ -22,7 +23,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Snapshots" Style="{StaticResource SectionHeader}" Margin="0,0,0,12"/>
+                <TextBlock Text="{res:Localize SnapshotSidebarTitle}" Style="{StaticResource SectionHeader}" Margin="0,0,0,12"/>
 
                 <ListBox Grid.Row="1" ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}"
                          Background="Transparent" BorderThickness="0">
@@ -41,7 +42,7 @@
                                     <Button Command="{Binding DataContext.DeleteSnapshotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
                                             Background="Transparent" BorderThickness="0"
-                                            ToolTip="Delete Snapshot">
+                                            ToolTip="{res:Localize SnapshotDeleteTooltip}">
                                         <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource DangerBrush}"/>
                                     </Button>
                                 </Grid>
@@ -50,7 +51,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Button Grid.Row="2" Command="{Binding CreateSnapshotCommand}" Content="Create New Snapshot" Margin="0,12,0,0"/>
+                <Button Grid.Row="2" Command="{Binding CreateSnapshotCommand}" Content="{res:Localize SnapshotCreate}" Margin="0,12,0,0"/>
             </Grid>
         </Border>
 
@@ -59,14 +60,14 @@
             <!-- No Selection State -->
             <StackPanel Visibility="{Binding SelectedSnapshot, Converter={StaticResource NullToVisibility}}"
                         HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Select a snapshot to view details" Foreground="{DynamicResource MutedForeground}"/>
+                <TextBlock Text="{res:Localize SnapshotSelectHint}" Foreground="{DynamicResource MutedForeground}"/>
             </StackPanel>
 
             <!-- Loading State -->
             <StackPanel Visibility="{Binding IsComparing, Converter={StaticResource BoolToVisibility}}"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="10">
                 <ProgressBar IsIndeterminate="True" Width="150" Height="4" Margin="0,0,0,12"/>
-                <TextBlock Text="Comparing snapshots..." Foreground="{DynamicResource MutedForeground}"/>
+                <TextBlock Text="{res:Localize SnapshotComparing}" Foreground="{DynamicResource MutedForeground}"/>
             </StackPanel>
 
             <!-- Selected Snapshot Details -->
@@ -86,14 +87,14 @@
 
                 <!-- Actions -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
-                    <Button Command="{Binding CompareWithCurrentCommand}" Content="Compare with Current State"
+                    <Button Command="{Binding CompareWithCurrentCommand}" Content="{res:Localize SnapshotCompareWithCurrent}"
                             IsEnabled="{Binding IsComparing, Converter={StaticResource InverseBool}}"/>
                 </StackPanel>
 
                 <!-- Comparison Result -->
                 <ScrollViewer Grid.Row="2" Visibility="{Binding ComparisonResult, Converter={StaticResource NotNullToVisibility}}">
                     <StackPanel>
-                        <TextBlock Text="Comparison Results" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="{res:Localize SnapshotComparisonTitle}" Style="{StaticResource SectionHeader}"/>
 
                         <!-- Changes Summary -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -109,7 +110,7 @@
                         </StackPanel>
 
                         <!-- Added Entries -->
-                        <Expander Header="Added Entries" IsExpanded="True" 
+                        <Expander Header="{res:Localize SnapshotAddedEntries}" IsExpanded="True"
                                   Visibility="{Binding ComparisonResult.AddedEntries.Count, Converter={StaticResource NotZeroToVisibility}}">
                             <ItemsControl ItemsSource="{Binding ComparisonResult.AddedEntries}">
                                 <ItemsControl.ItemTemplate>
@@ -133,7 +134,7 @@
                         </Expander>
 
                         <!-- Removed Entries -->
-                        <Expander Header="Removed Entries" IsExpanded="True" Margin="0,8,0,0"
+                        <Expander Header="{res:Localize SnapshotRemovedEntries}" IsExpanded="True" Margin="0,8,0,0"
                                   Visibility="{Binding ComparisonResult.RemovedEntries.Count, Converter={StaticResource NotZeroToVisibility}}">
                             <ItemsControl ItemsSource="{Binding ComparisonResult.RemovedEntries}">
                                 <ItemsControl.ItemTemplate>
@@ -157,7 +158,7 @@
                         </Expander>
 
                         <!-- Modified Entries -->
-                        <Expander Header="Modified Entries" IsExpanded="True" Margin="0,8,0,0"
+                        <Expander Header="{res:Localize SnapshotModifiedEntries}" IsExpanded="True" Margin="0,8,0,0"
                                   Visibility="{Binding ComparisonResult.ModifiedEntries.Count, Converter={StaticResource NotZeroToVisibility}}">
                             <ItemsControl ItemsSource="{Binding ComparisonResult.ModifiedEntries}">
                                 <ItemsControl.ItemTemplate>

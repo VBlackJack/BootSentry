@@ -35,23 +35,23 @@ public sealed class BrowserExtensionActionStrategy : IActionStrategy
         return true;
     }
 
-    public async Task<ActionResult> DisableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
+    public Task<ActionResult> DisableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
         if (entry.Type != EntryType.BrowserExtension)
         {
-            return ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE");
+            return Task.FromResult(ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE"));
         }
 
         var extensionId = entry.SourceName;
         if (string.IsNullOrWhiteSpace(extensionId))
         {
-            return ActionResult.Fail("Extension ID not found", "ERR_NO_EXTENSION_ID");
+            return Task.FromResult(ActionResult.Fail("Extension ID not found", "ERR_NO_EXTENSION_ID"));
         }
 
         var browserName = ExtractBrowserName(entry);
         if (string.IsNullOrWhiteSpace(browserName))
         {
-            return ActionResult.Fail("Could not determine browser type", "ERR_UNKNOWN_BROWSER");
+            return Task.FromResult(ActionResult.Fail("Could not determine browser type", "ERR_UNKNOWN_BROWSER"));
         }
 
         try
@@ -63,37 +63,37 @@ public sealed class BrowserExtensionActionStrategy : IActionStrategy
             entry.Status = EntryStatus.Disabled;
             _logger.LogInformation("Successfully disabled extension {ExtensionId}", extensionId);
 
-            return await Task.FromResult(ActionResult.Ok(entry));
+            return Task.FromResult(ActionResult.Ok(entry));
         }
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogError(ex, "Access denied disabling extension {ExtensionId}", extensionId);
-            return ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED");
+            return Task.FromResult(ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error disabling extension {ExtensionId}", extensionId);
-            return ActionResult.Fail(ex.Message, "ERR_DISABLE_FAILED");
+            return Task.FromResult(ActionResult.Fail(ex.Message, "ERR_DISABLE_FAILED"));
         }
     }
 
-    public async Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
+    public Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
         if (entry.Type != EntryType.BrowserExtension)
         {
-            return ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE");
+            return Task.FromResult(ActionResult.Fail("Invalid entry type for this strategy", "ERR_INVALID_TYPE"));
         }
 
         var extensionId = entry.SourceName;
         if (string.IsNullOrWhiteSpace(extensionId))
         {
-            return ActionResult.Fail("Extension ID not found", "ERR_NO_EXTENSION_ID");
+            return Task.FromResult(ActionResult.Fail("Extension ID not found", "ERR_NO_EXTENSION_ID"));
         }
 
         var browserName = ExtractBrowserName(entry);
         if (string.IsNullOrWhiteSpace(browserName))
         {
-            return ActionResult.Fail("Could not determine browser type", "ERR_UNKNOWN_BROWSER");
+            return Task.FromResult(ActionResult.Fail("Could not determine browser type", "ERR_UNKNOWN_BROWSER"));
         }
 
         try
@@ -105,17 +105,17 @@ public sealed class BrowserExtensionActionStrategy : IActionStrategy
             entry.Status = EntryStatus.Enabled;
             _logger.LogInformation("Successfully enabled extension {ExtensionId}", extensionId);
 
-            return await Task.FromResult(ActionResult.Ok(entry));
+            return Task.FromResult(ActionResult.Ok(entry));
         }
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogError(ex, "Access denied enabling extension {ExtensionId}", extensionId);
-            return ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED");
+            return Task.FromResult(ActionResult.Fail("Access denied. Administrator privileges required.", "ERR_ACCESS_DENIED"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error enabling extension {ExtensionId}", extensionId);
-            return ActionResult.Fail(ex.Message, "ERR_ENABLE_FAILED");
+            return Task.FromResult(ActionResult.Fail(ex.Message, "ERR_ENABLE_FAILED"));
         }
     }
 

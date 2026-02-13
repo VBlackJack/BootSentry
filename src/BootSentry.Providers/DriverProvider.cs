@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 
 namespace BootSentry.Providers;
@@ -64,7 +65,7 @@ public sealed class DriverProvider : IStartupProvider
                     if (!BootStartTypes.Contains(startType))
                         continue;
 
-                    var entry = await CreateDriverEntryAsync(serviceName, serviceKey, startType, cancellationToken);
+                    var entry = await CreateDriverEntryAsync(serviceName, serviceKey, startType, cancellationToken).ConfigureAwait(false);
                     if (entry != null)
                     {
                         entries.Add(entry);
@@ -139,7 +140,7 @@ public sealed class DriverProvider : IStartupProvider
         // Enrich with file metadata
         if (fileExists && resolvedPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, resolvedPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, resolvedPath, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;
@@ -197,8 +198,8 @@ public sealed class DriverProvider : IStartupProvider
     private static string GenerateNotes(int startType, string? group)
     {
         var startName = GetStartTypeName(startType);
-        var groupInfo = string.IsNullOrEmpty(group) ? "" : $" (Groupe: {group})";
-        return $"Pilote {startName}{groupInfo}";
+        var groupInfo = string.IsNullOrEmpty(group) ? "" : $" ({Localize.Get("ProviderDriverGroup")}: {group})";
+        return $"{Localize.Format("ProviderDriverDescription", startName)}{groupInfo}";
     }
 
     // Drivers that should NEVER be disabled - system will not boot without them
@@ -268,14 +269,14 @@ public sealed class DriverProvider : IStartupProvider
     private static string? GetProtectionReason(string driverName, string? group)
     {
         if (CriticalBootDrivers.Contains(driverName))
-            return "CRITIQUE: Pilote de démarrage essentiel - Désactiver ce pilote rendra Windows NON DÉMARRABLE (BSOD)";
+            return Localize.Get("ProviderDriverCritical");
 
         if (CriticalSystemDrivers.Contains(driverName))
-            return "Pilote système important - La désactivation peut causer des dysfonctionnements majeurs";
+            return Localize.Get("ProviderDriverProtected");
 
         if (!string.IsNullOrEmpty(group) && CriticalGroups.Any(g =>
             group.Equals(g, StringComparison.OrdinalIgnoreCase)))
-            return $"Pilote du groupe critique '{group}' - Modification déconseillée";
+            return Localize.Format("ProviderDriverCriticalGroup", group);
 
         return null;
     }
@@ -314,7 +315,7 @@ public sealed class DriverProvider : IStartupProvider
 
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
 
                 if (!string.IsNullOrEmpty(sigInfo.SignerName))

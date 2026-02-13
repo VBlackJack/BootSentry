@@ -37,18 +37,18 @@ public sealed class AppInitActionStrategy : IActionStrategy
 
     public async Task<ActionResult> DisableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
-        return await RemoveDllFromListAsync(entry, ActionType.Disable, cancellationToken);
+        return await RemoveDllFromListAsync(entry, ActionType.Disable, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ActionResult> EnableAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
-        return await AddDllToListAsync(entry, cancellationToken);
+        return await AddDllToListAsync(entry, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ActionResult> DeleteAsync(StartupEntry entry, CancellationToken cancellationToken = default)
     {
         // Delete is same as Disable for AppInit_DLLs (remove from list)
-        return await RemoveDllFromListAsync(entry, ActionType.Delete, cancellationToken);
+        return await RemoveDllFromListAsync(entry, ActionType.Delete, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<ActionResult> RemoveDllFromListAsync(StartupEntry entry, ActionType actionType, CancellationToken cancellationToken)
@@ -84,7 +84,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
             }
 
             // Create backup transaction BEFORE making changes
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, actionType, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, actionType, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -112,7 +112,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
                 key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 entry.Status = EntryStatus.Disabled;
                 _logger.LogInformation("Successfully removed DLL from AppInit_DLLs. New value: '{Value}'", newValue);
@@ -121,7 +121,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }
@@ -170,7 +170,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
             }
 
             // Create backup transaction BEFORE making changes
-            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken);
+            var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Enable, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -188,7 +188,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
                 if (dlls.Any(d => AppInitDllParser.AreEquivalent(d, dllPath)))
                 {
                     _logger.LogInformation("DLL {DllPath} already in AppInit_DLLs list", dllPath);
-                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                    await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                     entry.Status = EntryStatus.Enabled;
                     return ActionResult.Ok(entry, transaction.Id);
                 }
@@ -201,7 +201,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
                 key.SetValue("AppInit_DLLs", newValue, RegistryValueKind.String);
 
                 // Commit transaction
-                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
 
                 entry.Status = EntryStatus.Enabled;
                 _logger.LogInformation("Successfully added DLL to AppInit_DLLs. New value: '{Value}'", newValue);
@@ -210,7 +210,7 @@ public sealed class AppInitActionStrategy : IActionStrategy
             }
             catch
             {
-                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken).ConfigureAwait(false);
                 throw;
             }
         }

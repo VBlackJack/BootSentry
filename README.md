@@ -1,4 +1,4 @@
-# BootSentry v1.1
+# BootSentry v1.2
 
 **Reprenez le contrôle du démarrage de Windows.**
 
@@ -15,7 +15,13 @@ BootSentry est un utilitaire de sécurité et d'optimisation conçu pour analyse
 
 ---
 
-## Nouveautés de la version 1.1
+## Nouveautés de la version 1.2
+
+* **Script de build unifié :** `build.ps1` orchestre clean, tests, publish et installeur en une seule commande.
+* **Déduplication registre :** Les entrées en double (active + désactivée) sont correctement fusionnées.
+* **Correction export CSV :** La neutralisation des formules CSV fonctionne avec tous les caractères spéciaux.
+
+### Rappel version 1.1
 
 * **Nouvelle Interface :** Navigation simplifiée par onglets (Applications, Navigateurs, Système).
 * **Mode "Filtre Microsoft" :** Masque automatiquement les services et applications Microsoft sûrs (OneDrive, Edge, Système) pour une lecture plus facile.
@@ -27,7 +33,7 @@ BootSentry est un utilitaire de sécurité et d'optimisation conçu pour analyse
 
 ## Installation
 
-1.  Téléchargez la dernière version (`BootSentry_Setup_v1.1.0.exe`) depuis la section **Releases**.
+1.  Téléchargez la dernière version (`BootSentry_Setup_v1.2.0.exe`) depuis la section **Releases**.
 2.  Lancez l'installateur.
     * *Note : Windows SmartScreen peut afficher un avertissement car l'application est récente. Cliquez sur "Informations complémentaires" > "Exécuter quand même".*
 3.  L'application se lancera automatiquement après l'installation.

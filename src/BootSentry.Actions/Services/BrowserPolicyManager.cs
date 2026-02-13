@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
 
 using BootSentry.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 namespace BootSentry.Actions.Services;
@@ -12,6 +13,7 @@ namespace BootSentry.Actions.Services;
 /// </summary>
 public sealed class BrowserPolicyManager : IBrowserPolicyManager
 {
+    private readonly ILogger<BrowserPolicyManager> _logger;
     // Chromium-based browsers blocklist paths
     private const string ChromeBlocklistPath = @"SOFTWARE\Policies\Google\Chrome\ExtensionInstallBlocklist";
     private const string EdgeBlocklistPath = @"SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallBlocklist";
@@ -21,6 +23,11 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
 
     // Firefox extensions policy path
     private const string FirefoxExtensionsPath = @"SOFTWARE\Policies\Mozilla\Firefox\Extensions";
+
+    public BrowserPolicyManager(ILogger<BrowserPolicyManager> logger)
+    {
+        _logger = logger;
+    }
 
     /// <inheritdoc />
     public void ToggleExtensionState(string extensionId, string browserName, bool shouldEnable)
@@ -66,18 +73,18 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
                     break;
 
                 default:
-                    Console.WriteLine($"Unsupported browser: {browserName}");
+                    _logger.LogWarning("Unsupported browser: {BrowserName}", browserName);
                     break;
             }
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"Access denied when modifying registry for {browserName}: {ex.Message}");
+            _logger.LogError(ex, "Access denied when modifying registry for {BrowserName}", browserName);
             throw;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error toggling extension state for {browserName}: {ex.Message}");
+            _logger.LogError(ex, "Error toggling extension state for {BrowserName}", browserName);
             throw;
         }
     }
@@ -105,7 +112,7 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error checking extension block status: {ex.Message}");
+            _logger.LogError(ex, "Error checking extension block status");
             return false;
         }
     }
@@ -135,7 +142,7 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
         using var key = Registry.LocalMachine.CreateSubKey(registryPath, writable: true);
         if (key == null)
         {
-            Console.WriteLine($"Failed to create registry key: {registryPath}");
+            _logger.LogWarning("Failed to create registry key: {RegistryPath}", registryPath);
             return;
         }
 
@@ -146,7 +153,7 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
             var value = key.GetValue(name) as string;
             if (string.Equals(value, extensionId, StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"Extension {extensionId} is already in the blocklist.");
+                _logger.LogInformation("Extension {ExtensionId} is already in the blocklist", extensionId);
                 return;
             }
         }
@@ -160,7 +167,7 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
 
         // Add the extension ID to the blocklist
         key.SetValue(nextIndex.ToString(), extensionId, RegistryValueKind.String);
-        Console.WriteLine($"Added extension {extensionId} to blocklist at index {nextIndex}");
+        _logger.LogInformation("Added extension {ExtensionId} to blocklist at index {Index}", extensionId, nextIndex);
     }
 
     /// <summary>
@@ -171,7 +178,7 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
         using var key = Registry.LocalMachine.OpenSubKey(registryPath, writable: true);
         if (key == null)
         {
-            Console.WriteLine($"Registry key does not exist: {registryPath}");
+            _logger.LogWarning("Registry key does not exist: {RegistryPath}", registryPath);
             return;
         }
 
@@ -182,12 +189,12 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
             if (string.Equals(value, extensionId, StringComparison.OrdinalIgnoreCase))
             {
                 key.DeleteValue(name);
-                Console.WriteLine($"Removed extension {extensionId} from blocklist (was at index {name})");
+                _logger.LogInformation("Removed extension {ExtensionId} from blocklist (was at index {Index})", extensionId, name);
                 return;
             }
         }
 
-        Console.WriteLine($"Extension {extensionId} was not found in the blocklist.");
+        _logger.LogInformation("Extension {ExtensionId} was not found in the blocklist", extensionId);
     }
 
     /// <summary>
@@ -235,13 +242,13 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
         using var key = Registry.LocalMachine.CreateSubKey(FirefoxExtensionsPath, writable: true);
         if (key == null)
         {
-            Console.WriteLine($"Failed to create registry key: {FirefoxExtensionsPath}");
+            _logger.LogWarning("Failed to create registry key: {RegistryPath}", FirefoxExtensionsPath);
             return;
         }
 
         // Set the extension ID as name with value "0" to block
         key.SetValue(extensionId, "0", RegistryValueKind.String);
-        Console.WriteLine($"Added Firefox extension policy to block {extensionId}");
+        _logger.LogInformation("Added Firefox extension policy to block {ExtensionId}", extensionId);
     }
 
     /// <summary>
@@ -252,18 +259,18 @@ public sealed class BrowserPolicyManager : IBrowserPolicyManager
         using var key = Registry.LocalMachine.OpenSubKey(FirefoxExtensionsPath, writable: true);
         if (key == null)
         {
-            Console.WriteLine($"Registry key does not exist: {FirefoxExtensionsPath}");
+            _logger.LogWarning("Registry key does not exist: {RegistryPath}", FirefoxExtensionsPath);
             return;
         }
 
         try
         {
             key.DeleteValue(extensionId);
-            Console.WriteLine($"Removed Firefox extension policy for {extensionId}");
+            _logger.LogInformation("Removed Firefox extension policy for {ExtensionId}", extensionId);
         }
         catch (ArgumentException)
         {
-            Console.WriteLine($"Firefox extension {extensionId} was not found in policy.");
+            _logger.LogInformation("Firefox extension {ExtensionId} was not found in policy", extensionId);
         }
     }
 

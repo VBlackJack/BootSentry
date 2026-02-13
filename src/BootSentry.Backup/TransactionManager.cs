@@ -60,11 +60,11 @@ public sealed class TransactionManager : ITransactionManager
         };
 
         // Backup the original data based on entry type
-        var payloadFiles = await BackupEntryDataAsync(transactionId, entry, cancellationToken);
+        var payloadFiles = await BackupEntryDataAsync(transactionId, entry, cancellationToken).ConfigureAwait(false);
         manifest.PayloadFiles.AddRange(payloadFiles);
 
         // Save manifest
-        await _storage.SaveManifestAsync(manifest, cancellationToken);
+        await _storage.SaveManifestAsync(manifest, cancellationToken).ConfigureAwait(false);
 
         return ManifestToTransaction(manifest, entry);
     }
@@ -72,7 +72,7 @@ public sealed class TransactionManager : ITransactionManager
     /// <inheritdoc/>
     public async Task CommitAsync(string transactionId, CancellationToken cancellationToken = default)
     {
-        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken);
+        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken).ConfigureAwait(false);
         if (manifest == null)
         {
             _logger.LogWarning("Transaction not found: {Id}", transactionId);
@@ -82,14 +82,18 @@ public sealed class TransactionManager : ITransactionManager
         manifest.Status = TransactionStatus.Committed;
         manifest.CompletedAt = DateTime.UtcNow;
 
-        await _storage.SaveManifestAsync(manifest, cancellationToken);
+        await _storage.SaveManifestAsync(manifest, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Transaction committed: {Id}", transactionId);
     }
 
     /// <inheritdoc/>
     public async Task<ActionResult> RollbackAsync(string transactionId, CancellationToken cancellationToken = default)
     {
-        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken);
+        // LoadManifestAsync already performs HMAC verification internally,
+        // but we log an additional rollback-specific integrity check here.
+        LogManifestIntegrityForRollback(transactionId);
+
+        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken).ConfigureAwait(false);
         if (manifest == null)
         {
             return ActionResult.Fail("Transaction not found", "ERR_TRANSACTION_NOT_FOUND");
@@ -100,7 +104,7 @@ public sealed class TransactionManager : ITransactionManager
             return ActionResult.Fail("This transaction cannot be restored", "ERR_CANNOT_RESTORE");
         }
 
-        if (manifest.Status != TransactionStatus.Committed)
+        if (manifest.Status is not (TransactionStatus.Pending or TransactionStatus.Committed))
         {
             return ActionResult.Fail(
                 $"Transaction is not in a restorable state: {manifest.Status}",
@@ -112,11 +116,11 @@ public sealed class TransactionManager : ITransactionManager
         try
         {
             // Restore based on entry type
-            await RestoreEntryDataAsync(manifest, cancellationToken);
+            await RestoreEntryDataAsync(manifest, cancellationToken).ConfigureAwait(false);
 
             manifest.Status = TransactionStatus.RolledBack;
             manifest.CompletedAt = DateTime.UtcNow;
-            await _storage.SaveManifestAsync(manifest, cancellationToken);
+            await _storage.SaveManifestAsync(manifest, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Transaction rolled back successfully: {Id}", transactionId);
             return ActionResult.Ok(transactionId: transactionId);
@@ -127,7 +131,7 @@ public sealed class TransactionManager : ITransactionManager
 
             manifest.Status = TransactionStatus.Failed;
             manifest.ErrorMessage = ex.Message;
-            await _storage.SaveManifestAsync(manifest, cancellationToken);
+            await _storage.SaveManifestAsync(manifest, cancellationToken).ConfigureAwait(false);
 
             return ActionResult.Fail(ex.Message, "ERR_ROLLBACK_FAILED");
         }
@@ -138,7 +142,7 @@ public sealed class TransactionManager : ITransactionManager
         int? limit = null,
         CancellationToken cancellationToken = default)
     {
-        var manifests = await _storage.GetAllManifestsAsync(cancellationToken);
+        var manifests = await _storage.GetAllManifestsAsync(cancellationToken).ConfigureAwait(false);
 
         if (limit.HasValue)
             manifests = manifests.Take(limit.Value).ToList();
@@ -149,7 +153,7 @@ public sealed class TransactionManager : ITransactionManager
     /// <inheritdoc/>
     public async Task<Transaction?> GetTransactionAsync(string transactionId, CancellationToken cancellationToken = default)
     {
-        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken);
+        var manifest = await _storage.LoadManifestAsync(transactionId, cancellationToken).ConfigureAwait(false);
         return manifest != null ? ManifestToTransaction(manifest, null) : null;
     }
 
@@ -159,7 +163,7 @@ public sealed class TransactionManager : ITransactionManager
         int? maxCount = null,
         CancellationToken cancellationToken = default)
     {
-        return await _storage.PurgeOldTransactionsAsync(maxAge, maxCount, cancellationToken);
+        return await _storage.PurgeOldTransactionsAsync(maxAge, maxCount, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<List<string>> BackupEntryDataAsync(
@@ -191,7 +195,7 @@ public sealed class TransactionManager : ITransactionManager
                             key,
                             entry.SourcePath,
                             entry.SourceName,
-                            cancellationToken);
+                            cancellationToken).ConfigureAwait(false);
                     }
                 }
                 break;
@@ -204,7 +208,7 @@ public sealed class TransactionManager : ITransactionManager
                     if (File.Exists(filePath))
                     {
                         var backupPath = await _storage.BackupFileAsync(
-                            transactionId, filePath, entry.SourceName, cancellationToken);
+                            transactionId, filePath, entry.SourceName, cancellationToken).ConfigureAwait(false);
                         payloadFiles.Add(backupPath);
                     }
                 }
@@ -229,7 +233,7 @@ public sealed class TransactionManager : ITransactionManager
                             serviceKey,
                             serviceRegistryPath,
                             "Start",
-                            cancellationToken);
+                            cancellationToken).ConfigureAwait(false);
 
                         // DelayedAutostart is optional but needed to restore "Automatic (Delayed)".
                         await BackupRegistryValueIfPresentAsync(
@@ -238,7 +242,7 @@ public sealed class TransactionManager : ITransactionManager
                             serviceKey,
                             serviceRegistryPath,
                             "DelayedAutostart",
-                            cancellationToken);
+                            cancellationToken).ConfigureAwait(false);
                     }
                 }
                 break;
@@ -257,17 +261,41 @@ public sealed class TransactionManager : ITransactionManager
             case EntryType.AppInitDlls:
             case EntryType.IFEO:
             case EntryType.Service:
-                await RestoreRegistryValuesAsync(manifest, cancellationToken);
+                await RestoreRegistryValuesAsync(manifest, cancellationToken).ConfigureAwait(false);
                 break;
 
             case EntryType.StartupFolder:
-                await RestoreStartupFileAsync(manifest, cancellationToken);
+                await RestoreStartupFileAsync(manifest, cancellationToken).ConfigureAwait(false);
                 break;
 
             case EntryType.ScheduledTask:
                 // Handled by action strategy
                 break;
         }
+    }
+
+    /// <summary>
+    /// Allowed registry key path prefixes for restore operations.
+    /// Prevents deserialized backup data from targeting arbitrary registry locations.
+    /// </summary>
+    private static readonly string[] AllowedRegistryPrefixes =
+    {
+        @"Software\", @"SOFTWARE\", @"SYSTEM\", @"HKEY_"
+    };
+
+    /// <summary>
+    /// Validates a registry key path from deserialized backup data before any write operation.
+    /// </summary>
+    private static void ValidateRegistryKeyPath(string keyPath)
+    {
+        if (string.IsNullOrWhiteSpace(keyPath))
+            throw new ArgumentException("Registry key path cannot be empty.");
+
+        if (keyPath.Contains(".."))
+            throw new ArgumentException("Registry key path contains path traversal.");
+
+        if (!AllowedRegistryPrefixes.Any(p => keyPath.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException($"Registry key path '{keyPath}' does not start with an allowed prefix.");
     }
 
     private async Task RestoreRegistryValuesAsync(TransactionManifest manifest, CancellationToken cancellationToken)
@@ -279,11 +307,13 @@ public sealed class TransactionManager : ITransactionManager
 
         foreach (var backupFile in manifest.PayloadFiles)
         {
-            var json = await File.ReadAllTextAsync(backupFile, cancellationToken);
+            var json = await File.ReadAllTextAsync(backupFile, cancellationToken).ConfigureAwait(false);
             var backupData = JsonSerializer.Deserialize<RegistryValueBackupData>(json)
                 ?? throw new InvalidOperationException($"Invalid registry backup payload: {backupFile}");
 
             var keyPath = backupData.KeyPath;
+            ValidateRegistryKeyPath(keyPath);
+
             var valueName = backupData.ValueName;
             var valueKindStr = backupData.ValueKind;
             var valueKind = Enum.Parse<RegistryValueKind>(valueKindStr);
@@ -315,7 +345,7 @@ public sealed class TransactionManager : ITransactionManager
 
         await using var source = new FileStream(backupFile, FileMode.Open, FileAccess.Read);
         await using var dest = new FileStream(destPath, FileMode.Create, FileAccess.Write);
-        await source.CopyToAsync(dest, cancellationToken);
+        await source.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Restored file: {Path}", destPath);
     }
@@ -414,7 +444,7 @@ public sealed class TransactionManager : ITransactionManager
             valueName,
             value ?? string.Empty,
             valueKind,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
 
         payloadFiles.Add(backupPath);
     }
@@ -431,5 +461,54 @@ public sealed class TransactionManager : ITransactionManager
                 : Convert.FromBase64String(backupData.BinaryBase64),
             _ => backupData.StringValue ?? string.Empty
         };
+    }
+
+    /// <summary>
+    /// Performs an explicit HMAC integrity check before rollback and logs the result.
+    /// This provides rollback-specific context in the logs beyond the generic load-time verification.
+    /// </summary>
+    private void LogManifestIntegrityForRollback(string transactionId)
+    {
+        var manifestPath = _storage.GetManifestPath(transactionId);
+        var hmacPath = _storage.GetManifestHmacPath(transactionId);
+
+        if (!File.Exists(manifestPath))
+            return;
+
+        if (!File.Exists(hmacPath))
+        {
+            _logger.LogWarning(
+                "Rollback requested for transaction {TransactionId} which has no HMAC sidecar; "
+                + "integrity of the manifest cannot be verified",
+                transactionId);
+            return;
+        }
+
+        try
+        {
+            var manifestJson = File.ReadAllText(manifestPath);
+            var storedHmac = File.ReadAllText(hmacPath).Trim();
+
+            if (!ManifestIntegrity.VerifyHmac(manifestJson, storedHmac))
+            {
+                _logger.LogWarning(
+                    "Rollback integrity check failed for transaction {TransactionId}; "
+                    + "the manifest may have been tampered with since it was created",
+                    transactionId);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Rollback integrity check passed for transaction {TransactionId}",
+                    transactionId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to verify manifest integrity for rollback of transaction {TransactionId}",
+                transactionId);
+        }
     }
 }

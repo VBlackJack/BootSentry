@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 using BootSentry.Core.Parsing;
 
@@ -44,7 +45,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
         foreach (var (root, path, scope) in PolicyPaths)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await ScanPolicyKeyAsync(root, path, scope, entries, cancellationToken);
+            await ScanPolicyKeyAsync(root, path, scope, entries, cancellationToken).ConfigureAwait(false);
         }
 
         _logger.LogInformation("Found {Count} policy entries", entries.Count);
@@ -80,7 +81,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
                         if (string.IsNullOrEmpty(value)) continue;
 
                         var entry = await CreateEntryFromValueAsync(
-                            rootKey, keyPath, valueName, value, scope, cancellationToken);
+                            rootKey, keyPath, valueName, value, scope, cancellationToken).ConfigureAwait(false);
                         if (entry != null)
                         {
                             entries.Add(entry);
@@ -100,11 +101,11 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
                 if (!string.IsNullOrEmpty(shell) && !shell.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase))
                 {
                     var entry = await CreateEntryFromValueAsync(
-                        rootKey, keyPath, "Shell", shell, scope, cancellationToken);
+                        rootKey, keyPath, "Shell", shell, scope, cancellationToken).ConfigureAwait(false);
                     if (entry != null)
                     {
                         entry.RiskLevel = RiskLevel.Critical;
-                        entry.Notes = "Shell personnalisé via Policies - peut indiquer un malware!";
+                        entry.Notes = Localize.Get("ProviderPoliciesCustomShell");
                         entries.Add(entry);
                     }
                 }
@@ -153,7 +154,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
         // Enrich with file metadata
         if (fileExists && targetPath != null)
         {
-            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken);
+            await EnrichWithFileMetadataAsync(entry, targetPath, cancellationToken).ConfigureAwait(false);
         }
 
         return entry;
@@ -191,8 +192,8 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
     private static string GenerateNotes(string keyPath)
     {
         if (keyPath.Contains("Policies"))
-            return "Entrée définie par stratégie de groupe (GPO) ou politique locale";
-        return "Entrée de démarrage via Policies";
+            return Localize.Get("ProviderPoliciesGPO");
+        return Localize.Get("ProviderPoliciesStartup");
     }
 
     private async Task EnrichWithFileMetadataAsync(StartupEntry entry, string filePath, CancellationToken cancellationToken)
@@ -212,7 +213,7 @@ public sealed class RegistryPoliciesProvider : IStartupProvider
 
             if (_signatureVerifier != null)
             {
-                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken);
+                var sigInfo = await _signatureVerifier.VerifyAsync(filePath, cancellationToken).ConfigureAwait(false);
                 entry.SignatureStatus = sigInfo.Status;
 
                 if (!string.IsNullOrEmpty(sigInfo.SignerName))

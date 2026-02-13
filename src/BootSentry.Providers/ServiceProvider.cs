@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using BootSentry.Core.Enums;
 using BootSentry.Core.Interfaces;
+using BootSentry.Core.Localization;
 using BootSentry.Core.Models;
 using BootSentry.Core.Parsing;
 
@@ -82,13 +83,13 @@ public sealed class ServiceProvider : IStartupProvider
             {
                 _logger.LogError(ex, "Error scanning services");
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} service entries", entries.Count);
         return entries;
     }
 
-    private static string? GetServiceStartType(string serviceName)
+    private string? GetServiceStartType(string serviceName)
     {
         try
         {
@@ -114,8 +115,9 @@ public sealed class ServiceProvider : IStartupProvider
                 _ => null
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Failed to get service start type for {ServiceName}", serviceName);
             return null;
         }
     }
@@ -158,7 +160,7 @@ public sealed class ServiceProvider : IStartupProvider
             PreviousServiceStartType = startType,
             ServiceAccount = serviceAccount,
             IsProtected = isProtected || isMicrosoftService,
-            ProtectionReason = isProtected ? "Service système critique" : (isMicrosoftService ? "Service Microsoft" : null)
+            ProtectionReason = isProtected ? Localize.Get("ProviderCriticalService") : (isMicrosoftService ? Localize.Get("ProviderMicrosoftService") : null)
         };
 
         // Get file metadata if target exists
@@ -170,28 +172,30 @@ public sealed class ServiceProvider : IStartupProvider
         return entry;
     }
 
-    private static string? GetServiceImagePath(string serviceName)
+    private string? GetServiceImagePath(string serviceName)
     {
         try
         {
             using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
             return key?.GetValue("ImagePath")?.ToString();
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Failed to get service image path for {ServiceName}", serviceName);
             return null;
         }
     }
 
-    private static string? GetServiceAccount(string serviceName)
+    private string? GetServiceAccount(string serviceName)
     {
         try
         {
             using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
             return key?.GetValue("ObjectName")?.ToString();
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Failed to get service account for {ServiceName}", serviceName);
             return null;
         }
     }
@@ -233,7 +237,7 @@ public sealed class ServiceProvider : IStartupProvider
             if (versionInfo.CompanyName?.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) == true)
             {
                 entry.IsProtected = true;
-                entry.ProtectionReason = "Service Microsoft";
+                entry.ProtectionReason = Localize.Get("ProviderMicrosoftService");
                 entry.RiskLevel = RiskLevel.Safe;
             }
             else if (isMicrosoftService)
@@ -246,9 +250,9 @@ public sealed class ServiceProvider : IStartupProvider
                 entry.RiskLevel = RiskLevel.Unknown;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Ignore metadata errors
+            _logger.LogDebug(ex, "Failed to enrich file metadata for {FilePath}", filePath);
         }
     }
 }

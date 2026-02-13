@@ -19,6 +19,7 @@ BootSentry is a .NET 8 Windows solution (`BootSentry.sln`) split by responsibili
 - `dotnet test BootSentry.sln -c Debug`: run all automated tests.
 - `dotnet test tests/BootSentry.Core.Tests/BootSentry.Core.Tests.csproj --collect:"XPlat Code Coverage"`: run one suite with coverage output (Coverlet collector).
 - `dotnet publish src/BootSentry.UI/BootSentry.UI.csproj -c Release -r win-x64`: create release binaries.
+- `.\build.ps1 -Version X.Y.Z`: full build pipeline (clean, restore, build, test, publish, installer). Accepts `-SkipTests` and `-SkipInstaller` switches.
 
 ## Coding Style & Naming Conventions
 Use C# conventions already present in the codebase: 4-space indentation, file-scoped namespaces, `nullable` enabled, and `ImplicitUsings` enabled. Use `PascalCase` for types/methods/properties, `I`-prefixed interfaces (`IRiskService`), and `_camelCase` for private fields. Keep module boundaries clear (providers discover, actions modify, core models remain reusable).

@@ -48,7 +48,7 @@ public sealed class ShellExtensionProvider : IStartupProvider
                 ScanLocation(Registry.LocalMachine, location, EntryScope.Machine, entries, cancellationToken);
                 ScanLocation(Registry.CurrentUser, location, EntryScope.User, entries, cancellationToken);
             }
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Found {Count} shell extension entries", entries.Count);
         return entries;

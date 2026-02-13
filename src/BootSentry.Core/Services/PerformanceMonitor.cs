@@ -29,9 +29,10 @@ public sealed class PerformanceMonitor
         var startupMs = _appStartupWatch.ElapsedMilliseconds;
 
         _logger.LogInformation(
-            "Application startup completed in {StartupMs}ms (Target: <1500ms) - {Status}",
+            "Application startup completed in {StartupMs}ms (Target: <{Threshold}ms) - {Status}",
             startupMs,
-            startupMs < 1500 ? "OK" : "SLOW");
+            Constants.Performance.AppStartupThresholdMs,
+            startupMs < Constants.Performance.AppStartupThresholdMs ? "OK" : "SLOW");
 
         RecordMetric("AppStartup", startupMs);
     }
@@ -52,7 +53,7 @@ public sealed class PerformanceMonitor
         var sw = Stopwatch.StartNew();
         try
         {
-            return await operation();
+            return await operation().ConfigureAwait(false);
         }
         finally
         {
@@ -70,7 +71,7 @@ public sealed class PerformanceMonitor
         var sw = Stopwatch.StartNew();
         try
         {
-            await operation();
+            await operation().ConfigureAwait(false);
         }
         finally
         {
@@ -106,17 +107,17 @@ public sealed class PerformanceMonitor
 
     private static long GetThresholdForOperation(string operation) => operation switch
     {
-        "AppStartup" => 1500,
-        "FullScan" => 2000,
-        "FullScanWithHash" => 10000,
-        "RegistryScan" => 300,
-        "DisableAction" => 500,
-        "EnableAction" => 500,
-        "DeleteAction" => 500,
-        "HashCalculation" => 5000,
-        "SignatureVerification" => 1000,
-        "ListRender" => 100,
-        _ => 1000
+        "AppStartup" => Constants.Performance.AppStartupThresholdMs,
+        "FullScan" => Constants.Performance.FullScanThresholdMs,
+        "FullScanWithHash" => Constants.Performance.FullScanWithHashThresholdMs,
+        "RegistryScan" => Constants.Performance.RegistryScanThresholdMs,
+        "DisableAction" => Constants.Performance.DisableActionThresholdMs,
+        "EnableAction" => Constants.Performance.EnableActionThresholdMs,
+        "DeleteAction" => Constants.Performance.DeleteActionThresholdMs,
+        "HashCalculation" => Constants.Performance.HashCalculationThresholdMs,
+        "SignatureVerification" => Constants.Performance.SignatureVerificationThresholdMs,
+        "ListRender" => Constants.Performance.ListRenderThresholdMs,
+        _ => Constants.Performance.DefaultThresholdMs
     };
 
     /// <summary>

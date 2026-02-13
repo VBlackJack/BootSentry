@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Globalization;
+using BootSentry.Core;
 using Microsoft.Extensions.Logging;
 using BootSentry.Backup.Models;
 
@@ -31,8 +32,8 @@ public sealed class BackupStorage
     {
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "BootSentry",
-            "Backups");
+            Constants.AppName,
+            Constants.Directories.Backups);
     }
 
     private void EnsureDirectoryExists()
@@ -92,7 +93,15 @@ public sealed class BackupStorage
     /// </summary>
     public string GetManifestPath(string transactionId)
     {
-        return Path.Combine(GetTransactionPath(transactionId), "manifest.json");
+        return Path.Combine(GetTransactionPath(transactionId), Constants.Files.Manifest);
+    }
+
+    /// <summary>
+    /// Gets the HMAC sidecar file path for a transaction manifest.
+    /// </summary>
+    public string GetManifestHmacPath(string transactionId)
+    {
+        return GetManifestPath(transactionId) + Constants.Files.ManifestHmacSuffix;
     }
 
     /// <summary>
@@ -106,18 +115,25 @@ public sealed class BackupStorage
     }
 
     /// <summary>
-    /// Saves a transaction manifest.
+    /// Saves a transaction manifest and its HMAC integrity sidecar file.
     /// </summary>
     public async Task SaveManifestAsync(TransactionManifest manifest, CancellationToken cancellationToken = default)
     {
         var path = GetManifestPath(manifest.Id);
         var json = JsonSerializer.Serialize(manifest, JsonOptions);
-        await File.WriteAllTextAsync(path, json, cancellationToken);
-        _logger.LogDebug("Saved manifest: {Path}", path);
+        await File.WriteAllTextAsync(path, json, cancellationToken).ConfigureAwait(false);
+
+        // Write HMAC sidecar file for integrity verification
+        var hmacPath = GetManifestHmacPath(manifest.Id);
+        var hmac = ManifestIntegrity.ComputeHmac(json);
+        await File.WriteAllTextAsync(hmacPath, hmac, cancellationToken).ConfigureAwait(false);
+
+        _logger.LogDebug("Saved manifest with HMAC: {Path}", path);
     }
 
     /// <summary>
-    /// Loads a transaction manifest.
+    /// Loads a transaction manifest and verifies its HMAC integrity.
+    /// Logs a warning if the HMAC is missing (legacy backup) or invalid (possible tampering).
     /// </summary>
     public async Task<TransactionManifest?> LoadManifestAsync(string transactionId, CancellationToken cancellationToken = default)
     {
@@ -125,8 +141,52 @@ public sealed class BackupStorage
         if (!File.Exists(path))
             return null;
 
-        var json = await File.ReadAllTextAsync(path, cancellationToken);
+        var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        VerifyManifestHmac(transactionId, json);
         return JsonSerializer.Deserialize<TransactionManifest>(json, JsonOptions);
+    }
+
+    /// <summary>
+    /// Verifies the HMAC integrity of a loaded manifest.
+    /// Does not fail on mismatch to maintain backwards compatibility with pre-HMAC backups.
+    /// </summary>
+    private void VerifyManifestHmac(string transactionId, string manifestJson)
+    {
+        var hmacPath = GetManifestHmacPath(transactionId);
+
+        if (!File.Exists(hmacPath))
+        {
+            _logger.LogWarning(
+                "No HMAC sidecar found for transaction {TransactionId}; "
+                + "this may be a legacy backup created before integrity protection was enabled",
+                transactionId);
+            return;
+        }
+
+        try
+        {
+            var storedHmac = File.ReadAllText(hmacPath).Trim();
+
+            if (!ManifestIntegrity.VerifyHmac(manifestJson, storedHmac))
+            {
+                _logger.LogWarning(
+                    "HMAC verification failed for transaction {TransactionId}; "
+                    + "the manifest may have been tampered with or copied from another machine",
+                    transactionId);
+            }
+            else
+            {
+                _logger.LogDebug("HMAC verification passed for transaction {TransactionId}", transactionId);
+            }
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Malformed HMAC sidecar for transaction {TransactionId}; "
+                + "the HMAC file content is not valid base64",
+                transactionId);
+        }
     }
 
     /// <summary>
@@ -145,7 +205,7 @@ public sealed class BackupStorage
             cancellationToken.ThrowIfCancellationRequested();
 
             var transactionId = Path.GetFileName(dir);
-            var manifest = await LoadManifestAsync(transactionId, cancellationToken);
+            var manifest = await LoadManifestAsync(transactionId, cancellationToken).ConfigureAwait(false);
             if (manifest != null)
                 manifests.Add(manifest);
         }
@@ -172,7 +232,7 @@ public sealed class BackupStorage
 
         await using var source = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read);
         await using var dest = new FileStream(destPath, FileMode.Create, FileAccess.Write);
-        await source.CopyToAsync(dest, cancellationToken);
+        await source.CopyToAsync(dest, cancellationToken).ConfigureAwait(false);
 
         _logger.LogDebug("Backed up file: {Source} -> {Dest}", sourceFile, destPath);
         return destPath;
@@ -200,7 +260,7 @@ public sealed class BackupStorage
         var fileName = $"{SanitizeFileName(valueName)}.json";
         var filePath = Path.Combine(regBackupPath, fileName);
         var json = JsonSerializer.Serialize(backupData, JsonOptions);
-        await File.WriteAllTextAsync(filePath, json, cancellationToken);
+        await File.WriteAllTextAsync(filePath, json, cancellationToken).ConfigureAwait(false);
 
         _logger.LogDebug("Backed up registry value: {Key}\\{Value}", keyPath, valueName);
         return filePath;
@@ -227,7 +287,7 @@ public sealed class BackupStorage
         int? maxCount = null,
         CancellationToken cancellationToken = default)
     {
-        var manifests = await GetAllManifestsAsync(cancellationToken);
+        var manifests = await GetAllManifestsAsync(cancellationToken).ConfigureAwait(false);
         var toDelete = new List<string>();
 
         // Filter by age

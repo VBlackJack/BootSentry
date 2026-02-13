@@ -15,83 +15,83 @@ public sealed class HeuristicAnalyzer
         new HeuristicRule(
             "PowerShell Encoded Command",
             @"(?i)powershell.*(?:-e\s+|-enco\s+|-encodedcommand\s+)[a-zA-Z0-9+/=]{20,}",
-            30,
+            Constants.Security.HeuristicScores.PowerShellEncoded,
             "Potential obfuscated PowerShell script execution."),
 
         new HeuristicRule(
             "PowerShell Web Request",
             @"(?i)powershell.*(?:iwr|wget|curl|invoke-webrequest|net\.webclient|downloadstring|downloadfile)",
-            40,
+            Constants.Security.HeuristicScores.PowerShellWebRequest,
             "PowerShell script attempting network connections/downloads."),
 
         new HeuristicRule(
             "PowerShell Execution Policy Bypass",
             @"(?i)powershell.*-ex\s+(?:bypass|unrestricted)",
-            15,
+            Constants.Security.HeuristicScores.PowerShellBypass,
             "PowerShell running with execution policy bypass."),
 
         new HeuristicRule(
             "PowerShell Window Hiding",
             @"(?i)powershell.*-w\s+(?:h|hidden)",
-            15,
+            Constants.Security.HeuristicScores.PowerShellHidden,
             "PowerShell attempting to hide its window."),
 
         // Scripting Engines (VBS, JS, WSF)
         new HeuristicRule(
             "Suspicious Script Execution",
             @"(?i)(?:wscript|cscript)\.exe.*(?:\.vbs|\.js|\.wsf|\.jse)",
-            20,
+            Constants.Security.HeuristicScores.SuspiciousScript,
             "Direct execution of Windows script files."),
 
         new HeuristicRule(
             "Script in Temp Folder",
             @"(?i)(?:wscript|cscript|cmd|powershell)\.exe.*(?:%temp%|\\appdata\\local\\temp\\).*\.(?:vbs|js|bat|ps1)",
-            40,
+            Constants.Security.HeuristicScores.ScriptInTemp,
             "Execution of scripts located in temporary folders."),
 
         // Living off the Land Binaries (LOLBins)
         new HeuristicRule(
             "Rundll32 JavaScript Execution",
             @"(?i)rundll32\.exe.*javascript:",
-            50,
+            Constants.Security.HeuristicScores.Rundll32JavaScript,
             "Rundll32 used to execute JavaScript code (often malicious)."),
 
         new HeuristicRule(
             "Mshta HTA Execution",
             @"(?i)mshta\.exe",
-            25,
+            Constants.Security.HeuristicScores.MshtaExecution,
             "Mshta used to execute HTML Applications (common malware vector)."),
 
         new HeuristicRule(
             "Regsvr32 Remote Script",
             @"(?i)regsvr32\.exe.*/u.*/n.*/i:http",
-            50,
+            Constants.Security.HeuristicScores.Regsvr32Remote,
             "Regsvr32 used to fetch and execute remote script object (Squiblydoo technique)."),
 
         new HeuristicRule(
             "CertUtil Download",
             @"(?i)certutil\.exe.*-urlcache.*-split.*-f",
-            40,
+            Constants.Security.HeuristicScores.CertUtilDownload,
             "CertUtil used to download files from the internet."),
 
         new HeuristicRule(
             "Bitsadmin Transfer",
             @"(?i)bitsadmin.*\/transfer",
-            30,
+            Constants.Security.HeuristicScores.BitsadminTransfer,
             "Bitsadmin used for file transfer/download."),
 
         // Command Prompt & General Obfuscation
         new HeuristicRule(
             "Hidden Command Prompt",
             @"(?i)cmd\.exe.*\/c.*(?:start|min|/min)",
-            20,
+            Constants.Security.HeuristicScores.HiddenCommandPrompt,
             "Command prompt executing commands in hidden/minimized mode."),
 
         // Network (Basic IP detection)
         new HeuristicRule(
             "IP Address in Command",
-            @"(?:\d{1,3}\.){3}\d{1,3}", 
-            10,
+            @"(?:\d{1,3}\.){3}\d{1,3}",
+            Constants.Security.HeuristicScores.IpAddressInCommand,
             "Direct IP address usage in command line.")
     };
 
