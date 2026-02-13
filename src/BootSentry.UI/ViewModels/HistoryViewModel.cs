@@ -12,6 +12,8 @@ namespace BootSentry.UI.ViewModels;
 /// </summary>
 public partial class HistoryViewModel : ObservableObject
 {
+    private const int DefaultHistoryLimit = 500;
+
     private readonly ILogger<HistoryViewModel> _logger;
     private readonly ITransactionManager _transactionManager;
 
@@ -56,7 +58,7 @@ public partial class HistoryViewModel : ObservableObject
             IsLoading = true;
             StatusMessage = Strings.Get("HistoryLoading");
 
-            var transactions = await _transactionManager.GetTransactionsAsync(100);
+            var transactions = await _transactionManager.GetTransactionsAsync(DefaultHistoryLimit);
 
             Transactions.Clear();
             foreach (var tx in transactions.OrderByDescending(t => t.Timestamp))
@@ -102,7 +104,7 @@ public partial class HistoryViewModel : ObservableObject
             }
             else
             {
-                StatusMessage = Strings.Format("HistoryRestoreError", result.ErrorMessage ?? "Unknown error");
+                StatusMessage = Strings.Format("HistoryRestoreError", result.ErrorMessage ?? Strings.Get("UnknownError"));
                 _logger.LogWarning("Failed to rollback transaction {Id}: {Error}",
                     SelectedTransaction.Id, result.ErrorMessage);
             }

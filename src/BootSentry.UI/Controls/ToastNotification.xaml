@@ -1,6 +1,7 @@
 <UserControl x:Class="BootSentry.UI.Controls.ToastNotification"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:BootSentry.UI.Resources"
              x:Name="ToastControl">
     <UserControl.Resources>
         <Storyboard x:Key="ShowAnimation">
@@ -70,7 +71,7 @@
                     Margin="8,0,0,0"
                     Cursor="Hand"
                     Click="CloseButton_Click"
-                    ToolTip="Fermer"/>
+                    ToolTip="{res:Localize Close}"/>
         </Grid>
     </Border>
 </UserControl>

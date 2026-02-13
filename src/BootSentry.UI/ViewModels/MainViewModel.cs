@@ -31,6 +31,19 @@ namespace BootSentry.UI.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject, IDisposable
 {
+    private const string TypeFilterAll = "all";
+    private const string TypeFilterRegistry = "registry";
+    private const string TypeFilterStartupFolder = "startup_folder";
+    private const string TypeFilterTasks = "tasks";
+    private const string TypeFilterServices = "services";
+    private const string TypeFilterDrivers = "drivers";
+    private const string TypeFilterExpert = "expert";
+
+    private const string StatusFilterAll = "all";
+    private const string StatusFilterEnabled = "enabled";
+    private const string StatusFilterDisabled = "disabled";
+    private const string StatusFilterSuspicious = "suspicious";
+
     private bool _disposed;
     private readonly ILogger<MainViewModel> _logger;
     private readonly IEnumerable<IStartupProvider> _providers;
@@ -83,19 +96,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public bool HasMultipleSelection => _selectedEntries.Count > 1;
 
     [ObservableProperty]
-    private string _selectedTypeFilter = "Tous";
+    private string _selectedTypeFilter = TypeFilterAll;
 
     [ObservableProperty]
-    private string _selectedStatusFilter = "Tous";
+    private string _selectedStatusFilter = StatusFilterAll;
 
     [ObservableProperty]
     private NavigationTab _selectedTab = NavigationTab.Applications;
 
-    public string[] TypeFilters { get; } = ["Tous", "Registre", "Dossier Démarrage", "Tâches", "Services", "Drivers", "Expert"];
-    public string[] StatusFilters { get; } = ["Tous", "Actives", "Désactivées", "Suspectes"];
+    public ObservableCollection<FilterOption> TypeFilters { get; } = [];
+    public ObservableCollection<FilterOption> StatusFilters { get; } = [];
 
     [ObservableProperty]
-    private string _statusMessage = "Prêt";
+    private string _statusMessage = Strings.Get("StatusReady");
 
     [ObservableProperty]
     private bool _isLoading;
@@ -189,6 +202,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;
+        RebuildFilterOptions();
+        Strings.LanguageChanged += OnLanguageChanged;
 
         // Check admin status
         IsAdmin = UacHelper.IsRunningAsAdmin();
@@ -238,6 +253,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
+        OnPropertyChanged(nameof(CanResetFilters));
     }
 
     partial void OnIsExpertModeChanged(bool value)
@@ -245,7 +261,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
-        StatusMessage = value ? "Mode Expert activé" : "Mode Expert désactivé";
+        StatusMessage = value ? Strings.Get("ExpertModeEnabled") : Strings.Get("ExpertModeDisabled");
         _logger.LogInformation("Expert mode: {Mode}", value ? "enabled" : "disabled");
     }
 
@@ -254,6 +270,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
+        OnPropertyChanged(nameof(CanResetFilters));
     }
 
     partial void OnSelectedStatusFilterChanged(string value)
@@ -261,6 +278,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
+        OnPropertyChanged(nameof(CanResetFilters));
     }
 
     partial void OnSelectedTabChanged(NavigationTab value)
@@ -278,16 +296,73 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HasNoVisibleEntries));
     }
 
-    public bool CanResetFilters => !string.IsNullOrEmpty(SearchText) || SelectedStatusFilter != "Tous";
+    public bool CanResetFilters =>
+        !string.IsNullOrEmpty(SearchText)
+        || SelectedStatusFilter != StatusFilterAll
+        || SelectedTypeFilter != TypeFilterAll;
 
     [RelayCommand]
     private void ResetFilters()
     {
         SearchText = string.Empty;
-        SelectedStatusFilter = "Tous";
+        SelectedTypeFilter = TypeFilterAll;
+        SelectedStatusFilter = StatusFilterAll;
         _entriesView.Refresh();
         OnPropertyChanged(nameof(VisibleEntriesCount));
         OnPropertyChanged(nameof(HasNoVisibleEntries));
+        OnPropertyChanged(nameof(CanResetFilters));
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null)
+        {
+            RebuildFilterOptions();
+            return;
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            RebuildFilterOptions();
+            return;
+        }
+
+        dispatcher.Invoke(RebuildFilterOptions);
+    }
+
+    private void RebuildFilterOptions()
+    {
+        var selectedType = SelectedTypeFilter;
+        var selectedStatus = SelectedStatusFilter;
+
+        TypeFilters.Clear();
+        TypeFilters.Add(new FilterOption(TypeFilterAll, Strings.Get("FilterAll")));
+        TypeFilters.Add(new FilterOption(TypeFilterRegistry, Strings.Get("FilterTypeRegistry")));
+        TypeFilters.Add(new FilterOption(TypeFilterStartupFolder, Strings.Get("FilterTypeStartupFolder")));
+        TypeFilters.Add(new FilterOption(TypeFilterTasks, Strings.Get("FilterTypeTasks")));
+        TypeFilters.Add(new FilterOption(TypeFilterServices, Strings.Get("FilterTypeServices")));
+        TypeFilters.Add(new FilterOption(TypeFilterDrivers, Strings.Get("FilterTypeDrivers")));
+        TypeFilters.Add(new FilterOption(TypeFilterExpert, Strings.Get("FilterTypeExpert")));
+
+        StatusFilters.Clear();
+        StatusFilters.Add(new FilterOption(StatusFilterAll, Strings.Get("FilterAll")));
+        StatusFilters.Add(new FilterOption(StatusFilterEnabled, Strings.Get("FilterStatusEnabled")));
+        StatusFilters.Add(new FilterOption(StatusFilterDisabled, Strings.Get("FilterStatusDisabled")));
+        StatusFilters.Add(new FilterOption(StatusFilterSuspicious, Strings.Get("FilterStatusSuspicious")));
+
+        if (!TypeFilters.Any(option => option.Key == selectedType))
+        {
+            selectedType = TypeFilterAll;
+        }
+
+        if (!StatusFilters.Any(option => option.Key == selectedStatus))
+        {
+            selectedStatus = StatusFilterAll;
+        }
+
+        SelectedTypeFilter = selectedType;
+        SelectedStatusFilter = selectedStatus;
         OnPropertyChanged(nameof(CanResetFilters));
     }
 
@@ -343,31 +418,31 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         // Apply type filter (for sub-filtering within tab)
-        if (SelectedTypeFilter != "Tous")
+        if (SelectedTypeFilter != TypeFilterAll)
         {
             var matchesType = SelectedTypeFilter switch
             {
-                "Registre" => entry.Type is EntryType.RegistryRun or EntryType.RegistryRunOnce or EntryType.RegistryPolicies,
-                "Dossier Démarrage" => entry.Type == EntryType.StartupFolder,
-                "Tâches" => entry.Type == EntryType.ScheduledTask,
-                "Services" => entry.Type == EntryType.Service,
-                "Drivers" => entry.Type == EntryType.Driver,
-                "Expert" => entry.Type is EntryType.IFEO or EntryType.Winlogon or EntryType.ShellExtension or
-                            EntryType.BHO or EntryType.PrintMonitor or EntryType.SessionManager or
-                            EntryType.AppInitDlls or EntryType.WinsockLSP,
+                TypeFilterRegistry => entry.Type is EntryType.RegistryRun or EntryType.RegistryRunOnce or EntryType.RegistryPolicies,
+                TypeFilterStartupFolder => entry.Type == EntryType.StartupFolder,
+                TypeFilterTasks => entry.Type == EntryType.ScheduledTask,
+                TypeFilterServices => entry.Type == EntryType.Service,
+                TypeFilterDrivers => entry.Type == EntryType.Driver,
+                TypeFilterExpert => entry.Type is EntryType.IFEO or EntryType.Winlogon or EntryType.ShellExtension or
+                                    EntryType.BHO or EntryType.PrintMonitor or EntryType.SessionManager or
+                                    EntryType.AppInitDlls or EntryType.WinsockLSP,
                 _ => true
             };
             if (!matchesType) return false;
         }
 
         // Apply status filter
-        if (SelectedStatusFilter != "Tous")
+        if (SelectedStatusFilter != StatusFilterAll)
         {
             var matchesStatus = SelectedStatusFilter switch
             {
-                "Actives" => entry.Status == EntryStatus.Enabled,
-                "Désactivées" => entry.Status == EntryStatus.Disabled,
-                "Suspectes" => entry.RiskLevel is RiskLevel.Suspicious or RiskLevel.Critical,
+                StatusFilterEnabled => entry.Status == EntryStatus.Enabled,
+                StatusFilterDisabled => entry.Status == EntryStatus.Disabled,
+                StatusFilterSuspicious => entry.RiskLevel is RiskLevel.Suspicious or RiskLevel.Critical,
                 _ => true
             };
             if (!matchesStatus) return false;
@@ -485,13 +560,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Analyse annulée";
+            StatusMessage = Strings.Get("StatusScanCancelled");
             _logger.LogInformation("Scan cancelled by user");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during scan");
-            StatusMessage = $"Erreur: {ex.Message}";
+            StatusMessage = Strings.Format("StatusError", ex.Message);
         }
         finally
         {
@@ -582,7 +657,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                         _logger.LogWarning("Smart scan completed: {Count} threat(s) detected: {Names}",
                             malwareDetected.Count, names);
 
-                        StatusMessage = $"⚠ {malwareDetected.Count} menace(s) détectée(s) lors du scan automatique";
+                        StatusMessage = Strings.Format("StatusSmartScanThreats", malwareDetected.Count);
                     });
                 }
             });
@@ -616,7 +691,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void CancelOperation()
     {
         _cancellationTokenSource?.Cancel();
-        StatusMessage = "Annulation en cours...";
+        StatusMessage = Strings.Get("StatusCancelling");
         _logger.LogInformation("Operation cancelled by user");
     }
 
@@ -667,8 +742,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedEntry.IsProtected)
         {
             MessageBox.Show(
-                $"Cette entrée est protégée: {SelectedEntry.ProtectionReason}",
-                "Action impossible",
+                Strings.Format("ProtectedEntryMessage", SelectedEntry.ProtectionReason),
+                Strings.Get("ErrorActionImpossible"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -678,8 +753,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Disable) && !IsAdmin)
         {
             var result = MessageBox.Show(
-                "Cette action nécessite des droits administrateur.\n\nVoulez-vous relancer l'application en tant qu'administrateur?",
-                "Élévation requise",
+                Strings.Get("AdminRequiredMessage"),
+                Strings.Get("AdminRequiredTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -694,7 +769,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         _logger.LogInformation("Disabling entry: {Id}", SelectedEntry.Id);
-        StatusMessage = $"Désactivation de {SelectedEntry.DisplayName}...";
+        StatusMessage = Strings.Format("StatusDisabling", SelectedEntry.DisplayName);
 
         var actionResult = await _actionExecutor.DisableAsync(SelectedEntry);
 
@@ -717,10 +792,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            StatusMessage = $"Erreur: {actionResult.ErrorMessage}";
+            StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
             MessageBox.Show(
                 actionResult.ErrorMessage,
-                "Erreur",
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -741,8 +816,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Enable) && !IsAdmin)
         {
             var result = MessageBox.Show(
-                "Cette action nécessite des droits administrateur.\n\nVoulez-vous relancer l'application en tant qu'administrateur?",
-                "Élévation requise",
+                Strings.Get("AdminRequiredMessage"),
+                Strings.Get("AdminRequiredTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -757,7 +832,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         _logger.LogInformation("Enabling entry: {Id}", SelectedEntry.Id);
-        StatusMessage = $"Activation de {SelectedEntry.DisplayName}...";
+        StatusMessage = Strings.Format("StatusEnabling", SelectedEntry.DisplayName);
 
         var actionResult = await _actionExecutor.EnableAsync(SelectedEntry);
 
@@ -780,10 +855,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            StatusMessage = $"Erreur: {actionResult.ErrorMessage}";
+            StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
             MessageBox.Show(
                 actionResult.ErrorMessage,
-                "Erreur",
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -798,8 +873,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedEntry.IsProtected)
         {
             MessageBox.Show(
-                $"Cette entrée est protégée: {SelectedEntry.ProtectionReason}",
-                "Action impossible",
+                Strings.Format("ProtectedEntryMessage", SelectedEntry.ProtectionReason),
+                Strings.Get("ErrorActionImpossible"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -814,8 +889,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (_actionExecutor.RequiresAdmin(SelectedEntry, ActionType.Delete) && !IsAdmin)
         {
             var result = MessageBox.Show(
-                "Cette action nécessite des droits administrateur.\n\nVoulez-vous relancer l'application en tant qu'administrateur?",
-                "Élévation requise",
+                Strings.Get("AdminRequiredMessage"),
+                Strings.Get("AdminRequiredTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -830,7 +905,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         _logger.LogInformation("Deleting entry: {Id}", SelectedEntry.Id);
-        StatusMessage = $"Suppression de {SelectedEntry.DisplayName}...";
+        StatusMessage = Strings.Format("StatusDeleting", SelectedEntry.DisplayName);
 
         var actionResult = await _actionExecutor.DeleteAsync(SelectedEntry);
 
@@ -848,10 +923,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            StatusMessage = $"Erreur: {actionResult.ErrorMessage}";
+            StatusMessage = Strings.Format("StatusError", actionResult.ErrorMessage);
             MessageBox.Show(
                 actionResult.ErrorMessage,
-                "Erreur",
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -867,16 +942,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (entriesToEnable.Count == 0)
         {
             MessageBox.Show(
-                "Aucune entrée désactivée sélectionnée.",
-                "Information",
+                Strings.Get("NoDisabledEntrySelected"),
+                Strings.Get("InfoTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"Voulez-vous activer {entriesToEnable.Count} entrée(s)?",
-            "Confirmation",
+            Strings.Format("ConfirmEnableBatchMessage", entriesToEnable.Count),
+            Strings.Get("ConfirmEnableBatchTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -885,7 +960,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _logger.LogInformation("Batch enabling {Count} entries", entriesToEnable.Count);
         IsLoading = true;
-        StatusMessage = $"Activation de {entriesToEnable.Count} entrées...";
+        StatusMessage = Strings.Format("StatusBatchEnabling", entriesToEnable.Count);
 
         var successCount = 0;
         var failCount = 0;
@@ -898,7 +973,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 current++;
                 ProgressText = $"{current}/{total}";
-                StatusMessage = $"Activation: {entry.DisplayName}...";
+                StatusMessage = Strings.Format("StatusEnabling", entry.DisplayName);
 
                 var actionResult = await _actionExecutor.EnableAsync(entry);
                 if (actionResult.Success)
@@ -912,14 +987,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             if (failCount == 0)
             {
-                StatusMessage = $"{successCount} entrée(s) activée(s)";
+                StatusMessage = Strings.Format("StatusBatchEnabled", successCount);
             }
             else
             {
-                StatusMessage = $"{successCount} activée(s), {failCount} échec(s)";
+                StatusMessage = Strings.Format("StatusBatchEnabledWithFailures", successCount, failCount);
                 MessageBox.Show(
-                    $"{successCount} entrée(s) activée(s) avec succès.\n{failCount} échec(s).",
-                    "Résultat",
+                    Strings.Format("BatchEnableResultMessage", successCount, failCount),
+                    Strings.Get("BatchResultTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
@@ -941,16 +1016,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (entriesToDisable.Count == 0)
         {
             MessageBox.Show(
-                "Aucune entrée active non-protégée sélectionnée.",
-                "Information",
+                Strings.Get("NoEnabledEntrySelected"),
+                Strings.Get("InfoTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"Voulez-vous désactiver {entriesToDisable.Count} entrée(s)?",
-            "Confirmation",
+            Strings.Format("ConfirmDisableBatchMessage", entriesToDisable.Count),
+            Strings.Get("ConfirmDisableBatchTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -959,7 +1034,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _logger.LogInformation("Batch disabling {Count} entries", entriesToDisable.Count);
         IsLoading = true;
-        StatusMessage = $"Désactivation de {entriesToDisable.Count} entrées...";
+        StatusMessage = Strings.Format("StatusBatchDisabling", entriesToDisable.Count);
 
         var successCount = 0;
         var failCount = 0;
@@ -972,7 +1047,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 current++;
                 ProgressText = $"{current}/{total}";
-                StatusMessage = $"Désactivation: {entry.DisplayName}...";
+                StatusMessage = Strings.Format("StatusDisabling", entry.DisplayName);
 
                 var actionResult = await _actionExecutor.DisableAsync(entry);
                 if (actionResult.Success)
@@ -986,14 +1061,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             if (failCount == 0)
             {
-                StatusMessage = $"{successCount} entrée(s) désactivée(s)";
+                StatusMessage = Strings.Format("StatusBatchDisabled", successCount);
             }
             else
             {
-                StatusMessage = $"{successCount} désactivée(s), {failCount} échec(s)";
+                StatusMessage = Strings.Format("StatusBatchDisabledWithFailures", successCount, failCount);
                 MessageBox.Show(
-                    $"{successCount} entrée(s) désactivée(s) avec succès.\n{failCount} échec(s).",
-                    "Résultat",
+                    Strings.Format("BatchDisableResultMessage", successCount, failCount),
+                    Strings.Get("BatchResultTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
@@ -1028,8 +1103,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
             {
                 MessageBox.Show(
-                    "Le dossier cible n'existe pas.",
-                    "Dossier introuvable",
+                    Strings.Get("FolderNotFound"),
+                    Strings.Get("InfoTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -1038,8 +1113,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _logger.LogError(ex, "Error opening file location");
             MessageBox.Show(
-                $"Erreur lors de l'ouverture: {ex.Message}",
-                "Erreur",
+                Strings.Format("ErrorOpenLocation", ex.Message),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -1103,14 +1178,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
             key?.SetValue("LastKey", regPath);
 
             Process.Start(new ProcessStartInfo("regedit.exe") { UseShellExecute = true });
-            StatusMessage = "Regedit ouvert";
+            StatusMessage = Strings.Get("StatusRegeditOpened");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error opening regedit");
             MessageBox.Show(
-                $"Erreur lors de l'ouverture de Regedit: {ex.Message}",
-                "Erreur",
+                Strings.Format("ErrorOpeningRegedit", ex.Message),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -1129,7 +1204,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         try
         {
             Process.Start(new ProcessStartInfo("services.msc") { UseShellExecute = true });
-            StatusMessage = "Services.msc ouvert";
+            StatusMessage = Strings.Get("StatusServicesOpened");
         }
         catch (Exception ex)
         {
@@ -1155,7 +1230,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         try
         {
             Process.Start(new ProcessStartInfo("taskschd.msc") { UseShellExecute = true });
-            StatusMessage = "Planificateur de tâches ouvert";
+            StatusMessage = Strings.Get("StatusTaskSchedulerOpened");
         }
         catch (Exception ex)
         {
@@ -1174,8 +1249,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
         {
             MessageBox.Show(
-                "Impossible de calculer le hash: fichier introuvable.",
-                "Erreur",
+                Strings.Get("ErrorHashFileMissing"),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -1183,7 +1258,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            StatusMessage = "Calcul du hash SHA-256...";
+            StatusMessage = Strings.Get("StatusHashCalculating");
             var hashCalculator = new HashCalculator();
             var hash = await hashCalculator.CalculateSha256Async(SelectedEntry.TargetPath);
 
@@ -1192,21 +1267,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
             // Copy to clipboard and show result
             Clipboard.SetText(hash);
-            StatusMessage = $"Hash calculé et copié: {hash[..16]}...";
+            StatusMessage = Strings.Format("StatusHashCalculated", hash[..16]);
 
             MessageBox.Show(
-                $"SHA-256:\n{hash}\n\nLe hash a été copié dans le presse-papiers.",
-                "Hash calculé",
+                Strings.Format("HashCalculatedMessage", hash),
+                Strings.Get("HashCalculatedTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calculating hash");
-            StatusMessage = $"Erreur lors du calcul du hash: {ex.Message}";
+            StatusMessage = Strings.Format("ErrorHashCalculation", ex.Message);
             MessageBox.Show(
-                $"Erreur lors du calcul du hash:\n{ex.Message}",
-                "Erreur",
+                Strings.Format("ErrorHashCalculationWithDetails", ex.Message),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -1218,8 +1293,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
         {
             MessageBox.Show(
-                "Impossible de scanner: fichier introuvable.",
-                "Erreur",
+                Strings.Get("ErrorScanFileMissing"),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -1228,8 +1303,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (_malwareScanner == null)
         {
             MessageBox.Show(
-                "Le scanner antivirus n'est pas disponible.",
-                "Erreur",
+                Strings.Get("ScanNotAvailable"),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -1237,7 +1312,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            StatusMessage = "Scan antivirus en cours...";
+            StatusMessage = Strings.Get("ScanInProgress");
             _logger.LogInformation("Scanning file: {Path}", SelectedEntry.TargetPath);
 
             var result = await _malwareScanner.ScanAsync(SelectedEntry.TargetPath);
@@ -1249,46 +1324,45 @@ public partial class MainViewModel : ObservableObject, IDisposable
             switch (result)
             {
                 case ScanResult.Clean:
-                    StatusMessage = "Scan terminé: fichier sain";
+                    StatusMessage = Strings.Get("ScanResultClean");
                     break;
 
                 case ScanResult.Malware:
-                    StatusMessage = "ALERTE: Menace détectée!";
+                    StatusMessage = Strings.Get("ScanResultMalware");
                     SelectedEntry.RiskLevel = RiskLevel.Critical;
                     _entriesView.Refresh();
                     UpdateCounts();
 
                     MessageBox.Show(
-                        $"MENACE DÉTECTÉE!\n\nLe fichier suivant a été identifié comme malveillant:\n{SelectedEntry.TargetPath}\n\nIl est fortement recommandé de désactiver ou supprimer cette entrée.",
-                        "Menace détectée",
+                        Strings.Format("MalwareDetectedDetailedMessage", SelectedEntry.TargetPath),
+                        Strings.Get("MalwareDetectedTitle"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     break;
 
                 case ScanResult.Blocked:
-                    StatusMessage = "Scan terminé: fichier bloqué par la politique de sécurité";
+                    StatusMessage = Strings.Get("ScanResultBlocked");
                     break;
 
                 case ScanResult.NotScanned:
-                    StatusMessage = "Fichier non scanné (inaccessible ou verrouillé)";
+                    StatusMessage = Strings.Get("ScanResultNotScanned");
                     break;
 
                 case ScanResult.TooLarge:
-                    StatusMessage = "Fichier trop volumineux pour le scan (max 250 Mo)";
+                    StatusMessage = Strings.Get("ScanResultTooLarge");
                     break;
 
                 case ScanResult.NoAntivirusProvider:
-                    StatusMessage = "Aucun antivirus disponible";
+                    StatusMessage = Strings.Get("ScanResultNoAntivirusProvider");
                     MessageBox.Show(
-                        "Aucun antivirus compatible n'est disponible pour le scan.\n\n" +
-                        "Veuillez activer Windows Defender ou installer un antivirus compatible AMSI.",
-                        "Antivirus non disponible",
+                        Strings.Get("ScanNoAntivirusProviderMessage"),
+                        Strings.Get("ScanNoAntivirusProviderTitle"),
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     break;
 
                 case ScanResult.Error:
-                    StatusMessage = "Erreur lors du scan antivirus";
+                    StatusMessage = Strings.Get("ScanResultError");
                     break;
             }
 
@@ -1297,10 +1371,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during malware scan");
-            StatusMessage = $"Erreur lors du scan: {ex.Message}";
+            StatusMessage = Strings.Format("ErrorScanStatus", ex.Message);
             MessageBox.Show(
-                $"Erreur lors du scan antivirus:\n{ex.Message}",
-                "Erreur",
+                Strings.Format("ErrorScanMessageWithDetails", ex.Message),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -1341,8 +1415,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (_malwareScanner == null)
         {
             MessageBox.Show(
-                "Le scanner antivirus n'est pas disponible.",
-                "Erreur",
+                Strings.Get("ScanNotAvailable"),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             return;
@@ -1356,16 +1430,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (entriesToScan.Count == 0)
         {
             MessageBox.Show(
-                "Aucun fichier à scanner.",
-                "Scan global",
+                Strings.Get("ScanGlobalNoFiles"),
+                Strings.Get("ScanGlobalTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"Lancer le scan antivirus sur {entriesToScan.Count} fichiers ?\n\nCette opération peut prendre plusieurs minutes.",
-            "Scan global",
+            Strings.Format("ScanGlobalConfirm", entriesToScan.Count),
+            Strings.Get("ScanGlobalTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -1392,7 +1466,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     break;
 
                 ScanProgress = scanned + 1;
-                ScanProgressText = $"Scan {ScanProgress}/{ScanTotal}: {Path.GetFileName(entry.TargetPath)}";
+                ScanProgressText = Strings.Format("ScanProgressFormat", ScanProgress, ScanTotal, Path.GetFileName(entry.TargetPath));
                 StatusMessage = ScanProgressText;
 
                 try
@@ -1434,23 +1508,23 @@ public partial class MainViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(SelectedEntry));
 
             var message = _scanCts.Token.IsCancellationRequested
-                ? $"Scan interrompu.\n\n"
-                : $"Scan terminé.\n\n";
+                ? Strings.Get("ScanGlobalInterruptedHeader")
+                : Strings.Get("ScanGlobalCompletedHeader");
 
-            message += $"Fichiers scannés: {scanned}\n";
-            message += $"Fichiers sains: {clean}\n";
+            message += Strings.Format("ScanGlobalScannedCount", scanned);
+            message += Strings.Format("ScanGlobalCleanCount", clean);
             if (threats > 0)
-                message += $"MENACES DÉTECTÉES: {threats}\n";
+                message += Strings.Format("ScanGlobalThreatsCount", threats);
             if (errors > 0)
-                message += $"Erreurs/Non scannés: {errors}";
+                message += Strings.Format("ScanGlobalErrorsCount", errors);
 
             StatusMessage = threats > 0
-                ? $"Scan terminé: {threats} menace(s) détectée(s)!"
-                : $"Scan terminé: {clean} fichiers sains";
+                ? Strings.Format("ScanGlobalStatusThreats", threats)
+                : Strings.Format("ScanGlobalStatusClean", clean);
 
             MessageBox.Show(
                 message,
-                threats > 0 ? "Menaces détectées!" : "Scan terminé",
+                threats > 0 ? Strings.Get("ScanGlobalThreatsTitle") : Strings.Get("ScanComplete"),
                 MessageBoxButton.OK,
                 threats > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
 
@@ -1470,7 +1544,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void CancelScan()
     {
         _scanCts?.Cancel();
-        StatusMessage = "Annulation du scan...";
+        StatusMessage = Strings.Get("ScanGlobalCancelling");
     }
 
     [RelayCommand]
@@ -1487,15 +1561,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             try
             {
-                StatusMessage = "Exportation...";
+                StatusMessage = Strings.Get("StatusExporting");
                 var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
                 await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Json, options);
-                StatusMessage = $"Export terminé: {dialog.FileName}";
+                StatusMessage = Strings.Format("StatusExportComplete", dialog.FileName);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error exporting to JSON");
-                StatusMessage = $"Erreur d'export: {ex.Message}";
+                StatusMessage = Strings.Format("StatusExportError", ex.Message);
             }
         }
     }
@@ -1514,15 +1588,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             try
             {
-                StatusMessage = "Exportation...";
+                StatusMessage = Strings.Get("StatusExporting");
                 var options = new ExportOptions { IncludeDetails = true, IncludeKnowledgeInfo = true };
                 await _exportService.ExportToFileAsync(Entries, dialog.FileName, ExportFormat.Csv, options);
-                StatusMessage = $"Export terminé: {dialog.FileName}";
+                StatusMessage = Strings.Format("StatusExportComplete", dialog.FileName);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error exporting to CSV");
-                StatusMessage = $"Erreur d'export: {ex.Message}";
+                StatusMessage = Strings.Format("StatusExportError", ex.Message);
             }
         }
     }
@@ -1566,7 +1640,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         // This is handled by the DataGrid's built-in Ctrl+A, but we provide
         // a command for consistency. The actual selection is done in the View.
-        StatusMessage = "Sélectionner tout via Ctrl+A";
+        StatusMessage = Strings.Get("SelectAllHint");
     }
 
     [RelayCommand]
@@ -1581,16 +1655,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
             if (lastTransaction == null)
             {
                 MessageBox.Show(
-                    "Aucune action à annuler.",
-                    "Historique vide",
+                    Strings.Get("UndoNoActionMessage"),
+                    Strings.Get("UndoNoActionTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 return;
             }
 
             var confirmResult = MessageBox.Show(
-                $"Voulez-vous annuler l'action '{lastTransaction.ActionType}' sur '{lastTransaction.EntryDisplayName}'?",
-                "Confirmation d'annulation",
+                Strings.Format("UndoConfirmMessage", lastTransaction.ActionType, lastTransaction.EntryDisplayName),
+                Strings.Get("UndoConfirmTitle"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -1598,23 +1672,23 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 return;
 
             _logger.LogInformation("Undoing transaction: {Id}", lastTransaction.Id);
-            StatusMessage = $"Annulation de {lastTransaction.ActionType} sur {lastTransaction.EntryDisplayName}...";
+            StatusMessage = Strings.Format("UndoInProgress", lastTransaction.ActionType, lastTransaction.EntryDisplayName);
 
             var result = await _transactionManager.RollbackAsync(lastTransaction.Id);
 
             if (result.Success)
             {
-                StatusMessage = $"Action annulée: {lastTransaction.EntryDisplayName}";
+                StatusMessage = Strings.Format("UndoSuccess", lastTransaction.EntryDisplayName);
 
                 // Refresh the list to show the restored entry
                 await RefreshAsync();
             }
             else
             {
-                StatusMessage = $"Erreur: {result.ErrorMessage}";
+                StatusMessage = Strings.Format("StatusError", result.ErrorMessage);
                 MessageBox.Show(
                     result.ErrorMessage,
-                    "Erreur d'annulation",
+                    Strings.Get("UndoErrorTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -1622,10 +1696,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error undoing last action");
-            StatusMessage = $"Erreur: {ex.Message}";
+            StatusMessage = Strings.Format("StatusError", ex.Message);
             MessageBox.Show(
-                $"Erreur lors de l'annulation: {ex.Message}",
-                "Erreur",
+                Strings.Format("UndoErrorMessage", ex.Message),
+                Strings.Get("ErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -1655,15 +1729,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            StatusMessage = "Vérification des mises à jour...";
+            StatusMessage = Strings.Get("StatusCheckingUpdates");
             using var checker = new UpdateChecker();
             var update = await checker.CheckForUpdateAsync();
 
             if (update != null)
             {
                 var result = MessageBox.Show(
-                    $"La version {update.LatestVersion} est disponible.\n\nVoulez-vous la télécharger?",
-                    "Mise à jour disponible",
+                    Strings.Format("UpdateMessage", update.LatestVersion),
+                    Strings.Get("UpdateAvailable"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Information);
 
@@ -1675,18 +1749,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             else
             {
                 MessageBox.Show(
-                    "Vous utilisez la dernière version.",
-                    "Aucune mise à jour",
+                    Strings.Get("UpdateUpToDate"),
+                    Strings.Get("InfoTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
 
-            StatusMessage = "Prêt";
+            StatusMessage = Strings.Get("StatusReady");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking for updates");
-            StatusMessage = "Erreur lors de la vérification des mises à jour";
+            StatusMessage = Strings.Format("StatusError", ex.Message);
         }
     }
 
@@ -1714,13 +1788,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             try
             {
-                StatusMessage = "Création du fichier de diagnostics...";
+                StatusMessage = Strings.Get("StatusDiagnosticsCreating");
                 await _exportService.ExportDiagnosticsZipAsync(Entries, dialog.FileName);
-                StatusMessage = $"Diagnostics exportés: {dialog.FileName}";
+                StatusMessage = Strings.Format("StatusDiagnosticsExported", dialog.FileName);
 
                 var result = MessageBox.Show(
-                    $"Le fichier de diagnostics a été créé:\n{dialog.FileName}\n\nVoulez-vous ouvrir le dossier contenant le fichier?",
-                    "Export terminé",
+                    Strings.Format("DiagnosticsCreatedOpenPrompt", dialog.FileName),
+                    Strings.Get("DiagnosticsCreatedTitle"),
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Information);
 
@@ -1732,10 +1806,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error exporting diagnostics");
-                StatusMessage = $"Erreur d'export: {ex.Message}";
+                StatusMessage = Strings.Format("StatusExportError", ex.Message);
                 MessageBox.Show(
-                    $"Erreur lors de l'export: {ex.Message}",
-                    "Erreur",
+                    Strings.Format("ErrorExportWithDetails", ex.Message),
+                    Strings.Get("ErrorTitle"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -1764,6 +1838,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         if (disposing)
         {
+            Strings.LanguageChanged -= OnLanguageChanged;
+
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = null;
@@ -1778,3 +1854,5 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _disposed = true;
     }
 }
+
+public sealed record FilterOption(string Key, string Label);

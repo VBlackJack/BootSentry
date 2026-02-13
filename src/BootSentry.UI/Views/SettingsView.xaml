@@ -94,26 +94,26 @@
                                    Foreground="{DynamicResource WindowForeground}" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal" Margin="0,4">
                             <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
-                                    Background="{DynamicResource AccentBrush}" ToolTip="Accent"/>
+                                    Background="{DynamicResource AccentBrush}" ToolTip="{res:Localize ThemePreviewAccent}"/>
                             <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
-                                    Background="{DynamicResource SuccessBrush}" ToolTip="Success"/>
+                                    Background="{DynamicResource SuccessBrush}" ToolTip="{res:Localize ThemePreviewSuccess}"/>
                             <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
-                                    Background="{DynamicResource WarningBrush}" ToolTip="Warning"/>
+                                    Background="{DynamicResource WarningBrush}" ToolTip="{res:Localize ThemePreviewWarning}"/>
                             <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
-                                    Background="{DynamicResource ErrorBrush}" ToolTip="Error"/>
+                                    Background="{DynamicResource ErrorBrush}" ToolTip="{res:Localize ThemePreviewError}"/>
                             <Border Width="24" Height="24" CornerRadius="4" Margin="0,0,8,0"
-                                    Background="{DynamicResource NeutralBrush}" ToolTip="Neutral"/>
+                                    Background="{DynamicResource NeutralBrush}" ToolTip="{res:Localize ThemePreviewNeutral}"/>
                         </StackPanel>
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="Primary" Margin="0,0,4,0"
+                            <Button Grid.Column="0" Content="{res:Localize ThemePreviewPrimaryButton}" Margin="0,0,4,0"
                                     Background="{DynamicResource AccentBrush}"
                                     Foreground="{DynamicResource AccentForeground}"
                                     Padding="8,4" IsEnabled="False"/>
-                            <Button Grid.Column="1" Content="Secondary" Margin="4,0,0,0"
+                            <Button Grid.Column="1" Content="{res:Localize ThemePreviewSecondaryButton}" Margin="4,0,0,0"
                                     Style="{StaticResource SecondaryButton}"
                                     Padding="8,4" IsEnabled="False"/>
                         </Grid>

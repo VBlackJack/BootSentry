@@ -101,13 +101,9 @@ public partial class SettingsViewModel : ObservableObject
 
         if (previousLanguage != value)
         {
-            var message = value == "fr"
-                ? "La langue sera appliquée après le redémarrage.\n\nRedémarrer l'application maintenant ?"
-                : "The language will be applied after restart.\n\nRestart the application now?";
-
             var result = System.Windows.MessageBox.Show(
-                message,
-                value == "fr" ? "Changement de langue" : "Language Change",
+                Strings.Get("SettingsLanguageRestartPrompt"),
+                Strings.Get("SettingsLanguageChangeTitle"),
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
@@ -177,11 +173,15 @@ public partial class SettingsViewModel : ObservableObject
         if (confirmDialog.ShowDialog() != true)
             return;
 
+        var currentLanguage = Strings.CurrentLanguage;
+
         _settingsService.Reset();
+        _settingsService.Settings.Language = currentLanguage;
+        _settingsService.Save();
         LoadSettings();
         _themeService.CurrentTheme = ThemeMode.System;
-        Strings.CurrentLanguage = "fr";
-        StatusMessage = Strings.Get("SettingsTitle") + " - " + "Reset";
+        Strings.CurrentLanguage = currentLanguage;
+        StatusMessage = Strings.Get("SettingsResetDone");
         _logger.LogInformation("Settings reset to defaults");
     }
 
@@ -194,7 +194,7 @@ public partial class SettingsViewModel : ObservableObject
 
         _settingsService.PurgeAllData();
         LoadSettings();
-        StatusMessage = Strings.Get("SettingsPurgeData") + " - OK";
+        StatusMessage = Strings.Get("SettingsPurgeDone");
         _logger.LogInformation("All application data purged");
     }
 }

@@ -16,18 +16,21 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
             <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility"/>
             <converters:NullToVisibilityConverter x:Key="NullToVisibility"/>
+            <converters:NullOrWhiteSpaceToVisibilityConverter x:Key="NullOrWhiteSpaceToVisibility"/>
+            <converters:NotNullOrWhiteSpaceToVisibilityConverter x:Key="NotNullOrWhiteSpaceToVisibility"/>
             <converters:NotNullToVisibilityConverter x:Key="NotNullToVisibility"/>
             <converters:InverseBoolConverter x:Key="InverseBool"/>
             <converters:RiskLevelToColorConverter x:Key="RiskToColor"/>
+            <converters:RiskLevelToStringConverter x:Key="RiskToString"/>
             <converters:SignatureStatusToColorConverter x:Key="SignatureToColor"/>
             <converters:EntryStatusToColorConverter x:Key="StatusToColor"/>
             <converters:ScanResultToStringConverter x:Key="ScanResultToString"/>
             <converters:SafetyLevelToStringConverter x:Key="SafetyLevelToString"/>
             <!-- Colors - Unified palette matching ThemeService -->
             <Color x:Key="PrimaryColor">#0078D4</Color>
-            <Color x:Key="SuccessColor">#10B981</Color>
-            <Color x:Key="WarningColor">#F59E0B</Color>
-            <Color x:Key="DangerColor">#EF4444</Color>
+            <Color x:Key="SuccessColor">#047857</Color>
+            <Color x:Key="WarningColor">#B45309</Color>
+            <Color x:Key="DangerColor">#B91C1C</Color>
             <Color x:Key="NeutralColor">#6B7280</Color>
 
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
@@ -35,16 +38,19 @@
             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
             <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
             <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}"/>
+            <SolidColorBrush x:Key="SuccessSoftBrush" Color="#1A047857"/>
+            <SolidColorBrush x:Key="WarningSoftBrush" Color="#1AB45309"/>
+            <SolidColorBrush x:Key="ErrorSoftBrush" Color="#1AB91C1C"/>
 
             <!-- Risk Level Colors -->
-            <SolidColorBrush x:Key="RiskSafeBrush" Color="#10B981"/>
+            <SolidColorBrush x:Key="RiskSafeBrush" Color="#047857"/>
             <SolidColorBrush x:Key="RiskUnknownBrush" Color="#6B7280"/>
-            <SolidColorBrush x:Key="RiskSuspiciousBrush" Color="#F59E0B"/>
-            <SolidColorBrush x:Key="RiskCriticalBrush" Color="#EF4444"/>
+            <SolidColorBrush x:Key="RiskSuspiciousBrush" Color="#B45309"/>
+            <SolidColorBrush x:Key="RiskCriticalBrush" Color="#B91C1C"/>
 
             <!-- Status Colors -->
-            <SolidColorBrush x:Key="StatusEnabledBrush" Color="#10B981"/>
-            <SolidColorBrush x:Key="StatusDisabledBrush" Color="#EF4444"/>
+            <SolidColorBrush x:Key="StatusEnabledBrush" Color="#047857"/>
+            <SolidColorBrush x:Key="StatusDisabledBrush" Color="#B91C1C"/>
             <SolidColorBrush x:Key="StatusUnknownBrush" Color="#6B7280"/>
 
             <!-- Notes/Warning Box Colors (theme-aware) -->
@@ -60,7 +66,7 @@
             <SolidColorBrush x:Key="ControlForeground" Color="#202020"/>
             <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
             <SolidColorBrush x:Key="AccentForeground" Color="White"/>
-            <SolidColorBrush x:Key="InfoBrush" Color="#3B82F6"/>
+            <SolidColorBrush x:Key="InfoBrush" Color="#1D4ED8"/>
             <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
             <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
             <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>

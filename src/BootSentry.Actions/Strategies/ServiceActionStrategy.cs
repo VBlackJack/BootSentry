@@ -158,7 +158,7 @@ public sealed class ServiceActionStrategy : IActionStrategy
             if (start == null)
                 return null;
 
-            var startMode = Convert.ToInt32(start) switch
+            ServiceStartMode? startMode = Convert.ToInt32(start) switch
             {
                 0 => ServiceStartMode.Boot,
                 1 => ServiceStartMode.System,
@@ -225,25 +225,25 @@ public sealed class ServiceActionStrategy : IActionStrategy
     private static ServiceStartConfiguration ParseStartConfiguration(string value)
     {
         if (value.Equals("Automatic (Delayed)", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: true);
+            return new ServiceStartConfiguration(ServiceStartMode.Automatic, IsDelayedAutomatic: true);
 
         if (value.Equals("Automatic", StringComparison.OrdinalIgnoreCase)
             || value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: false);
+            return new ServiceStartConfiguration(ServiceStartMode.Automatic, IsDelayedAutomatic: false);
 
         if (value.Equals("Manual", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.Manual, isDelayedAutomatic: false);
+            return new ServiceStartConfiguration(ServiceStartMode.Manual, IsDelayedAutomatic: false);
 
         if (value.Equals("Disabled", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.Disabled, isDelayedAutomatic: false);
+            return new ServiceStartConfiguration(ServiceStartMode.Disabled, IsDelayedAutomatic: false);
 
         if (value.Equals("Boot", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.Boot, isDelayedAutomatic: false);
+            return new ServiceStartConfiguration(ServiceStartMode.Boot, IsDelayedAutomatic: false);
 
         if (value.Equals("System", StringComparison.OrdinalIgnoreCase))
-            return new ServiceStartConfiguration(ServiceStartMode.System, isDelayedAutomatic: false);
+            return new ServiceStartConfiguration(ServiceStartMode.System, IsDelayedAutomatic: false);
 
-        return new ServiceStartConfiguration(ServiceStartMode.Automatic, isDelayedAutomatic: false);
+        return new ServiceStartConfiguration(ServiceStartMode.Automatic, IsDelayedAutomatic: false);
     }
 
     private static string ToDisplayStartType(ServiceStartConfiguration configuration)

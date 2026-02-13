@@ -49,7 +49,7 @@
                     <Ellipse x:Name="Step3Indicator" Width="10" Height="10"
                              Fill="{DynamicResource BorderBrush}" Margin="4,0"/>
                 </StackPanel>
-                <TextBlock x:Name="StepText" Text="{res:Localize OnboardingStep1of2}"
+                <TextBlock x:Name="StepText" Text="{res:Localize OnboardingStep1of3}"
                            FontSize="11"
                            Foreground="{DynamicResource DisabledForeground}"
                            HorizontalAlignment="Center"

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:res="clr-namespace:BootSentry.UI.Resources"
         mc:Ignorable="d"
         Title="{Binding Title}"
         Height="280" Width="480"
@@ -84,7 +85,7 @@
                            LineHeight="22"/>
 
                 <!-- Technical details (collapsed by default) -->
-                <Expander Header="Détails techniques" Margin="0,12,0,0"
+                <Expander Header="{res:Localize ErrorTechnicalDetails}" Margin="0,12,0,0"
                           Visibility="{Binding HasDetails, Converter={StaticResource BoolToVisibility}}">
                     <Border Background="{DynamicResource RowAlternate}" CornerRadius="4" Padding="8" Margin="0,8,0,0">
                         <TextBox Text="{Binding TechnicalDetails, Mode=OneWay}"
@@ -113,12 +114,12 @@
 
             <!-- Action Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,16,0,0">
-                <Button Content="Réessayer" Click="RetryButton_Click"
+                <Button Content="{res:Localize ErrorRetry}" Click="RetryButton_Click"
                         Visibility="{Binding CanRetry, Converter={StaticResource BoolToVisibility}}"
                         Padding="16,8" Margin="0,0,8,0"
                         Background="{DynamicResource AccentBrush}"
                         Foreground="White" BorderThickness="0"/>
-                <Button Content="Copier l'erreur" Click="CopyButton_Click"
+                <Button Content="{res:Localize ErrorCopy}" Click="CopyButton_Click"
                         Padding="16,8" Margin="0,0,8,0"
                         Background="{DynamicResource ControlBackground}"
                         Foreground="{DynamicResource ControlForeground}"
@@ -127,7 +128,7 @@
 
             <!-- Close Button -->
             <Button Grid.Row="3"
-                    Content="Fermer"
+                    Content="{res:Localize Close}"
                     Click="CloseButton_Click"
                     IsDefault="True"
                     HorizontalAlignment="Right"

@@ -54,9 +54,9 @@ public partial class ErrorDialog : Window
         {
             Owner = owner,
             Title = Strings.Get("ErrorTitle"),
-            Message = "Impossible d'accéder au registre Windows.",
+            Message = Strings.Get("ErrorRegistryAccess"),
             TechnicalDetails = ex.Message,
-            Suggestion = "Lancez l'application en tant qu'administrateur pour accéder au registre système.",
+            Suggestion = Strings.Get("ErrorRegistrySuggestion"),
             CanRetry = true
         };
     }
@@ -70,9 +70,9 @@ public partial class ErrorDialog : Window
         {
             Owner = owner,
             Title = Strings.Get("ErrorTitle"),
-            Message = $"Impossible d'accéder au fichier:\n{path}",
+            Message = Strings.Format("ErrorFileAccess", path),
             TechnicalDetails = ex.Message,
-            Suggestion = "Le fichier est peut-être verrouillé par un autre programme ou vous n'avez pas les permissions nécessaires.",
+            Suggestion = Strings.Get("ErrorFileSuggestion"),
             CanRetry = true
         };
     }
@@ -86,9 +86,9 @@ public partial class ErrorDialog : Window
         {
             Owner = owner,
             Title = Strings.Get("ErrorTitle"),
-            Message = "Erreur de connexion réseau.",
+            Message = Strings.Get("ErrorNetworkMessage"),
             TechnicalDetails = ex.Message,
-            Suggestion = "Vérifiez votre connexion Internet et réessayez.",
+            Suggestion = Strings.Get("ErrorNetworkSuggestion"),
             CanRetry = true
         };
     }
@@ -102,9 +102,9 @@ public partial class ErrorDialog : Window
         {
             Owner = owner,
             Title = Strings.Get("ErrorTitle"),
-            Message = "Erreur lors du scan antivirus.",
+            Message = Strings.Get("ErrorScanMessage"),
             TechnicalDetails = ex.Message,
-            Suggestion = "Assurez-vous que Windows Defender ou un autre antivirus compatible AMSI est actif.",
+            Suggestion = Strings.Get("ErrorScanSuggestion"),
             CanRetry = true
         };
     }
@@ -143,7 +143,7 @@ public partial class ErrorDialog : Window
         var errorText = $"{Title}\n\n{Message}";
         if (!string.IsNullOrEmpty(TechnicalDetails))
         {
-            errorText += $"\n\nDétails techniques:\n{TechnicalDetails}";
+            errorText += $"\n\n{Strings.Get("ErrorTechnicalDetails")}:\n{TechnicalDetails}";
         }
         Clipboard.SetText(errorText);
     }

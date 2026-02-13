@@ -46,6 +46,42 @@ public class NullToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Converts null or whitespace string values to Visible, others to Collapsed.
+/// </summary>
+public class NullOrWhiteSpaceToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is string text && !string.IsNullOrWhiteSpace(text)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts non-empty string values to Visible, null/whitespace to Collapsed.
+/// </summary>
+public class NotNullOrWhiteSpaceToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is string text && !string.IsNullOrWhiteSpace(text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
 /// Converts non-null to Visible, null to Collapsed.
 /// </summary>
 public class NotNullToVisibilityConverter : IValueConverter
@@ -133,6 +169,33 @@ public class RiskLevelToColorConverter : IValueConverter
             };
         }
         return defaultBrush;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converts RiskLevel enum to a localized string.
+/// </summary>
+public class RiskLevelToStringConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is BootSentry.Core.Enums.RiskLevel riskLevel)
+        {
+            return riskLevel switch
+            {
+                BootSentry.Core.Enums.RiskLevel.Safe => Resources.Strings.Get("RiskSafe"),
+                BootSentry.Core.Enums.RiskLevel.Suspicious => Resources.Strings.Get("RiskSuspicious"),
+                BootSentry.Core.Enums.RiskLevel.Critical => Resources.Strings.Get("RiskCritical"),
+                _ => Resources.Strings.Get("RiskUnknown")
+            };
+        }
+
+        return Resources.Strings.Get("RiskUnknown");
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
