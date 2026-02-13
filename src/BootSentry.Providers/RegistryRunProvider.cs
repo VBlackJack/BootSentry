@@ -16,8 +16,6 @@ public sealed class RegistryRunProvider : IStartupProvider
     private readonly ILogger<RegistryRunProvider> _logger;
     private readonly ISignatureVerifier? _signatureVerifier;
 
-    private const string DisabledKeyPath = @"Software\BootSentry\Disabled";
-
     private static readonly (RegistryHive Hive, string Path, EntryScope Scope, RegistryView View)[] RegistryLocations =
     [
         // HKCU Run keys (64-bit view)
@@ -72,7 +70,7 @@ public sealed class RegistryRunProvider : IStartupProvider
                 entries.AddRange(locationEntries);
 
                 // Scan disabled entries (stored in BootSentry backup key)
-                var disabledPath = $"{DisabledKeyPath}\\{location.Path}";
+                var disabledPath = $"{BootSentry.Core.Constants.Registry.DisabledKeyPath}\\{location.Path}";
                 var disabledEntries = await ScanRegistryKeyAsync(
                     location.Hive,
                     disabledPath,
@@ -113,7 +111,7 @@ public sealed class RegistryRunProvider : IStartupProvider
 
         // For disabled entries, use the original path for display/identification
         var originalPath = isDisabled
-            ? path.Replace($"{DisabledKeyPath}\\", "", StringComparison.OrdinalIgnoreCase)
+            ? path.Replace($"{BootSentry.Core.Constants.Registry.DisabledKeyPath}\\", "", StringComparison.OrdinalIgnoreCase)
             : path;
         var fullKeyPath = $"{hiveName}\\{originalPath}";
 
@@ -192,7 +190,7 @@ public sealed class RegistryRunProvider : IStartupProvider
         if (CommandLineParser.IsSuspiciousCommandLine(commandLine))
         {
             entry.RiskLevel = RiskLevel.Suspicious;
-            entry.Notes = "Ligne de commande suspecte détectée";
+            entry.Notes = BootSentry.Core.Constants.Messages.SuspiciousCommandLine;
         }
 
         return entry;

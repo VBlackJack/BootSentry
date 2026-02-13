@@ -7,6 +7,7 @@ using BootSentry.Actions;
 using BootSentry.Backup;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Services;
+using BootSentry.Core.Services.Integrations;
 using BootSentry.Knowledge.Services;
 using BootSentry.Providers;
 using BootSentry.Security;
@@ -24,6 +25,8 @@ public partial class App : Application
     private const string MutexName = @"Global\BootSentryMutex";
 
     public static IServiceProvider Services { get; private set; } = null!;
+    
+    public bool IsExiting { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -137,8 +140,25 @@ public partial class App : Application
 
         // Core services
         services.AddSingleton<IRiskService, RiskAnalyzer>();
+        services.AddSingleton<SnapshotManager>();
         services.AddSingleton<StartupWatchdog>();
         services.AddSingleton<TrayIconService>();
+        
+        // Integrations
+        services.AddSingleton<VirusTotalService>(sp => 
+        {
+            var logger = sp.GetRequiredService<ILogger<VirusTotalService>>();
+            var service = new VirusTotalService(logger);
+            
+            // Configure API key if available
+            var settings = sp.GetRequiredService<SettingsService>();
+            if (!string.IsNullOrEmpty(settings.Settings.VirusTotalApiKey))
+            {
+                service.SetApiKey(settings.Settings.VirusTotalApiKey);
+            }
+            
+            return service;
+        });
 
         // Knowledge base
         services.AddSingleton<KnowledgeService>(sp =>
@@ -157,6 +177,7 @@ public partial class App : Application
 
         // ViewModels
         services.AddTransient<MainViewModel>();
+        services.AddTransient<SnapshotViewModel>();
         services.AddTransient<EntryListViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<HistoryViewModel>();

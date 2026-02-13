@@ -30,6 +30,17 @@ public partial class MainWindow : FluentWindow
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        var app = Application.Current as App;
+        var settingsService = App.Services.GetRequiredService<SettingsService>();
+        
+        // If monitoring is enabled and not explicitly exiting, minimize to tray
+        if (settingsService.Settings.EnableRealTimeMonitoring && app?.IsExiting != true)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         // Save window state before closing
         SaveWindowState();
 

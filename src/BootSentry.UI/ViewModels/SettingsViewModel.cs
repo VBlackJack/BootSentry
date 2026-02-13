@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using BootSentry.Core.Services.Integrations;
 using BootSentry.UI.Resources;
 using BootSentry.UI.Services;
 
@@ -15,10 +16,11 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ILogger<SettingsViewModel> _logger;
     private readonly SettingsService _settingsService;
     private readonly ThemeService _themeService;
+    private readonly VirusTotalService _virusTotalService;
     private bool _isInitializing = true;
 
     // Design-time constructor
-    public SettingsViewModel() : this(null!, null!, null!) { }
+    public SettingsViewModel() : this(null!, null!, null!, null!) { }
 
     [ObservableProperty]
     private string _selectedLanguage = "fr";
@@ -42,6 +44,9 @@ public partial class SettingsViewModel : ObservableObject
     private bool _showOnboarding = true;
 
     [ObservableProperty]
+    private string? _virusTotalApiKey;
+
+    [ObservableProperty]
     private string _statusMessage = string.Empty;
 
     public ObservableCollection<LanguageItem> Languages { get; } =
@@ -55,11 +60,13 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(
         ILogger<SettingsViewModel> logger,
         SettingsService settingsService,
-        ThemeService themeService)
+        ThemeService themeService,
+        VirusTotalService virusTotalService)
     {
         _logger = logger;
         _settingsService = settingsService;
         _themeService = themeService;
+        _virusTotalService = virusTotalService;
 
         UpdateThemeList();
         LoadSettings();
@@ -85,6 +92,17 @@ public partial class SettingsViewModel : ObservableObject
         BackupRetentionDays = settings.BackupRetentionDays;
         AutoCalculateHashes = settings.AutoCalculateHashes;
         ShowOnboarding = settings.ShowOnboarding;
+        VirusTotalApiKey = settings.VirusTotalApiKey;
+    }
+
+    private bool SaveSettingsOrReportError()
+    {
+        if (_settingsService.Save())
+            return true;
+
+        StatusMessage = Strings.Get("SettingsSaveFailed");
+        _logger.LogWarning("Failed to persist settings");
+        return false;
     }
 
     partial void OnSelectedLanguageChanged(string value)
@@ -95,7 +113,7 @@ public partial class SettingsViewModel : ObservableObject
         var previousLanguage = Strings.CurrentLanguage;
         Strings.CurrentLanguage = value;
         _settingsService.Settings.Language = value;
-        _settingsService.Save();
+        var saved = SaveSettingsOrReportError();
 
         UpdateThemeList();
 
@@ -113,7 +131,10 @@ public partial class SettingsViewModel : ObservableObject
             }
         }
 
-        StatusMessage = Strings.Get("SettingsLanguage") + ": " + value;
+        if (saved)
+        {
+            StatusMessage = Strings.Get("SettingsLanguage") + ": " + value;
+        }
     }
 
     private static void RestartApplication()
@@ -133,37 +154,44 @@ public partial class SettingsViewModel : ObservableObject
 
         _themeService.CurrentTheme = value;
         _settingsService.Settings.Theme = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
     }
 
     partial void OnIsExpertModeDefaultChanged(bool value)
     {
         _settingsService.Settings.ExpertModeDefault = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
     }
 
     partial void OnCheckForUpdatesOnStartupChanged(bool value)
     {
         _settingsService.Settings.CheckUpdatesOnStartup = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
     }
 
     partial void OnBackupRetentionDaysChanged(int value)
     {
         _settingsService.Settings.BackupRetentionDays = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
     }
 
     partial void OnAutoCalculateHashesChanged(bool value)
     {
         _settingsService.Settings.AutoCalculateHashes = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
     }
 
     partial void OnShowOnboardingChanged(bool value)
     {
         _settingsService.Settings.ShowOnboarding = value;
-        _settingsService.Save();
+        SaveSettingsOrReportError();
+    }
+
+    partial void OnVirusTotalApiKeyChanged(string? value)
+    {
+        _settingsService.Settings.VirusTotalApiKey = value;
+        if (value != null) _virusTotalService.SetApiKey(value);
+        SaveSettingsOrReportError();
     }
 
     [RelayCommand]
@@ -175,9 +203,19 @@ public partial class SettingsViewModel : ObservableObject
 
         var currentLanguage = Strings.CurrentLanguage;
 
-        _settingsService.Reset();
+        if (!_settingsService.Reset())
+        {
+            StatusMessage = Strings.Get("SettingsResetFailed");
+            return;
+        }
+
         _settingsService.Settings.Language = currentLanguage;
-        _settingsService.Save();
+        if (!_settingsService.Save())
+        {
+            StatusMessage = Strings.Get("SettingsSaveFailed");
+            return;
+        }
+
         LoadSettings();
         _themeService.CurrentTheme = ThemeMode.System;
         Strings.CurrentLanguage = currentLanguage;
@@ -192,7 +230,12 @@ public partial class SettingsViewModel : ObservableObject
         if (confirmDialog.ShowDialog() != true)
             return;
 
-        _settingsService.PurgeAllData();
+        if (!_settingsService.PurgeAllData())
+        {
+            StatusMessage = Strings.Get("SettingsPurgeFailed");
+            return;
+        }
+
         LoadSettings();
         StatusMessage = Strings.Get("SettingsPurgeDone");
         _logger.LogInformation("All application data purged");

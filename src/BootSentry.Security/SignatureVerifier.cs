@@ -98,7 +98,7 @@ public sealed class SignatureVerifier : ISignatureVerifier
                     pPolicyCallbackData = IntPtr.Zero,
                     pSIPClientData = IntPtr.Zero,
                     dwUIChoice = NativeMethods.WTD_UI_NONE,
-                    fdwRevocationChecks = NativeMethods.WTD_REVOKE_NONE,
+                    fdwRevocationChecks = NativeMethods.WTD_REVOKE_WHOLECHAIN,
                     dwUnionChoice = NativeMethods.WTD_CHOICE_FILE,
                     pFile = fileInfoPtr,
                     dwStateAction = NativeMethods.WTD_STATEACTION_VERIFY,
@@ -161,13 +161,20 @@ public sealed class SignatureVerifier : ISignatureVerifier
                 ChainIsValid = ValidateCertificateChain(cert)
             };
         }
-        catch (Exception)
+        catch (System.Security.Cryptography.CryptographicException ex)
         {
-            // Certificate extraction can fail for various reasons
             return new SignatureInfo
             {
                 Status = SignatureStatus.Unknown,
-                ErrorMessage = "Could not read certificate"
+                ErrorMessage = $"Crypto error: {ex.Message}"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new SignatureInfo
+            {
+                Status = SignatureStatus.Unknown,
+                ErrorMessage = $"Certificate error: {ex.Message}"
             };
         }
     }
@@ -178,7 +185,7 @@ public sealed class SignatureVerifier : ISignatureVerifier
         chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
         chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
         chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
-        chain.ChainPolicy.UrlRetrievalTimeout = TimeSpan.FromSeconds(10); // Prevent blocking on slow OCSP/CRL servers
+        chain.ChainPolicy.UrlRetrievalTimeout = TimeSpan.FromSeconds(3); // Reduced timeout for better responsiveness
 
         try
         {

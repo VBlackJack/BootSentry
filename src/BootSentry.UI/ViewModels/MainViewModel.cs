@@ -14,6 +14,7 @@ using BootSentry.Core.Helpers;
 using BootSentry.Core.Interfaces;
 using BootSentry.Core.Models;
 using BootSentry.Core.Services;
+using BootSentry.Core.Services.Integrations;
 using BootSentry.Knowledge.Models;
 using BootSentry.Knowledge.Services;
 using BootSentry.Security;
@@ -54,6 +55,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IRiskService _riskAnalyzer;
     private readonly KnowledgeService _knowledgeService;
     private readonly IMalwareScanner? _malwareScanner;
+    private readonly VirusTotalService _virusTotalService;
     private readonly ToastService _toastService;
     private readonly SettingsService _settingsService;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -187,6 +189,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IRiskService riskAnalyzer,
         ToastService toastService,
         SettingsService settingsService,
+        VirusTotalService virusTotalService,
         IMalwareScanner? malwareScanner = null)
     {
         _logger = logger;
@@ -199,6 +202,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _riskAnalyzer = riskAnalyzer;
         _toastService = toastService;
         _settingsService = settingsService;
+        _virusTotalService = virusTotalService;
 
         _entriesView = CollectionViewSource.GetDefaultView(Entries);
         _entriesView.Filter = FilterEntries;
@@ -610,7 +614,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // Run scanning in background
             await Task.Run(async () =>
             {
-                var malwareDetected = new List<StartupEntry>();
+                var scanOutcomes = new List<(StartupEntry Entry, ScanResult Result)>(riskyEntries.Count);
 
                 foreach (var entry in riskyEntries)
                 {
@@ -621,22 +625,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
                         _logger.LogDebug("Smart scan: scanning {Name}", entry.DisplayName);
 
                         var result = await _malwareScanner.ScanAsync(entry.TargetPath!);
-
-                        // Update entry properties (StartupEntry implements INotifyPropertyChanged)
-                        entry.MalwareScanResult = result;
-                        entry.LastMalwareScan = DateTime.Now;
-
-                        if (result == ScanResult.Malware)
-                        {
-                            entry.RiskLevel = RiskLevel.Critical;
-                            malwareDetected.Add(entry);
-                            _logger.LogWarning("Smart scan: MALWARE detected in {Path}", entry.TargetPath);
-                        }
+                        scanOutcomes.Add((entry, result));
                     }
                     catch (Exception ex)
                     {
                         _logger.LogDebug(ex, "Smart scan: error scanning {Name}", entry.DisplayName);
-                        entry.MalwareScanResult = ScanResult.Error;
+                        scanOutcomes.Add((entry, ScanResult.Error));
                     }
                     finally
                     {
@@ -644,22 +638,35 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     }
                 }
 
-                // Update UI on dispatcher thread if malware was found
-                if (malwareDetected.Count > 0)
+                // Apply bound-property updates on the UI thread.
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    var malwareDetected = new List<StartupEntry>();
+                    foreach (var (entry, result) in scanOutcomes)
                     {
-                        _entriesView.Refresh();
-                        UpdateCounts();
+                        entry.MalwareScanResult = result;
+                        entry.LastMalwareScan = DateTime.Now;
 
-                        // Log notification instead of blocking MessageBox
-                        var names = string.Join(", ", malwareDetected.Select(e => e.DisplayName));
-                        _logger.LogWarning("Smart scan completed: {Count} threat(s) detected: {Names}",
-                            malwareDetected.Count, names);
+                        if (result != ScanResult.Malware)
+                            continue;
 
-                        StatusMessage = Strings.Format("StatusSmartScanThreats", malwareDetected.Count);
-                    });
-                }
+                        entry.RiskLevel = RiskLevel.Critical;
+                        malwareDetected.Add(entry);
+                        _logger.LogWarning("Smart scan: MALWARE detected in {Path}", entry.TargetPath);
+                    }
+
+                    if (malwareDetected.Count == 0)
+                        return;
+
+                    _entriesView.Refresh();
+                    UpdateCounts();
+
+                    var names = string.Join(", ", malwareDetected.Select(e => e.DisplayName));
+                    _logger.LogWarning("Smart scan completed: {Count} threat(s) detected: {Names}",
+                        malwareDetected.Count, names);
+
+                    StatusMessage = Strings.Format("StatusSmartScanThreats", malwareDetected.Count);
+                });
             });
 
             _logger.LogInformation("Smart scan completed");
@@ -1288,6 +1295,79 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task AnalyzeWithVirusTotalAsync()
+    {
+        if (SelectedEntry == null) return;
+        
+        if (!_virusTotalService.IsConfigured)
+        {
+             var result = MessageBox.Show(
+                "L'intégration VirusTotal n'est pas configurée. Voulez-vous ouvrir les paramètres pour saisir votre clé API (gratuite) ?",
+                "Configuration requise",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+                
+             if (result == MessageBoxResult.Yes)
+             {
+                 OpenSettings();
+             }
+             return;
+        }
+
+        if (string.IsNullOrEmpty(SelectedEntry.Sha256))
+        {
+             await CalculateHashAsync();
+             if (string.IsNullOrEmpty(SelectedEntry.Sha256)) return;
+        }
+
+        try
+        {
+            StatusMessage = "Interrogation de VirusTotal...";
+            IsLoading = true;
+            var report = await _virusTotalService.GetFileReportAsync(SelectedEntry.Sha256);
+            
+            if (report == null)
+            {
+                StatusMessage = "Fichier inconnu de VirusTotal.";
+                _toastService.ShowWarning("Fichier inconnu : Ce fichier n'a jamais été analysé par VirusTotal.");
+                return;
+            }
+            
+            var stats = report.Attributes?.LastAnalysisStats;
+            if (stats != null)
+            {
+                var total = stats.Harmless + stats.Suspicious + stats.Malicious + stats.Undetected;
+                var score = $"{stats.Malicious}/{total}";
+                
+                SelectedEntry.VirusTotalScore = score;
+                SelectedEntry.VirusTotalLink = $"https://www.virustotal.com/gui/file/{SelectedEntry.Sha256}";
+                OnPropertyChanged(nameof(SelectedEntry));
+                
+                StatusMessage = $"VirusTotal: {score} détections";
+                
+                if (stats.Malicious > 0)
+                {
+                    _toastService.ShowWarning($"Menace détectée : VirusTotal signale {stats.Malicious} détections !");
+                    SelectedEntry.RiskLevel = RiskLevel.Critical;
+                }
+                else
+                {
+                    _toastService.ShowSuccess("Fichier sain : Aucune détection sur VirusTotal.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = "Erreur VirusTotal";
+            _toastService.ShowError($"Erreur VirusTotal: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
     private async Task ScanSelectedAsync()
     {
         if (SelectedEntry?.TargetPath == null || !SelectedEntry.FileExists)
@@ -1619,6 +1699,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void OpenSnapshots()
+    {
+        var snapshotWindow = new Views.SnapshotWindow
+        {
+            Owner = Application.Current.MainWindow
+        };
+        snapshotWindow.ShowDialog();
+    }
+
+    [RelayCommand]
     private void ShowHistory()
     {
         var historyWindow = new Views.HistoryView
@@ -1819,6 +1909,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Exit()
     {
+        if (Application.Current is App app)
+        {
+            app.IsExiting = true;
+        }
         Application.Current.Shutdown();
     }
 

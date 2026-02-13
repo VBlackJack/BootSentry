@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace BootSentry.UI.Services;
 
@@ -9,6 +10,7 @@ namespace BootSentry.UI.Services;
 /// </summary>
 public class SettingsService
 {
+    private readonly ILogger<SettingsService> _logger;
     private readonly string _settingsPath;
     private AppSettings _settings;
 
@@ -18,8 +20,10 @@ public class SettingsService
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public SettingsService()
+    public SettingsService(ILogger<SettingsService> logger)
     {
+        _logger = logger;
+
         var appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "BootSentry");
@@ -37,7 +41,7 @@ public class SettingsService
     /// <summary>
     /// Loads settings from disk.
     /// </summary>
-    public void Load()
+    public bool Load()
     {
         try
         {
@@ -46,63 +50,94 @@ public class SettingsService
                 var json = File.ReadAllText(_settingsPath);
                 _settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
             }
+
+            return true;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Failed to load settings from {Path}; using defaults", _settingsPath);
             _settings = new AppSettings();
+            return false;
         }
     }
 
     /// <summary>
     /// Saves settings to disk.
     /// </summary>
-    public void Save()
+    public bool Save()
     {
         try
         {
             var json = JsonSerializer.Serialize(_settings, JsonOptions);
             File.WriteAllText(_settingsPath, json);
+            return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore save errors
+            _logger.LogError(ex, "Failed to save settings to {Path}", _settingsPath);
+            return false;
         }
     }
 
     /// <summary>
     /// Resets settings to defaults.
     /// </summary>
-    public void Reset()
+    public bool Reset()
     {
         _settings = new AppSettings();
-        Save();
+        return Save();
     }
 
     /// <summary>
     /// Purges all application data.
     /// </summary>
-    public void PurgeAllData()
+    public bool PurgeAllData()
     {
+        var success = true;
+
+        // Reset settings
+        if (!Reset())
+        {
+            success = false;
+        }
+
+        // Delete logs
         try
         {
-            // Reset settings
-            Reset();
-
-            // Delete logs
             var logsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "BootSentry", "Logs");
             if (Directory.Exists(logsPath))
+            {
                 Directory.Delete(logsPath, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to purge logs");
+            success = false;
+        }
 
-            // Delete backups
+        // Delete backups
+        try
+        {
             var backupsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "BootSentry", "Backups");
             if (Directory.Exists(backupsPath))
+            {
                 Directory.Delete(backupsPath, true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to purge backups");
+            success = false;
+        }
 
-            // Delete local app data
+        // Delete local app data
+        try
+        {
             var localPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "BootSentry");
@@ -112,14 +147,27 @@ public class SettingsService
                 foreach (var file in Directory.GetFiles(localPath))
                 {
                     if (!file.EndsWith("settings.json"))
-                        File.Delete(file);
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to delete local data file: {File}", file);
+                            success = false;
+                        }
+                    }
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors
+            _logger.LogError(ex, "Failed to purge local app data");
+            success = false;
         }
+
+        return success;
     }
 }
 
@@ -187,6 +235,55 @@ public class AppSettings
     /// Whether to hide Microsoft system entries (Services/Drivers) from the list.
     /// </summary>
     public bool HideMicrosoftEntries { get; set; } = true;
+
+    /// <summary>
+    /// Whether to enable real-time startup monitoring.
+    /// </summary>
+    public bool EnableRealTimeMonitoring { get; set; } = false;
+
+    /// <summary>
+    /// API Key for VirusTotal integration (Encrypted in storage).
+    /// </summary>
+    [JsonIgnore]
+    public string? VirusTotalApiKey { get; set; }
+
+    [JsonPropertyName("VirusTotalApiKey")]
+    public string? VirusTotalApiKeyEncrypted
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(VirusTotalApiKey)) return null;
+            try
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(VirusTotalApiKey);
+                var protectedBytes = System.Security.Cryptography.ProtectedData.Protect(
+                    bytes, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+                return Convert.ToBase64String(protectedBytes);
+            }
+            catch { return null; }
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                VirusTotalApiKey = null;
+                return;
+            }
+
+            try
+            {
+                var bytes = Convert.FromBase64String(value);
+                var unprotectedBytes = System.Security.Cryptography.ProtectedData.Unprotect(
+                    bytes, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+                VirusTotalApiKey = System.Text.Encoding.UTF8.GetString(unprotectedBytes);
+            }
+            catch
+            {
+                // Fallback for migration: treat as clear text if decryption fails
+                VirusTotalApiKey = value;
+            }
+        }
+    }
 }
 
 /// <summary>

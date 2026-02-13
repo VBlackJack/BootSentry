@@ -1,0 +1,62 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Base Colors -->
+    <Color x:Key="PrimaryColor">#0078D4</Color>
+    <Color x:Key="SuccessColor">#047857</Color>
+    <Color x:Key="WarningColor">#B45309</Color>
+    <Color x:Key="DangerColor">#B91C1C</Color>
+    <Color x:Key="NeutralColor">#6B7280</Color>
+    <Color x:Key="InfoColor">#1D4ED8</Color>
+
+    <!-- Opacity Values -->
+    <system:Double x:Key="OpacitySoft" xmlns:system="clr-namespace:System;assembly=mscorlib">0.1</system:Double>
+    <system:Double x:Key="OpacityMuted" xmlns:system="clr-namespace:System;assembly=mscorlib">0.6</system:Double>
+    <system:Double x:Key="OpacityOverlay" xmlns:system="clr-namespace:System;assembly=mscorlib">0.5</system:Double>
+
+    <!-- Base Brushes (Shared) -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+    <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+
+    <!-- These are placeholders, they are overridden by ThemeService at runtime -->
+    <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
+    <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
+    <SolidColorBrush x:Key="PanelBackground" Color="White"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#DCDCDC"/>
+    <SolidColorBrush x:Key="ControlBackground" Color="White"/>
+    <SolidColorBrush x:Key="ControlForeground" Color="#202020"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="AccentForeground" Color="White"/>
+    <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
+    <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
+    <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
+    <SolidColorBrush x:Key="HeaderSecondaryForeground" Color="#CCFFFFFF"/>
+    <SolidColorBrush x:Key="OverlayBackground" Color="#80000000"/>
+    <SolidColorBrush x:Key="MutedForeground" Color="#6B7280"/>
+
+    <!-- Soft/Translucent Brushes -->
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="{StaticResource SuccessColor}" Opacity="{StaticResource OpacitySoft}"/>
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="{StaticResource WarningColor}" Opacity="{StaticResource OpacitySoft}"/>
+    <SolidColorBrush x:Key="ErrorSoftBrush" Color="{StaticResource DangerColor}" Opacity="{StaticResource OpacitySoft}"/>
+
+    <!-- Risk Level Colors (Placeholders, overridden by ThemeService) -->
+    <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="RiskUnknownBrush" Color="{StaticResource NeutralColor}"/>
+    <SolidColorBrush x:Key="RiskSuspiciousBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="RiskCriticalBrush" Color="{StaticResource DangerColor}"/>
+
+    <!-- Status Colors (Placeholders, overridden by ThemeService) -->
+    <SolidColorBrush x:Key="StatusEnabledBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="StatusDisabledBrush" Color="{StaticResource DangerColor}"/>
+    <SolidColorBrush x:Key="StatusUnknownBrush" Color="{StaticResource NeutralColor}"/>
+
+    <!-- Notes/Warning Box Colors (Placeholders, overridden by ThemeService) -->
+    <SolidColorBrush x:Key="NoteBackgroundBrush" Color="#FEF3C7"/>
+    <SolidColorBrush x:Key="NoteForegroundBrush" Color="#92400E"/>
+
+</ResourceDictionary>

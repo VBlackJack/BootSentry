@@ -47,6 +47,9 @@ public sealed class TransactionManifest
     [JsonPropertyName("originalValue")]
     public string? OriginalValue { get; init; }
 
+    [JsonPropertyName("originalStatus")]
+    public EntryStatus OriginalStatus { get; init; }
+
     [JsonPropertyName("payloadFiles")]
     public List<string> PayloadFiles { get; init; } = [];
 

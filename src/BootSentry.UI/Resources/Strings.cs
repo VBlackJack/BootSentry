@@ -243,6 +243,9 @@ public static class Strings
             ["SettingsLanguageRestartPrompt"] = "La langue sera appliquée après le redémarrage.\n\nRedémarrer l'application maintenant ?",
             ["SettingsLanguageChangeTitle"] = "Changement de langue",
             ["SettingsResetDone"] = "Paramètres réinitialisés",
+            ["SettingsSaveFailed"] = "Impossible d'enregistrer les paramètres",
+            ["SettingsResetFailed"] = "Échec de la réinitialisation des paramètres",
+            ["SettingsPurgeFailed"] = "Échec de la purge des données",
 
             // History
             ["HistoryWindowTitle"] = "Historique - BootSentry",
@@ -507,6 +510,28 @@ public static class Strings
             ["ExpertModeDisabled"] = "Mode Expert désactivé",
             ["RunningAsAdmin"] = "Exécution en tant qu'administrateur",
             ["NotRunningAsAdmin"] = "Mode standard (certaines actions nécessitent une élévation)",
+
+            // Tray Icon
+            ["TrayTooltip"] = "BootSentry",
+            ["TrayOpen"] = "Ouvrir BootSentry",
+            ["TrayExit"] = "Quitter",
+            ["TrayMonitor"] = "Surveillance temps réel",
+            ["TrayMonitorActive"] = "Surveillance en temps réel activée",
+            ["TrayMonitorInactive"] = "Surveillance en temps réel désactivée",
+            ["NotifNewEntry"] = "⚠️ Nouvelle entrée détectée",
+            ["NotifNewEntryBody"] = "Nouvelle entrée de démarrage détectée:\n{0}\nSource: {1}",
+            ["NotifEntryRemoved"] = "Entrée supprimée",
+            ["NotifEntryRemovedBody"] = "Entrée de démarrage supprimée:\n{0}\nSource: {1}",
+
+            // Snapshots
+            ["SnapshotManualDescription"] = "Snapshot manuel",
+            ["SnapshotCurrentState"] = "État actuel",
+            ["NotifSnapshotCreated"] = "Snapshot créé: {0}",
+            ["NotifSnapshotDeleted"] = "Snapshot supprimé: {0}",
+            ["ErrorSnapshotLoad"] = "Échec du chargement des snapshots: {0}",
+            ["ErrorSnapshotCreate"] = "Échec de la création du snapshot: {0}",
+            ["ErrorSnapshotDelete"] = "Échec de la suppression du snapshot: {0}",
+            ["ErrorComparisonFailed"] = "Comparaison échouée: {0}",
         },
 
         ["en"] = new Dictionary<string, string>
@@ -742,6 +767,9 @@ public static class Strings
             ["SettingsLanguageRestartPrompt"] = "The language will be applied after restart.\n\nRestart the application now?",
             ["SettingsLanguageChangeTitle"] = "Language Change",
             ["SettingsResetDone"] = "Settings reset to defaults",
+            ["SettingsSaveFailed"] = "Failed to save settings",
+            ["SettingsResetFailed"] = "Failed to reset settings",
+            ["SettingsPurgeFailed"] = "Failed to purge data",
 
             // History
             ["HistoryWindowTitle"] = "History - BootSentry",
@@ -1006,6 +1034,28 @@ public static class Strings
             ["ExpertModeDisabled"] = "Expert Mode disabled",
             ["RunningAsAdmin"] = "Running as Administrator",
             ["NotRunningAsAdmin"] = "Standard mode (some actions require elevation)",
+
+            // Tray Icon
+            ["TrayTooltip"] = "BootSentry",
+            ["TrayOpen"] = "Open BootSentry",
+            ["TrayExit"] = "Exit",
+            ["TrayMonitor"] = "Real-time monitoring",
+            ["TrayMonitorActive"] = "Real-time monitoring enabled",
+            ["TrayMonitorInactive"] = "Real-time monitoring disabled",
+            ["NotifNewEntry"] = "⚠️ New entry detected",
+            ["NotifNewEntryBody"] = "New startup entry detected:\n{0}\nSource: {1}",
+            ["NotifEntryRemoved"] = "Entry removed",
+            ["NotifEntryRemovedBody"] = "Startup entry removed:\n{0}\nSource: {1}",
+
+            // Snapshots
+            ["SnapshotManualDescription"] = "Manual snapshot",
+            ["SnapshotCurrentState"] = "Current State",
+            ["NotifSnapshotCreated"] = "Snapshot created: {0}",
+            ["NotifSnapshotDeleted"] = "Snapshot deleted: {0}",
+            ["ErrorSnapshotLoad"] = "Failed to load snapshots: {0}",
+            ["ErrorSnapshotCreate"] = "Failed to create snapshot: {0}",
+            ["ErrorSnapshotDelete"] = "Failed to delete snapshot: {0}",
+            ["ErrorComparisonFailed"] = "Comparison failed: {0}",
         }
     };
 

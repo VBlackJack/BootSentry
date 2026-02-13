@@ -99,3 +99,33 @@ nul
 con
 prn
 aux
+
+# Local audit/build diagnostics
+.dotnet-home-audit/
+.audit_actions_diag.log
+actions_tests.log
+build*.log
+*build*.log
+
+# Local scratch scripts/assets (one-off investigations)
+add_translations*.ps1
+add_translations*.py
+add_all_translations.ps1
+add_all_trans_*.py
+add_english_translations*.py
+add_remaining_translations.py
+add_translations_section_*.py
+add_translations_atomic.py
+add_translations_final.py
+run_translations_*.bat
+check_extensions.ps1
+list_extensions.ps1
+list_edge_extensions.ps1
+resolve_extensions.ps1
+test_locales.ps1
+verify_translations.py
+adblock.png
+bug.png
+keepassxc.png
+reponse.txt
+settings.json

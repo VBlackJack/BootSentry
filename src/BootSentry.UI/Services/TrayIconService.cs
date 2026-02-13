@@ -2,6 +2,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using BootSentry.Core.Services;
+using BootSentry.UI.Resources;
 using Microsoft.Extensions.Logging;
 
 namespace BootSentry.UI.Services;
@@ -70,6 +71,12 @@ public class TrayIconService : IDisposable
         _watchdog.EntryRemoved += OnEntryRemoved;
 
         _notifyIcon.DoubleClick += (s, e) => ShowMainWindow();
+
+        // Start monitoring if enabled in settings
+        if (_settingsService.Settings.EnableRealTimeMonitoring)
+        {
+            StartMonitoring();
+        }
     }
 
     /// <summary>
@@ -98,7 +105,10 @@ public class TrayIconService : IDisposable
         if (!_watchdog.IsRunning)
         {
             _watchdog.Start();
-            ShowNotification("BootSentry", "Surveillance en temps réel activée", ToolTipIcon.Info);
+            ShowNotification(Strings.Get("TrayTooltip"), Strings.Get("TrayMonitorActive"), ToolTipIcon.Info);
+            
+            _settingsService.Settings.EnableRealTimeMonitoring = true;
+            _settingsService.Save();
         }
     }
 
@@ -110,7 +120,10 @@ public class TrayIconService : IDisposable
         if (_watchdog.IsRunning)
         {
             _watchdog.Stop();
-            ShowNotification("BootSentry", "Surveillance en temps réel désactivée", ToolTipIcon.Info);
+            ShowNotification(Strings.Get("TrayTooltip"), Strings.Get("TrayMonitorInactive"), ToolTipIcon.Info);
+            
+            _settingsService.Settings.EnableRealTimeMonitoring = false;
+            _settingsService.Save();
         }
     }
 
@@ -118,12 +131,13 @@ public class TrayIconService : IDisposable
     {
         var menu = new ContextMenuStrip();
 
-        menu.Items.Add("Ouvrir BootSentry", null, (s, e) => ShowMainWindow());
+        menu.Items.Add(Strings.Get("TrayOpen"), null, (s, e) => ShowMainWindow());
         menu.Items.Add("-");
 
-        var monitorItem = new ToolStripMenuItem("Surveillance temps réel")
+        var monitorItem = new ToolStripMenuItem(Strings.Get("TrayMonitor"))
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Checked = _settingsService.Settings.EnableRealTimeMonitoring
         };
         monitorItem.CheckedChanged += (s, e) =>
         {
@@ -135,8 +149,12 @@ public class TrayIconService : IDisposable
         menu.Items.Add(monitorItem);
 
         menu.Items.Add("-");
-        menu.Items.Add("Quitter", null, (s, e) =>
+        menu.Items.Add(Strings.Get("TrayExit"), null, (s, e) =>
         {
+            if (Application.Current is App app)
+            {
+                app.IsExiting = true;
+            }
             Hide();
             Application.Current.Shutdown();
         });
@@ -146,21 +164,21 @@ public class TrayIconService : IDisposable
 
     private void OnEntryDetected(object? sender, StartupEntryDetectedEventArgs e)
     {
-        var message = $"Nouvelle entrée de démarrage détectée:\n{e.Name}\nSource: {e.Source}";
+        var message = Strings.Format("NotifNewEntryBody", e.Name, e.Source);
 
         Application.Current.Dispatcher.Invoke(() =>
         {
-            ShowNotification("⚠️ Nouvelle entrée détectée", message, ToolTipIcon.Warning);
+            ShowNotification(Strings.Get("NotifNewEntry"), message, ToolTipIcon.Warning);
         });
     }
 
     private void OnEntryRemoved(object? sender, StartupEntryDetectedEventArgs e)
     {
-        var message = $"Entrée de démarrage supprimée:\n{e.Name}\nSource: {e.Source}";
+        var message = Strings.Format("NotifEntryRemovedBody", e.Name, e.Source);
 
         Application.Current.Dispatcher.Invoke(() =>
         {
-            ShowNotification("Entrée supprimée", message, ToolTipIcon.Info);
+            ShowNotification(Strings.Get("NotifEntryRemoved"), message, ToolTipIcon.Info);
         });
     }
 

@@ -11,6 +11,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
+                <ResourceDictionary Source="/Resources/Themes.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <!-- Converters -->
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
@@ -26,54 +27,7 @@
             <converters:EntryStatusToColorConverter x:Key="StatusToColor"/>
             <converters:ScanResultToStringConverter x:Key="ScanResultToString"/>
             <converters:SafetyLevelToStringConverter x:Key="SafetyLevelToString"/>
-            <!-- Colors - Unified palette matching ThemeService -->
-            <Color x:Key="PrimaryColor">#0078D4</Color>
-            <Color x:Key="SuccessColor">#047857</Color>
-            <Color x:Key="WarningColor">#B45309</Color>
-            <Color x:Key="DangerColor">#B91C1C</Color>
-            <Color x:Key="NeutralColor">#6B7280</Color>
-
-            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-            <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-            <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-            <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
-            <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}"/>
-            <SolidColorBrush x:Key="SuccessSoftBrush" Color="#1A047857"/>
-            <SolidColorBrush x:Key="WarningSoftBrush" Color="#1AB45309"/>
-            <SolidColorBrush x:Key="ErrorSoftBrush" Color="#1AB91C1C"/>
-
-            <!-- Risk Level Colors -->
-            <SolidColorBrush x:Key="RiskSafeBrush" Color="#047857"/>
-            <SolidColorBrush x:Key="RiskUnknownBrush" Color="#6B7280"/>
-            <SolidColorBrush x:Key="RiskSuspiciousBrush" Color="#B45309"/>
-            <SolidColorBrush x:Key="RiskCriticalBrush" Color="#B91C1C"/>
-
-            <!-- Status Colors -->
-            <SolidColorBrush x:Key="StatusEnabledBrush" Color="#047857"/>
-            <SolidColorBrush x:Key="StatusDisabledBrush" Color="#B91C1C"/>
-            <SolidColorBrush x:Key="StatusUnknownBrush" Color="#6B7280"/>
-
-            <!-- Notes/Warning Box Colors (theme-aware) -->
-            <SolidColorBrush x:Key="NoteBackgroundBrush" Color="#FEF3C7"/>
-            <SolidColorBrush x:Key="NoteForegroundBrush" Color="#92400E"/>
-
-            <!-- Theme-aware brushes (defaults, overridden by ThemeService) -->
-            <SolidColorBrush x:Key="WindowBackground" Color="#F9F9F9"/>
-            <SolidColorBrush x:Key="WindowForeground" Color="#202020"/>
-            <SolidColorBrush x:Key="PanelBackground" Color="White"/>
-            <SolidColorBrush x:Key="BorderBrush" Color="#DCDCDC"/>
-            <SolidColorBrush x:Key="ControlBackground" Color="White"/>
-            <SolidColorBrush x:Key="ControlForeground" Color="#202020"/>
-            <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
-            <SolidColorBrush x:Key="AccentForeground" Color="White"/>
-            <SolidColorBrush x:Key="InfoBrush" Color="#1D4ED8"/>
-            <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
-            <SolidColorBrush x:Key="RowAlternate" Color="#F5F5F5"/>
-            <SolidColorBrush x:Key="RowHover" Color="#EBEBEB"/>
-            <SolidColorBrush x:Key="RowSelected" Color="#0078D4"/>
-            <SolidColorBrush x:Key="HeaderSecondaryForeground" Color="#CCFFFFFF"/>
-            <SolidColorBrush x:Key="OverlayBackground" Color="#80000000"/>
-            <SolidColorBrush x:Key="MutedForeground" Color="#6B7280"/>
+            <converters:NotZeroToVisibilityConverter x:Key="NotZeroToVisibility"/>
 
             <!-- Spacing Scale (8px base) -->
             <system:Double x:Key="SpacingXS">4</system:Double>

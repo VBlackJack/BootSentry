@@ -109,6 +109,11 @@ public class StartupEntry : INotifyPropertyChanged
     public RiskLevel RiskLevel { get; set; } = RiskLevel.Unknown;
 
     /// <summary>
+    /// Detailed risk factors contributing to the risk level.
+    /// </summary>
+    public IReadOnlyList<RiskFactor> RiskFactors { get; set; } = Array.Empty<RiskFactor>();
+
+    /// <summary>
     /// Short explanation or note about this entry.
     /// </summary>
     public string? Notes { get; set; }
@@ -220,6 +225,16 @@ public class StartupEntry : INotifyPropertyChanged
             }
         }
     }
+
+    /// <summary>
+    /// VirusTotal detection score (e.g. 5/70).
+    /// </summary>
+    public string? VirusTotalScore { get; set; }
+
+    /// <summary>
+    /// VirusTotal permalink.
+    /// </summary>
+    public string? VirusTotalLink { get; set; }
 
     /// <summary>
     /// Category grouping based on entry type.

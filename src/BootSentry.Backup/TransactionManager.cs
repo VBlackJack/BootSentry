@@ -55,6 +55,7 @@ public sealed class TransactionManager : ITransactionManager
             SourcePath = entry.SourcePath,
             SourceName = entry.SourceName,
             OriginalValue = entry.CommandLineRaw,
+            OriginalStatus = entry.Status,
             Status = TransactionStatus.Pending
         };
 
@@ -279,12 +280,12 @@ public sealed class TransactionManager : ITransactionManager
         foreach (var backupFile in manifest.PayloadFiles)
         {
             var json = await File.ReadAllTextAsync(backupFile, cancellationToken);
-            var backupData = JsonSerializer.Deserialize<JsonElement>(json);
+            var backupData = JsonSerializer.Deserialize<RegistryValueBackupData>(json)
+                ?? throw new InvalidOperationException($"Invalid registry backup payload: {backupFile}");
 
-            var keyPath = backupData.GetProperty("keyPath").GetString()!;
-            var valueName = backupData.GetProperty("valueName").GetString()!;
-            var value = backupData.GetProperty("value").GetString();
-            var valueKindStr = backupData.GetProperty("valueKind").GetString()!;
+            var keyPath = backupData.KeyPath;
+            var valueName = backupData.ValueName;
+            var valueKindStr = backupData.ValueKind;
             var valueKind = Enum.Parse<RegistryValueKind>(valueKindStr);
 
             var (hive, path) = ParseRegistryPath(keyPath);
@@ -297,7 +298,7 @@ public sealed class TransactionManager : ITransactionManager
                 throw new InvalidOperationException($"Registry key not found: {keyPath}");
             }
 
-            key.SetValue(valueName, ConvertBackupValue(value, valueKind), valueKind);
+            key.SetValue(valueName, ConvertBackupValue(backupData, valueKind), valueKind);
             _logger.LogInformation("Restored registry value: {Key}\\{Value}", keyPath, valueName);
         }
     }
@@ -374,7 +375,8 @@ public sealed class TransactionManager : ITransactionManager
             DisplayName = manifest.EntryDisplayName,
             SourcePath = manifest.SourcePath,
             SourceName = manifest.SourceName,
-            CommandLineRaw = manifest.OriginalValue
+            CommandLineRaw = manifest.OriginalValue,
+            Status = manifest.OriginalStatus
         };
 
         return new Transaction
@@ -417,13 +419,17 @@ public sealed class TransactionManager : ITransactionManager
         payloadFiles.Add(backupPath);
     }
 
-    private static object ConvertBackupValue(string? value, RegistryValueKind valueKind)
+    private static object ConvertBackupValue(RegistryValueBackupData backupData, RegistryValueKind valueKind)
     {
         return valueKind switch
         {
-            RegistryValueKind.DWord => int.TryParse(value, out var dwordValue) ? dwordValue : 0,
-            RegistryValueKind.QWord => long.TryParse(value, out var qwordValue) ? qwordValue : 0L,
-            _ => value ?? string.Empty
+            RegistryValueKind.DWord => backupData.DWordValue ?? 0,
+            RegistryValueKind.QWord => backupData.QWordValue ?? 0L,
+            RegistryValueKind.MultiString => backupData.MultiStringValue ?? Array.Empty<string>(),
+            RegistryValueKind.Binary => string.IsNullOrEmpty(backupData.BinaryBase64)
+                ? Array.Empty<byte>()
+                : Convert.FromBase64String(backupData.BinaryBase64),
+            _ => backupData.StringValue ?? string.Empty
         };
     }
 }

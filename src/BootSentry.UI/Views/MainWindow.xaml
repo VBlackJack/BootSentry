@@ -68,6 +68,7 @@
                 <MenuItem Header="{res:Localize MenuExpertMode}" IsCheckable="True" IsChecked="{Binding IsExpertMode}" InputGestureText="Ctrl+E"/>
                 <Separator/>
                 <MenuItem Header="{res:Localize MenuHistory}" Command="{Binding ShowHistoryCommand}" InputGestureText="Ctrl+H"/>
+                <MenuItem Header="Snapshots..." Command="{Binding OpenSnapshotsCommand}"/>
             </MenuItem>
             <MenuItem Header="{res:Localize MenuActions}">
                 <MenuItem Header="{res:Localize ActionEnable}" Command="{Binding EnableSelectedCommand}"/>
@@ -110,7 +111,11 @@
                     <Image Source="/Resources/app.png" Width="32" Height="32" Margin="0,0,12,0"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <StackPanel>
-                        <TextBlock Text="{res:Localize AppTitle}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}"/>
+                        <TextBlock Text="{res:Localize AppTitle}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentForeground}">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         <TextBlock Text="{res:Localize AppSubtitle}" FontSize="11" Foreground="{DynamicResource HeaderSecondaryForeground}"/>
                     </StackPanel>
                 </StackPanel>
@@ -708,6 +713,65 @@
                                 </Border>
                             </Grid>
 
+                            <!-- Risk Analysis Details -->
+                            <ItemsControl ItemsSource="{Binding SelectedEntry.RiskFactors}" Margin="0,0,0,12">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#15B91C1C" CornerRadius="4" Padding="8" Margin="0,0,0,4">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Type}" Value="Negative">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Type}" Value="Warning">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Setter Property="Background" Value="#15B45309"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock FontFamily="Segoe MDL2 Assets" Margin="0,2,8,0" VerticalAlignment="Top">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="&#xE783;"/> <!-- Warning icon -->
+                                                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Type}" Value="Warning">
+                                                                    <Setter Property="Text" Value="&#xE7BA;"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Type}" Value="Warning">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource WindowForeground}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
                             <!-- Description (for extensions) -->
                             <TextBlock Text="{Binding SelectedEntry.Description}" TextWrapping="Wrap"
                                        Foreground="{DynamicResource MutedForeground}" Margin="0,0,0,12"
@@ -722,6 +786,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition/>
@@ -793,6 +858,18 @@
                                     </Border>
                                     <TextBlock Text="{Binding SelectedEntry.LastMalwareScan, StringFormat=' ({0:g})'}"
                                                FontSize="10" Foreground="{DynamicResource DisabledForeground}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="8" Text="VirusTotal" FontWeight="SemiBold" Margin="0,4"/>
+                                <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Margin="0,4">
+                                    <Button Command="{Binding DataContext.AnalyzeWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            Content="Check Cloud" Padding="8,2" FontSize="11" Height="24"
+                                            Background="{DynamicResource InfoBrush}" BorderThickness="0"
+                                            Visibility="{Binding SelectedEntry.VirusTotalScore, Converter={StaticResource NullToVisibility}}"/>
+                                    
+                                    <TextBlock Text="{Binding SelectedEntry.VirusTotalScore}" 
+                                               Visibility="{Binding SelectedEntry.VirusTotalScore, Converter={StaticResource NotNullToVisibility}}"
+                                               VerticalAlignment="Center" FontWeight="Bold"/>
                                 </StackPanel>
                             </Grid>
 
@@ -950,7 +1027,7 @@
                             <Separator Margin="0,16"/>
 
                             <!-- Action Buttons -->
-                            <WrapPanel HorizontalAlignment="Center">
+                            <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,20">
                                 <Button Command="{Binding OpenFileLocationCommand}"
                                         Style="{StaticResource ToolbarButton}" Background="{DynamicResource NeutralBrush}" Margin="4">
                                     <StackPanel Orientation="Horizontal">

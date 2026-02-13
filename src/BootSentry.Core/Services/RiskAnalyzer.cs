@@ -10,6 +10,13 @@ namespace BootSentry.Core.Services;
 /// </summary>
 public class RiskAnalyzer : IRiskService
 {
+    private readonly HeuristicAnalyzer _heuristicAnalyzer;
+
+    public RiskAnalyzer()
+    {
+        _heuristicAnalyzer = new HeuristicAnalyzer();
+    }
+
     /// <summary>
     /// List of known trusted publishers.
     /// </summary>
@@ -172,6 +179,7 @@ public class RiskAnalyzer : IRiskService
     {
         var assessment = Analyze(entry);
         entry.RiskLevel = assessment.RecommendedRiskLevel;
+        entry.RiskFactors = assessment.Factors;
     }
 
     /// <inheritdoc/>
@@ -306,10 +314,25 @@ public class RiskAnalyzer : IRiskService
         return null;
     }
 
-    private static RiskFactor? AnalyzeCommandLine(StartupEntry entry)
+    private RiskFactor? AnalyzeCommandLine(StartupEntry entry)
     {
         if (string.IsNullOrEmpty(entry.CommandLineRaw))
             return null;
+
+        var matches = _heuristicAnalyzer.Analyze(entry.CommandLineRaw);
+        if (matches.Count > 0)
+        {
+            // Take the highest score match or sum them? Let's take the highest impact.
+            var worstMatch = matches.OrderByDescending(m => m.Score).First();
+            
+            return new RiskFactor
+            {
+                Name = "Heuristics",
+                Description = $"{worstMatch.Name}: {worstMatch.Description}",
+                Score = worstMatch.Score, // Heuristic scores are positive (bad)
+                Type = RiskFactorType.Negative
+            };
+        }
 
         if (Parsing.CommandLineParser.IsSuspiciousCommandLine(entry.CommandLineRaw))
         {
@@ -400,38 +423,4 @@ public class RiskAnalyzer : IRiskService
             _ => RiskLevel.Critical
         };
     }
-}
-
-/// <summary>
-/// Risk assessment result for a startup entry.
-/// </summary>
-public class RiskAssessment
-{
-    public string EntryId { get; set; } = string.Empty;
-    public RiskLevel OriginalRiskLevel { get; set; }
-    public RiskLevel RecommendedRiskLevel { get; set; }
-    public int TotalScore { get; set; }
-    public IReadOnlyList<RiskFactor> Factors { get; set; } = Array.Empty<RiskFactor>();
-}
-
-/// <summary>
-/// Individual risk factor contributing to the assessment.
-/// </summary>
-public class RiskFactor
-{
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public int Score { get; set; }
-    public RiskFactorType Type { get; set; }
-}
-
-/// <summary>
-/// Type of risk factor.
-/// </summary>
-public enum RiskFactorType
-{
-    Positive,   // Reduces risk
-    Neutral,    // No impact
-    Warning,    // Minor concern
-    Negative    // Increases risk
 }

@@ -15,8 +15,6 @@ public sealed class RegistryActionStrategy : IActionStrategy
     private readonly ILogger<RegistryActionStrategy> _logger;
     private readonly ITransactionManager _transactionManager;
 
-    private const string DisabledKeyPath = @"Software\BootSentry\Disabled";
-
     public RegistryActionStrategy(ILogger<RegistryActionStrategy> logger, ITransactionManager transactionManager)
     {
         _logger = logger;
@@ -81,7 +79,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
                     throw new InvalidOperationException($"Registry key not found: {entry.SourcePath}");
 
                 // Create disabled key path (mirror structure)
-                var disabledKeyPath = $"{DisabledKeyPath}\\{keyPath}";
+                var disabledKeyPath = $"{BootSentry.Core.Constants.Registry.DisabledKeyPath}\\{keyPath}";
                 using var disabledBaseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
                 using var disabledKey = disabledBaseKey.CreateSubKey(disabledKeyPath, writable: true);
 
@@ -132,7 +130,7 @@ public sealed class RegistryActionStrategy : IActionStrategy
         {
             // Parse paths
             var (hive, keyPath) = ParseRegistryPath(entry.SourcePath);
-            var disabledKeyPath = $"{DisabledKeyPath}\\{keyPath}";
+            var disabledKeyPath = $"{BootSentry.Core.Constants.Registry.DisabledKeyPath}\\{keyPath}";
 
             // Read from disabled key
             using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);

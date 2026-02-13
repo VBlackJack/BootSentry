@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using BootSentry.Backup.Models;
 
@@ -194,14 +195,7 @@ public sealed class BackupStorage
         if (!Directory.Exists(regBackupPath))
             Directory.CreateDirectory(regBackupPath);
 
-        var backupData = new
-        {
-            KeyPath = keyPath,
-            ValueName = valueName,
-            Value = value?.ToString(),
-            ValueKind = valueKind.ToString(),
-            BackupTime = DateTime.UtcNow
-        };
+        var backupData = CreateRegistryBackupData(keyPath, valueName, value, valueKind);
 
         var fileName = $"{SanitizeFileName(valueName)}.json";
         var filePath = Path.Combine(regBackupPath, fileName);
@@ -269,5 +263,56 @@ public sealed class BackupStorage
     {
         var invalid = Path.GetInvalidFileNameChars();
         return string.Join("_", name.Split(invalid, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static RegistryValueBackupData CreateRegistryBackupData(
+        string keyPath,
+        string valueName,
+        object value,
+        Microsoft.Win32.RegistryValueKind valueKind)
+    {
+        return valueKind switch
+        {
+            Microsoft.Win32.RegistryValueKind.DWord => new RegistryValueBackupData
+            {
+                KeyPath = keyPath,
+                ValueName = valueName,
+                ValueKind = valueKind.ToString(),
+                BackupTime = DateTime.UtcNow,
+                DWordValue = Convert.ToInt32(value, CultureInfo.InvariantCulture)
+            },
+            Microsoft.Win32.RegistryValueKind.QWord => new RegistryValueBackupData
+            {
+                KeyPath = keyPath,
+                ValueName = valueName,
+                ValueKind = valueKind.ToString(),
+                BackupTime = DateTime.UtcNow,
+                QWordValue = Convert.ToInt64(value, CultureInfo.InvariantCulture)
+            },
+            Microsoft.Win32.RegistryValueKind.MultiString => new RegistryValueBackupData
+            {
+                KeyPath = keyPath,
+                ValueName = valueName,
+                ValueKind = valueKind.ToString(),
+                BackupTime = DateTime.UtcNow,
+                MultiStringValue = value as string[] ?? Array.Empty<string>()
+            },
+            Microsoft.Win32.RegistryValueKind.Binary => new RegistryValueBackupData
+            {
+                KeyPath = keyPath,
+                ValueName = valueName,
+                ValueKind = valueKind.ToString(),
+                BackupTime = DateTime.UtcNow,
+                BinaryBase64 = Convert.ToBase64String(value as byte[] ?? Array.Empty<byte>())
+            },
+            _ => new RegistryValueBackupData
+            {
+                KeyPath = keyPath,
+                ValueName = valueName,
+                ValueKind = valueKind.ToString(),
+                BackupTime = DateTime.UtcNow,
+                StringValue = value?.ToString()
+            }
+        };
     }
 }

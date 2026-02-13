@@ -16,6 +16,7 @@ internal static partial class NativeMethods
 
     public const uint WTD_UI_NONE = 2;
     public const uint WTD_REVOKE_NONE = 0;
+    public const uint WTD_REVOKE_WHOLECHAIN = 1;
     public const uint WTD_CHOICE_FILE = 1;
     public const uint WTD_STATEACTION_VERIFY = 1;
     public const uint WTD_STATEACTION_CLOSE = 2;
