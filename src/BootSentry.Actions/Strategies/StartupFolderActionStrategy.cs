@@ -61,31 +61,39 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
             // Create backup transaction
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Disable, cancellationToken);
 
-            // Ensure quarantine directory exists
-            var quarantineDir = Path.Combine(QuarantinePath, GetRelativeFolderName(entry.SourcePath));
-            Directory.CreateDirectory(quarantineDir);
-
-            // Move file to quarantine
-            var destPath = Path.Combine(quarantineDir, entry.SourceName);
-
-            // Handle existing file in quarantine
-            if (File.Exists(destPath))
+            try
             {
-                var backupPath = destPath + ".bak";
-                if (File.Exists(backupPath))
-                    File.Delete(backupPath);
-                File.Move(destPath, backupPath);
+                // Ensure quarantine directory exists
+                var quarantineDir = Path.Combine(QuarantinePath, GetRelativeFolderName(entry.SourcePath));
+                Directory.CreateDirectory(quarantineDir);
+
+                // Move file to quarantine
+                var destPath = Path.Combine(quarantineDir, entry.SourceName);
+
+                // Handle existing file in quarantine
+                if (File.Exists(destPath))
+                {
+                    var backupPath = destPath + ".bak";
+                    if (File.Exists(backupPath))
+                        File.Delete(backupPath);
+                    File.Move(destPath, backupPath);
+                }
+
+                File.Move(sourcePath, destPath);
+
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+
+                _logger.LogInformation("Disabled startup folder entry: {Name} (moved to {Dest})", entry.DisplayName, destPath);
+
+                entry.Status = EntryStatus.Disabled;
+                return ActionResult.Ok(entry, transaction.Id);
             }
-
-            File.Move(sourcePath, destPath);
-
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
-
-            _logger.LogInformation("Disabled startup folder entry: {Name} (moved to {Dest})", entry.DisplayName, destPath);
-
-            entry.Status = EntryStatus.Disabled;
-            return ActionResult.Ok(entry, transaction.Id);
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -174,15 +182,23 @@ public sealed class StartupFolderActionStrategy : IActionStrategy
             // Create backup transaction first
             var transaction = await _transactionManager.CreateTransactionAsync(entry, ActionType.Delete, cancellationToken);
 
-            // Delete the file
-            File.Delete(sourcePath);
+            try
+            {
+                // Delete the file
+                File.Delete(sourcePath);
 
-            // Commit transaction
-            await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
+                // Commit transaction
+                await _transactionManager.CommitAsync(transaction.Id, cancellationToken);
 
-            _logger.LogInformation("Deleted startup folder entry: {Name}", entry.DisplayName);
+                _logger.LogInformation("Deleted startup folder entry: {Name}", entry.DisplayName);
 
-            return ActionResult.Ok(transactionId: transaction.Id);
+                return ActionResult.Ok(transactionId: transaction.Id);
+            }
+            catch
+            {
+                await _transactionManager.RollbackAsync(transaction.Id, cancellationToken);
+                throw;
+            }
         }
         catch (UnauthorizedAccessException ex)
         {
